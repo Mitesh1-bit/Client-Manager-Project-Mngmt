@@ -1,0 +1,28 @@
+{
+  "name": "marketing-site",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Public, SEO-critical marketing site for the Client & Project Management Platform. Fully static (SSG), independent of the app frontend — separate deployment, separate auth model (none), separate design system.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.43.0",
+    "lucide-react": "^1.27.0",
+    "next": "16.2.12",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.12",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "tailwindcss": "^4"
+  }
+}
