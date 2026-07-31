@@ -1,0 +1,950 @@
+"""
+Local stub of the FastAPI + Strawberry GraphQL contract.
+
+Query/Mutation roots are reproduced verbatim from Section 5 of
+frontend-implementation-prompt.md. Everything else (object shapes, inputs,
+enums) is inferred from the data model in Section 6 of the master plan.
+Assumptions are tracked in NEEDED_SCHEMA_CHANGES.md.
+
+Delete this file once NEXT_PUBLIC_GRAPHQL_URL points at the real /graphql.
+"""
+
+scalar DateTime
+scalar Date
+scalar JSON
+
+enum SortDirection {
+  ASC
+  DESC
+}
+
+enum AuthScope {
+  INTERNAL
+  PORTAL
+}
+
+enum UserRole {
+  ADMIN
+  ACCOUNT_MANAGER
+  PROJECT_MANAGER
+  TEAM_MEMBER
+  FINANCE_ADMIN
+  VIEWER
+}
+
+enum UserStatus {
+  ACTIVE
+  INVITED
+  DISABLED
+}
+
+enum CompanyStatus {
+  LEAD
+  ACTIVE
+  PAUSED
+  CHURNED
+}
+
+enum ContactStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PreferredChannel {
+  EMAIL
+  PHONE
+  MEETING
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum ProjectHealth {
+  ON_TRACK
+  AT_RISK
+  DELAYED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum PhaseStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  AT_RISK
+  COMPLETED
+}
+
+enum MilestoneStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  AT_RISK
+  COMPLETED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+}
+
+enum DependencyType {
+  FINISH_TO_START
+  START_TO_START
+  FINISH_TO_FINISH
+  START_TO_FINISH
+}
+
+enum ChangeRequestType {
+  SCOPE_ADDITION
+  SCOPE_REDUCTION
+  TIMELINE_CHANGE
+  BUDGET_CHANGE
+  BUGFIX
+  OTHER
+}
+
+enum ChangeRequestStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  PENDING_IMPACT_ASSESSMENT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  ON_HOLD
+  IN_PROGRESS
+  IMPLEMENTED
+  CLOSED
+}
+
+enum ApprovalOutcome {
+  APPROVED
+  REJECTED
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ApproverType {
+  INTERNAL
+  CLIENT
+}
+
+enum ApprovalEntityType {
+  CHANGE_REQUEST
+  MILESTONE
+  DOCUMENT
+}
+
+enum SequenceTriggerType {
+  MANUAL
+  ON_COMPANY_CREATED
+  ON_PROJECT_COMPLETED
+  ON_RENEWAL_APPROACHING
+}
+
+enum SequenceChannel {
+  EMAIL
+  CALL
+  MEETING
+  INTERNAL_TASK
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum TouchpointStatus {
+  SCHEDULED
+  COMPLETED
+  SKIPPED
+  OVERDUE
+}
+
+enum TouchpointOutcome {
+  POSITIVE
+  NEUTRAL
+  AT_RISK
+}
+
+type PageInfo {
+  page: Int!
+  pageSize: Int!
+  totalPages: Int!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+type Organization {
+  id: ID!
+  name: String!
+  plan: String
+  logoUrl: String
+  timezone: String
+  settings: JSON
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  role: UserRole!
+  status: UserStatus!
+  avatarUrl: String
+  organization: Organization!
+  scope: AuthScope!
+  contact: Contact
+  company: Company
+}
+
+type Address {
+  line1: String
+  line2: String
+  city: String
+  region: String
+  postalCode: String
+  country: String
+}
+
+type Tag {
+  id: ID!
+  name: String!
+  color: String
+}
+
+type HealthScorePoint {
+  id: ID!
+  score: Int!
+  factors: JSON
+  calculatedAt: DateTime!
+}
+
+type Contract {
+  id: ID!
+  startDate: Date!
+  endDate: Date!
+  value: Float
+  autoRenew: Boolean!
+  status: String!
+}
+
+type Company {
+  id: ID!
+  name: String!
+  industry: String
+  website: String
+  logoUrl: String
+  address: Address
+  size: String
+  timezone: String
+  status: CompanyStatus!
+  healthScore: Int
+  healthScoreTrend: [HealthScorePoint!]!
+  accountOwner: User
+  tags: [Tag!]!
+  contactCount: Int!
+  projectCount: Int!
+  openChangeRequestCount: Int!
+  primaryContact: Contact
+  contacts: [Contact!]!
+  projects: [Project!]!
+  touchpoints: [Touchpoint!]!
+  changeRequests: [ChangeRequest!]!
+  documents: [Document!]!
+  contracts: [Contract!]!
+  activity: [ActivityEntry!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Contact {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  fullName: String!
+  email: String!
+  phone: String
+  title: String
+  department: String
+  isPrimary: Boolean!
+  preferredChannel: PreferredChannel
+  bestTimeToContact: String
+  doNotContact: Boolean!
+  timezone: String
+  portalAccessEnabled: Boolean!
+  linkedinUrl: String
+  status: ContactStatus!
+  company: Company!
+  touchpoints: [Touchpoint!]!
+  activity: [ActivityEntry!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Project {
+  id: ID!
+  name: String!
+  description: String
+  status: ProjectStatus!
+  priority: Priority!
+  health: ProjectHealth!
+  startDate: Date
+  endDate: Date
+  budget: Float
+  actualCost: Float
+  completionPercent: Int!
+  company: Company!
+  projectManager: User
+  team: [User!]!
+  tags: [Tag!]!
+  phases: [ProjectPhase!]!
+  milestones: [Milestone!]!
+  tasks: [Task!]!
+  changeRequests: [ChangeRequest!]!
+  documents: [Document!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ProjectPhase {
+  id: ID!
+  name: String!
+  orderIndex: Int!
+  startDate: Date
+  dueDate: Date
+  status: PhaseStatus!
+  milestones: [Milestone!]!
+  tasks: [Task!]!
+}
+
+type Milestone {
+  id: ID!
+  title: String!
+  description: String
+  dueDate: Date
+  status: MilestoneStatus!
+  requiresClientApproval: Boolean!
+  approvedAt: DateTime
+  orderIndex: Int!
+  phase: ProjectPhase
+  project: Project!
+  tasks: [Task!]!
+  approvals: [Approval!]!
+  "The deliverables a client is being asked to sign off. See §7.2."
+  documents: [Document!]!
+}
+
+type Task {
+  id: ID!
+  title: String!
+  description: String
+  status: TaskStatus!
+  priority: Priority!
+  startDate: Date
+  dueDate: Date
+  estimatedHours: Float
+  actualHours: Float
+  """
+  Position among siblings. For a top-level task that means its place in its
+  status column on the board; for a subtask, its place within its parent.
+  """
+  orderIndex: Int!
+  assignee: User
+  phase: ProjectPhase
+  milestone: Milestone
+  parentTask: Task
+  subtasks: [Task!]!
+  dependencies: [TaskDependency!]!
+}
+
+type TaskDependency {
+  id: ID!
+  dependsOnTask: Task!
+  type: DependencyType!
+}
+
+type ChangeRequest {
+  id: ID!
+  reference: String!
+  title: String!
+  description: String
+  type: ChangeRequestType!
+  status: ChangeRequestStatus!
+  priority: Priority!
+  desiredDueDate: Date
+  impactHours: Float
+  impactCost: Float
+  impactTimelineDays: Int
+  assessmentNotes: String
+  requiresClientApproval: Boolean!
+  requiresInternalApproval: Boolean!
+  revisionCount: Int!
+  decidedAt: DateTime
+  decisionReason: String
+  """
+  Who the request is waiting on right now, so the queue and the portal can say
+  the same thing. Derived from status plus outstanding approvals.
+  """
+  awaitingParty: AwaitingParty!
+  "When the current holder needs to respond by. Null once decided. See §8.3."
+  responseDueAt: DateTime
+  isOverdue: Boolean!
+  project: Project!
+  company: Company!
+  requestedByContact: Contact
+  assignedPm: User
+  approvals: [Approval!]!
+  comments: [Comment!]!
+  attachments: [Document!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Approval {
+  id: ID!
+  entityType: ApprovalEntityType!
+  entityId: ID!
+  approverType: ApproverType!
+  approverName: String
+  status: ApprovalStatus!
+  comment: String
+  decidedAt: DateTime
+  createdAt: DateTime!
+}
+
+type RetentionSequence {
+  id: ID!
+  name: String!
+  description: String
+  triggerType: SequenceTriggerType!
+  isActive: Boolean!
+  isTemplate: Boolean!
+  steps: [RetentionSequenceStep!]!
+  enrollments: [SequenceEnrollment!]!
+  "So a sequence list can show enrollment counts without pulling every enrollment's nested company."
+  activeEnrollmentCount: Int!
+}
+
+type RetentionSequenceStep {
+  id: ID!
+  stepOrder: Int!
+  name: String!
+  channel: SequenceChannel!
+  offsetDays: Int!
+  assigneeRole: UserRole
+  templateId: ID
+}
+
+# Added by the frontend — see NEEDED_SCHEMA_CHANGES.md §9.1.
+input RetentionSequenceStepInput {
+  name: String!
+  channel: SequenceChannel!
+  "Days after enrollment this step fires. Steps must be non-decreasing in this value — see §9.1."
+  offsetDays: Int!
+  assigneeRole: UserRole
+  templateId: ID
+}
+
+input RetentionSequenceInput {
+  name: String!
+  description: String
+  triggerType: SequenceTriggerType!
+  isActive: Boolean
+  "The builder's order is the order of this list — no separate index to keep in sync."
+  steps: [RetentionSequenceStepInput!]!
+}
+
+input CompleteTouchpointInput {
+  outcome: TouchpointOutcome
+  notes: String
+  "Defaults to now if omitted."
+  completedAt: DateTime
+}
+
+"""
+A company flagged for retention attention, with the reasons already computed
+server-side. See NEEDED_SCHEMA_CHANGES.md §9.3 for the thresholds this is
+built from and why they should move to org settings.
+"""
+type AtRiskCompany {
+  company: Company!
+  reasons: [AtRiskReason!]!
+  overdueTouchpointCount: Int!
+  "Most recent completed touchpoint. Null if the company has never had one."
+  lastTouchpointAt: DateTime
+  activeEnrollments: [SequenceEnrollment!]!
+}
+
+enum AtRiskReason {
+  LOW_HEALTH_SCORE
+  OVERDUE_TOUCHPOINTS
+  NO_RECENT_CONTACT
+}
+
+type SequenceEnrollment {
+  id: ID!
+  status: EnrollmentStatus!
+  currentStep: Int!
+  enrolledAt: DateTime!
+  sequence: RetentionSequence!
+  company: Company!
+  contact: Contact
+}
+
+type Touchpoint {
+  id: ID!
+  type: SequenceChannel!
+  status: TouchpointStatus!
+  outcome: TouchpointOutcome
+  notes: String
+  scheduledAt: DateTime
+  completedAt: DateTime
+  company: Company!
+  contact: Contact
+  project: Project
+  enrollment: SequenceEnrollment
+  createdBy: User
+}
+
+type Comment {
+  id: ID!
+  body: String!
+  authorType: ApproverType!
+  authorName: String!
+  authorAvatarUrl: String
+  isClientVisible: Boolean!
+  createdAt: DateTime!
+}
+
+type Document {
+  id: ID!
+  name: String!
+  fileUrl: String!
+  mimeType: String
+  sizeBytes: Int
+  version: Int!
+  uploadedByName: String
+  createdAt: DateTime!
+}
+
+type ActivityEntry {
+  id: ID!
+  action: String!
+  entityType: String!
+  entityId: ID!
+  summary: String!
+  actorName: String
+  actorAvatarUrl: String
+  diff: JSON
+  createdAt: DateTime!
+}
+
+type CompanyConnection {
+  nodes: [Company!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ProjectConnection {
+  nodes: [Project!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type AuthPayload {
+  accessToken: String!
+  expiresAt: DateTime!
+  scope: AuthScope!
+  user: User!
+}
+
+input PageInput {
+  page: Int = 1
+  pageSize: Int = 25
+  sortBy: String
+  sortDirection: SortDirection = ASC
+}
+
+input CompanyFilter {
+  search: String
+  status: [CompanyStatus!]
+  accountOwnerId: ID
+  industry: String
+  tagIds: [ID!]
+  healthScoreBelow: Int
+}
+
+input ProjectFilter {
+  search: String
+  status: [ProjectStatus!]
+  health: [ProjectHealth!]
+  priority: [Priority!]
+  companyId: ID
+  projectManagerId: ID
+  tagIds: [ID!]
+}
+
+input AddressInput {
+  line1: String
+  line2: String
+  city: String
+  region: String
+  postalCode: String
+  country: String
+}
+
+input CompanyInput {
+  name: String!
+  industry: String
+  website: String
+  logoUrl: String
+  address: AddressInput
+  size: String
+  timezone: String
+  status: CompanyStatus
+  accountOwnerId: ID
+  tagIds: [ID!]
+}
+
+input ProjectInput {
+  companyId: ID!
+  name: String!
+  description: String
+  status: ProjectStatus
+  priority: Priority
+  projectManagerId: ID
+  startDate: Date
+  endDate: Date
+  budget: Float
+  tagIds: [ID!]
+}
+
+input TaskInput {
+  projectId: ID!
+  phaseId: ID
+  milestoneId: ID
+  parentTaskId: ID
+  title: String!
+  description: String
+  assigneeId: ID
+  status: TaskStatus
+  priority: Priority
+  startDate: Date
+  dueDate: Date
+  estimatedHours: Float
+}
+
+input MilestoneInput {
+  phaseId: ID!
+  title: String!
+  description: String
+  dueDate: Date
+  requiresClientApproval: Boolean
+  orderIndex: Int
+}
+
+input ChangeRequestFilter {
+  search: String
+  status: [ChangeRequestStatus!]
+  type: [ChangeRequestType!]
+  priority: [Priority!]
+  companyId: ID
+  projectId: ID
+  assignedPmId: ID
+  "Only requests whose response window has already passed. See §8.3."
+  overdueOnly: Boolean
+  "Only requests currently waiting on this party."
+  awaiting: AwaitingParty
+}
+
+type ChangeRequestConnection {
+  nodes: [ChangeRequest!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+"Who the request is sitting with right now."
+enum AwaitingParty {
+  AGENCY
+  CLIENT
+  NOBODY
+}
+
+input CommentInput {
+  entityType: CommentEntityType!
+  entityId: ID!
+  body: String!
+  """
+  Internal-only notes are hidden from the client portal. Defaults to visible so
+  a comment is never accidentally hidden from the person it's addressed to.
+  """
+  isClientVisible: Boolean = true
+}
+
+enum CommentEntityType {
+  CHANGE_REQUEST
+  PROJECT
+  MILESTONE
+  TASK
+}
+
+"""
+One approver's decision. Deliberately the same shape as
+`ChangeRequestDecision` (§1.2) — the two flows differ in what is being decided,
+not in how a decision is recorded.
+"""
+input ApprovalDecision {
+  outcome: ApprovalOutcome!
+  approverType: ApproverType!
+  comment: String
+}
+
+input UploadRequestInput {
+  entityType: ApprovalEntityType
+  fileName: String!
+  mimeType: String
+  sizeBytes: Int
+  companyId: ID
+  projectId: ID
+  milestoneId: ID
+}
+
+type UploadTicket {
+  "Where to PUT the bytes."
+  uploadUrl: String!
+  "Where the file will be readable once the PUT succeeds."
+  fileUrl: String!
+  "Echo this back to `confirmUpload` so the server can match the two calls."
+  uploadId: ID!
+  expiresAt: DateTime!
+}
+
+input ConfirmUploadInput {
+  uploadId: ID!
+  name: String!
+  mimeType: String
+  sizeBytes: Int
+  companyId: ID
+  projectId: ID
+  milestoneId: ID
+}
+
+input PhaseInput {
+  projectId: ID!
+  name: String!
+  startDate: Date
+  dueDate: Date
+  status: PhaseStatus
+  orderIndex: Int
+}
+
+input ContactInput {
+  companyId: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  phone: String
+  title: String
+  department: String
+  isPrimary: Boolean
+  preferredChannel: PreferredChannel
+  bestTimeToContact: String
+  doNotContact: Boolean
+  timezone: String
+  portalAccessEnabled: Boolean
+  linkedinUrl: String
+  status: ContactStatus
+}
+
+input ChangeRequestInput {
+  projectId: ID!
+  type: ChangeRequestType!
+  title: String!
+  description: String!
+  priority: Priority
+  desiredDueDate: Date
+  attachmentIds: [ID!]
+}
+
+input ImpactAssessmentInput {
+  impactHours: Float
+  impactCost: Float
+  impactTimelineDays: Int
+  assessmentNotes: String
+  requiresClientApproval: Boolean
+  requiresInternalApproval: Boolean
+}
+
+input ChangeRequestDecision {
+  outcome: ApprovalOutcome!
+  approverType: ApproverType!
+  comment: String
+}
+
+input TouchpointInput {
+  companyId: ID!
+  contactId: ID
+  projectId: ID
+  enrollmentId: ID
+  type: SequenceChannel!
+  scheduledAt: DateTime
+  completedAt: DateTime
+  outcome: TouchpointOutcome
+  notes: String
+}
+
+type Query {
+  company(id: ID!): Company
+  companies(filter: CompanyFilter, page: PageInput): CompanyConnection!
+  project(id: ID!): Project
+  projects(filter: ProjectFilter, page: PageInput): ProjectConnection!
+  """
+  Kept for compatibility with the original contract. The org-wide queue uses
+  `changeRequestQueue` instead — see NEEDED_SCHEMA_CHANGES.md §8.1.
+  """
+  changeRequests(projectId: ID, status: ChangeRequestStatus): [ChangeRequest!]!
+  retentionSequences: [RetentionSequence!]!
+  me: User
+
+  # Added by the frontend — see NEEDED_SCHEMA_CHANGES.md §5.
+  tags: [Tag!]!
+  users: [User!]!
+
+  # Added by the frontend — see NEEDED_SCHEMA_CHANGES.md §8.
+  changeRequest(id: ID!): ChangeRequest
+  changeRequestQueue(
+    filter: ChangeRequestFilter
+    page: PageInput
+  ): ChangeRequestConnection!
+
+  # Added by the frontend — see NEEDED_SCHEMA_CHANGES.md §9.
+  retentionSequence(id: ID!): RetentionSequence
+
+  """
+  Companies flagged for retention attention, pre-filtered and reasoned
+  server-side rather than fetched in bulk and filtered in the client — the
+  same shape gap 2.3 (dashboardMetrics) asks for elsewhere. See §9.3.
+  """
+  atRiskCompanies: [AtRiskCompany!]!
+}
+
+type Mutation {
+  createCompany(input: CompanyInput!): Company!
+  updateCompany(id: ID!, input: CompanyInput!): Company!
+  createProject(input: ProjectInput!): Project!
+  createTask(input: TaskInput!): Task!
+  createMilestone(input: MilestoneInput!): Milestone!
+  createChangeRequest(input: ChangeRequestInput!): ChangeRequest!
+  assessChangeRequest(id: ID!, input: ImpactAssessmentInput!): ChangeRequest!
+  decideChangeRequest(id: ID!, decision: ChangeRequestDecision!): ChangeRequest!
+  enrollInSequence(sequenceId: ID!, companyId: ID!): SequenceEnrollment!
+  logTouchpoint(input: TouchpointInput!): Touchpoint!
+  login(email: String!, password: String!): AuthPayload!
+  refreshToken: AuthPayload!
+  logout: Boolean!
+
+  # Added by the frontend — see NEEDED_SCHEMA_CHANGES.md §5.
+  createContact(input: ContactInput!): Contact!
+  updateContact(id: ID!, input: ContactInput!): Contact!
+  archiveContact(id: ID!): Contact!
+
+  # Added by the frontend — see NEEDED_SCHEMA_CHANGES.md §6.
+  updateProject(id: ID!, input: ProjectInput!): Project!
+  updateTask(id: ID!, input: TaskInput!): Task!
+  updateMilestone(id: ID!, input: MilestoneInput!): Milestone!
+  createPhase(input: PhaseInput!): ProjectPhase!
+  updatePhase(id: ID!, input: PhaseInput!): ProjectPhase!
+
+  """
+  The Kanban drop write, and the inline status control in the list view.
+
+  `orderIndex` is the task's position among its siblings after the move: its
+  slot in the destination status column for a top-level task, its slot within
+  its parent for a subtask. The server reindexes every affected sibling group
+  and returns each task it touched, so the client can reconcile its optimistic
+  order in a single cache write.
+  """
+  updateTaskStatus(id: ID!, status: TaskStatus!, orderIndex: Int!): [Task!]!
+
+  addTaskDependency(
+    taskId: ID!
+    dependsOnTaskId: ID!
+    type: DependencyType! = FINISH_TO_START
+  ): Task!
+  removeTaskDependency(id: ID!): Task!
+
+  # Added by the frontend — see NEEDED_SCHEMA_CHANGES.md §7.
+
+  """
+  Records a decision on a milestone that requires sign-off.
+
+  `id` is the **milestone** id, mirroring `decideChangeRequest`. The server
+  resolves which pending `Approval` row the decision belongs to from
+  `decision.approverType` plus the caller's identity. See §7.1 — taking the
+  approval id instead would be less ambiguous.
+  """
+  decideMilestoneApproval(id: ID!, decision: ApprovalDecision!): Milestone!
+
+  """
+  Step one of a presigned upload: the client asks for somewhere to PUT the
+  file, then calls `confirmUpload` once the transfer finishes.
+  """
+  requestUploadUrl(input: UploadRequestInput!): UploadTicket!
+  confirmUpload(input: ConfirmUploadInput!): Document!
+
+  # Added by the frontend — see NEEDED_SCHEMA_CHANGES.md §8.
+
+  "The clarification thread on a change request. Closes gap 2.8."
+  addComment(input: CommentInput!): Comment!
+
+  """
+  Moves a change request along its lifecycle for transitions that aren't an
+  assessment or a decision — picking it up, parking it, marking it built.
+  The server is expected to reject transitions that aren't legal from the
+  current status; see §8.2 for the state machine the UI assumes.
+  """
+  updateChangeRequestStatus(
+    id: ID!
+    status: ChangeRequestStatus!
+    note: String
+  ): ChangeRequest!
+
+  "Routes a request to the PM who will assess it."
+  assignChangeRequest(id: ID!, assignedPmId: ID): ChangeRequest!
+
+  "Client-side cancellation, before a decision has been made."
+  withdrawChangeRequest(id: ID!, reason: String): ChangeRequest!
+
+  # Added by the frontend — see NEEDED_SCHEMA_CHANGES.md §9.
+
+  "Persists what the sequence builder creates. See §9.1."
+  createRetentionSequence(input: RetentionSequenceInput!): RetentionSequence!
+  updateRetentionSequence(id: ID!, input: RetentionSequenceInput!): RetentionSequence!
+
+  """
+  Marks a scheduled touchpoint — whether logged manually with a future date or
+  generated by enrolling a company in a sequence — as done. If it fulfils the
+  enrollment's current step, the enrollment advances; if it was the last step,
+  the enrollment completes. See §9.2.
+  """
+  completeTouchpoint(id: ID!, input: CompleteTouchpointInput!): Touchpoint!
+
+  "Pause, resume, or cancel an enrollment without waiting for it to run its course."
+  updateEnrollmentStatus(id: ID!, status: EnrollmentStatus!): SequenceEnrollment!
+}

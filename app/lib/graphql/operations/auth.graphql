@@ -1,0 +1,60 @@
+fragment ViewerFields on User {
+  id
+  name
+  email
+  role
+  status
+  avatarUrl
+  scope
+  organization {
+    id
+    name
+    plan
+    logoUrl
+  }
+  company {
+    id
+    name
+    logoUrl
+    status
+  }
+  contact {
+    id
+    firstName
+    lastName
+    title
+    isPrimary
+  }
+}
+
+query Me {
+  me {
+    ...ViewerFields
+  }
+}
+
+mutation Login($email: String!, $password: String!) {
+  login(email: $email, password: $password) {
+    accessToken
+    expiresAt
+    scope
+    user {
+      ...ViewerFields
+    }
+  }
+}
+
+mutation RefreshToken {
+  refreshToken {
+    accessToken
+    expiresAt
+    scope
+    user {
+      ...ViewerFields
+    }
+  }
+}
+
+mutation Logout {
+  logout
+}

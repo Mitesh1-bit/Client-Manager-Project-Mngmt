@@ -1,0 +1,51 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
+
+import { PageHeader } from "@/app/components/domain/page-header";
+import { getClient } from "@/app/lib/graphql/apollo-client";
+import {
+  ProjectForEditDocument,
+  ProjectFormOptionsDocument,
+} from "@/app/lib/graphql/generated/documents";
+
+import { ProjectForm } from "../../project-form";
+
+export async function generateMetadata({ params }) {
+  const { id } = await params;
+  const { data } = await getClient().query({ query: ProjectForEditDocument, variables: { id } });
+  return { title: data.project ? `Edit ${data.project.name}` : "Edit project" };
+}
+
+export default async function EditProjectPage({ params }) {
+  const { id } = await params;
+
+  const [{ data }, { data: options }] = await Promise.all([
+    getClient().query({ query: ProjectForEditDocument, variables: { id } }),
+    getClient().query({ query: ProjectFormOptionsDocument }),
+  ]);
+
+  if (!data.project) notFound();
+
+  return (
+    <div className="mx-auto w-full max-w-3xl">
+      <Link
+        href={`/projects/${id}`}
+        className="mb-4 inline-flex items-center gap-1 rounded-sm text-caption text-muted-foreground hover:text-foreground focus-ring"
+      >
+        <ChevronLeft aria-hidden="true" className="size-4" />
+        Back to {data.project.name}
+      </Link>
+
+      <PageHeader title={`Edit ${data.project.name}`} />
+
+      <ProjectForm
+        mode="edit"
+        project={data.project}
+        companies={options.companies.nodes}
+        users={options.users}
+        tags={options.tags}
+      />
+    </div>
+  );
+}

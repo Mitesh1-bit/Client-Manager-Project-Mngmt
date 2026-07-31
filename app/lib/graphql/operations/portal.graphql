@@ -1,0 +1,222 @@
+fragment PortalApprovalFields on Approval {
+  id
+  approverType
+  approverName
+  status
+  comment
+  decidedAt
+  createdAt
+}
+
+fragment PortalDocumentFields on Document {
+  id
+  name
+  fileUrl
+  mimeType
+  sizeBytes
+  version
+  uploadedByName
+  createdAt
+}
+
+fragment PortalMilestoneFields on Milestone {
+  id
+  title
+  description
+  dueDate
+  status
+  requiresClientApproval
+  approvedAt
+  approvals {
+    ...PortalApprovalFields
+  }
+  documents {
+    ...PortalDocumentFields
+  }
+}
+
+fragment PortalProjectSummary on Project {
+  id
+  name
+  description
+  status
+  health
+  startDate
+  endDate
+  completionPercent
+  projectManager {
+    id
+    name
+    email
+    avatarUrl
+  }
+}
+
+query PortalOverview {
+  me {
+    id
+    name
+    company {
+      id
+      name
+    }
+    contact {
+      id
+      fullName
+    }
+  }
+  projects(page: { pageSize: 50, sortBy: "endDate" }) {
+    totalCount
+    nodes {
+      ...PortalProjectSummary
+      milestones {
+        ...PortalMilestoneFields
+      }
+    }
+  }
+  changeRequests {
+    id
+    reference
+    title
+    status
+    updatedAt
+  }
+}
+
+query PortalProjects {
+  projects(page: { pageSize: 50, sortBy: "endDate" }) {
+    totalCount
+    nodes {
+      ...PortalProjectSummary
+      milestones {
+        id
+        title
+        dueDate
+        status
+        requiresClientApproval
+        approvedAt
+        approvals {
+          ...PortalApprovalFields
+        }
+      }
+    }
+  }
+}
+
+query PortalProject($id: ID!) {
+  me {
+    id
+    contact {
+      id
+      fullName
+    }
+  }
+  project(id: $id) {
+    ...PortalProjectSummary
+    company {
+      id
+      name
+    }
+    phases {
+      id
+      name
+      orderIndex
+      startDate
+      dueDate
+      status
+      milestones {
+        ...PortalMilestoneFields
+      }
+    }
+    milestones {
+      ...PortalMilestoneFields
+      phase {
+        id
+        name
+      }
+    }
+    documents {
+      ...PortalDocumentFields
+    }
+    changeRequests {
+      id
+      reference
+      title
+      status
+      updatedAt
+    }
+  }
+}
+
+query PortalApprovals {
+  me {
+    id
+    contact {
+      id
+      fullName
+    }
+  }
+  projects(page: { pageSize: 50 }) {
+    nodes {
+      id
+      name
+      milestones {
+        ...PortalMilestoneFields
+        phase {
+          id
+          name
+        }
+      }
+    }
+  }
+}
+
+query PortalDocuments {
+  me {
+    id
+    company {
+      id
+      name
+      documents {
+        ...PortalDocumentFields
+      }
+    }
+  }
+  projects(page: { pageSize: 50 }) {
+    nodes {
+      id
+      name
+      documents {
+        ...PortalDocumentFields
+      }
+      milestones {
+        id
+        title
+        documents {
+          ...PortalDocumentFields
+        }
+      }
+    }
+  }
+}
+
+mutation DecideMilestoneApproval($id: ID!, $decision: ApprovalDecision!) {
+  decideMilestoneApproval(id: $id, decision: $decision) {
+    ...PortalMilestoneFields
+  }
+}
+
+mutation RequestUploadUrl($input: UploadRequestInput!) {
+  requestUploadUrl(input: $input) {
+    uploadId
+    uploadUrl
+    fileUrl
+    expiresAt
+  }
+}
+
+mutation ConfirmUpload($input: ConfirmUploadInput!) {
+  confirmUpload(input: $input) {
+    ...PortalDocumentFields
+  }
+}

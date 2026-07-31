@@ -1,0 +1,357 @@
+fragment TagFields on Tag {
+  id
+  name
+  color
+}
+
+fragment CompanyRow on Company {
+  id
+  name
+  industry
+  status
+  healthScore
+  # Powers the trend arrow in the list — a bare score can't show direction.
+  healthScoreTrend {
+    id
+    score
+  }
+  contactCount
+  projectCount
+  openChangeRequestCount
+  updatedAt
+  accountOwner {
+    id
+    name
+    avatarUrl
+  }
+  tags {
+    ...TagFields
+  }
+  primaryContact {
+    id
+    fullName
+    email
+  }
+}
+
+fragment CompanyHeader on Company {
+  id
+  name
+  industry
+  website
+  logoUrl
+  status
+  healthScore
+  accountOwner {
+    id
+    name
+    avatarUrl
+  }
+  tags {
+    ...TagFields
+  }
+}
+
+fragment ContactFields on Contact {
+  id
+  firstName
+  lastName
+  fullName
+  email
+  phone
+  title
+  department
+  isPrimary
+  preferredChannel
+  bestTimeToContact
+  doNotContact
+  timezone
+  portalAccessEnabled
+  linkedinUrl
+  status
+  updatedAt
+}
+
+fragment ActivityFields on ActivityEntry {
+  id
+  action
+  entityType
+  entityId
+  summary
+  actorName
+  actorAvatarUrl
+  createdAt
+}
+
+fragment TouchpointFields on Touchpoint {
+  id
+  type
+  status
+  outcome
+  notes
+  scheduledAt
+  completedAt
+  contact {
+    id
+    fullName
+  }
+  project {
+    id
+    name
+  }
+  createdBy {
+    id
+    name
+  }
+}
+
+query CompanyList($filter: CompanyFilter, $page: PageInput) {
+  companies(filter: $filter, page: $page) {
+    totalCount
+    pageInfo {
+      page
+      pageSize
+      totalPages
+      hasNextPage
+      hasPreviousPage
+    }
+    nodes {
+      ...CompanyRow
+    }
+  }
+}
+
+query CompanyDetailHeader($id: ID!) {
+  company(id: $id) {
+    ...CompanyHeader
+  }
+}
+
+query CompanyOverview($id: ID!) {
+  company(id: $id) {
+    id
+    name
+    industry
+    website
+    size
+    timezone
+    status
+    healthScore
+    createdAt
+    updatedAt
+    address {
+      line1
+      line2
+      city
+      region
+      postalCode
+      country
+    }
+    accountOwner {
+      id
+      name
+      email
+      avatarUrl
+    }
+    healthScoreTrend {
+      id
+      score
+      calculatedAt
+    }
+    contracts {
+      id
+      startDate
+      endDate
+      value
+      autoRenew
+      status
+    }
+    primaryContact {
+      ...ContactFields
+    }
+    activity {
+      ...ActivityFields
+    }
+  }
+}
+
+query CompanyContacts($id: ID!) {
+  company(id: $id) {
+    id
+    name
+    contacts {
+      ...ContactFields
+      activity {
+        ...ActivityFields
+      }
+      touchpoints {
+        ...TouchpointFields
+      }
+    }
+  }
+}
+
+query CompanyProjects($id: ID!) {
+  company(id: $id) {
+    id
+    name
+    projects {
+      id
+      name
+      status
+      health
+      priority
+      startDate
+      endDate
+      budget
+      actualCost
+      completionPercent
+      projectManager {
+        id
+        name
+        avatarUrl
+      }
+    }
+  }
+}
+
+query CompanyTouchpoints($id: ID!) {
+  company(id: $id) {
+    id
+    name
+    touchpoints {
+      ...TouchpointFields
+    }
+  }
+}
+
+query CompanyDocuments($id: ID!) {
+  company(id: $id) {
+    id
+    name
+    documents {
+      id
+      name
+      fileUrl
+      mimeType
+      sizeBytes
+      version
+      uploadedByName
+      createdAt
+    }
+  }
+}
+
+query CompanyChangeLog($id: ID!) {
+  company(id: $id) {
+    id
+    name
+    changeRequests {
+      id
+      reference
+      title
+      type
+      status
+      priority
+      impactCost
+      impactTimelineDays
+      createdAt
+      updatedAt
+      project {
+        id
+        name
+      }
+      requestedByContact {
+        id
+        fullName
+      }
+      assignedPm {
+        id
+        name
+      }
+    }
+  }
+}
+
+query CompanyForEdit($id: ID!) {
+  company(id: $id) {
+    id
+    name
+    industry
+    website
+    logoUrl
+    size
+    timezone
+    status
+    accountOwner {
+      id
+    }
+    tags {
+      id
+    }
+    address {
+      line1
+      line2
+      city
+      region
+      postalCode
+      country
+    }
+  }
+}
+
+query CompanyFormOptions {
+  users {
+    id
+    name
+    email
+    role
+    avatarUrl
+  }
+  tags {
+    ...TagFields
+  }
+}
+
+mutation CreateCompany($input: CompanyInput!) {
+  createCompany(input: $input) {
+    ...CompanyRow
+  }
+}
+
+mutation UpdateCompany($id: ID!, $input: CompanyInput!) {
+  updateCompany(id: $id, input: $input) {
+    ...CompanyRow
+    ...CompanyHeader
+  }
+}
+
+mutation CreateContact($input: ContactInput!) {
+  createContact(input: $input) {
+    ...ContactFields
+    company {
+      id
+      contactCount
+    }
+  }
+}
+
+mutation UpdateContact($id: ID!, $input: ContactInput!) {
+  updateContact(id: $id, input: $input) {
+    ...ContactFields
+    company {
+      id
+      contactCount
+    }
+  }
+}
+
+mutation ArchiveContact($id: ID!) {
+  archiveContact(id: $id) {
+    ...ContactFields
+    company {
+      id
+      contactCount
+    }
+  }
+}

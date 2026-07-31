@@ -1,0 +1,204 @@
+fragment SequenceStepFields on RetentionSequenceStep {
+  id
+  stepOrder
+  name
+  channel
+  offsetDays
+  assigneeRole
+  templateId
+}
+
+fragment SequenceEnrollmentFields on SequenceEnrollment {
+  id
+  status
+  currentStep
+  enrolledAt
+  company {
+    id
+    name
+    healthScore
+  }
+  contact {
+    id
+    fullName
+  }
+}
+
+fragment SequenceSummary on RetentionSequence {
+  id
+  name
+  description
+  triggerType
+  isActive
+  isTemplate
+  activeEnrollmentCount
+  steps {
+    ...SequenceStepFields
+  }
+}
+
+query RetentionSequences {
+  retentionSequences {
+    ...SequenceSummary
+  }
+}
+
+query RetentionSequenceDetail($id: ID!) {
+  retentionSequence(id: $id) {
+    ...SequenceSummary
+    enrollments {
+      ...SequenceEnrollmentFields
+    }
+  }
+}
+
+query AtRiskDashboard {
+  atRiskCompanies {
+    reasons
+    overdueTouchpointCount
+    lastTouchpointAt
+    company {
+      id
+      name
+      industry
+      status
+      healthScore
+      healthScoreTrend {
+        id
+        score
+      }
+      accountOwner {
+        id
+        name
+        avatarUrl
+      }
+      primaryContact {
+        id
+        fullName
+        email
+        phone
+      }
+    }
+    activeEnrollments {
+      id
+      currentStep
+      enrolledAt
+      sequence {
+        id
+        name
+      }
+    }
+  }
+}
+
+"""
+Lightweight id/name lists for pickers — the enrollment dialog (from either
+direction) and the touchpoint form all just need something to put in a
+Select, not the full company or sequence record.
+"""
+query RetentionFormOptions {
+  companies(page: { page: 1, pageSize: 200, sortBy: "name" }) {
+    nodes {
+      id
+      name
+    }
+  }
+  retentionSequences {
+    id
+    name
+    isActive
+  }
+}
+
+query CompanyTouchpointContext($id: ID!) {
+  company(id: $id) {
+    id
+    name
+    contacts {
+      id
+      fullName
+      isPrimary
+    }
+    projects {
+      id
+      name
+    }
+  }
+}
+
+query CompanyOpenTouchpoints($id: ID!) {
+  company(id: $id) {
+    id
+    name
+    touchpoints {
+      id
+      type
+      status
+      scheduledAt
+      notes
+      contact {
+        id
+        fullName
+      }
+    }
+  }
+}
+
+mutation CreateRetentionSequence($input: RetentionSequenceInput!) {
+  createRetentionSequence(input: $input) {
+    ...SequenceSummary
+  }
+}
+
+mutation UpdateRetentionSequence($id: ID!, $input: RetentionSequenceInput!) {
+  updateRetentionSequence(id: $id, input: $input) {
+    ...SequenceSummary
+  }
+}
+
+mutation EnrollInSequence($sequenceId: ID!, $companyId: ID!) {
+  enrollInSequence(sequenceId: $sequenceId, companyId: $companyId) {
+    ...SequenceEnrollmentFields
+  }
+}
+
+mutation UpdateEnrollmentStatus($id: ID!, $status: EnrollmentStatus!) {
+  updateEnrollmentStatus(id: $id, status: $status) {
+    ...SequenceEnrollmentFields
+  }
+}
+
+mutation LogTouchpoint($input: TouchpointInput!) {
+  logTouchpoint(input: $input) {
+    id
+    type
+    status
+    outcome
+    notes
+    scheduledAt
+    completedAt
+    company {
+      id
+      name
+    }
+    contact {
+      id
+      fullName
+    }
+  }
+}
+
+mutation CompleteTouchpoint($id: ID!, $input: CompleteTouchpointInput!) {
+  completeTouchpoint(id: $id, input: $input) {
+    id
+    status
+    outcome
+    notes
+    completedAt
+    enrollment {
+      id
+      status
+      currentStep
+    }
+  }
+}

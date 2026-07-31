@@ -1,0 +1,353 @@
+fragment ProjectRow on Project {
+  id
+  name
+  status
+  health
+  priority
+  startDate
+  endDate
+  budget
+  actualCost
+  completionPercent
+  updatedAt
+  company {
+    id
+    name
+  }
+  projectManager {
+    id
+    name
+    avatarUrl
+  }
+  tags {
+    ...TagFields
+  }
+}
+
+fragment ProjectHeader on Project {
+  id
+  name
+  description
+  status
+  health
+  priority
+  startDate
+  endDate
+  budget
+  actualCost
+  completionPercent
+  company {
+    id
+    name
+  }
+  projectManager {
+    id
+    name
+    avatarUrl
+  }
+  team {
+    id
+    name
+    avatarUrl
+  }
+  tags {
+    ...TagFields
+  }
+}
+
+fragment TaskCard on Task {
+  id
+  title
+  status
+  priority
+  startDate
+  dueDate
+  estimatedHours
+  actualHours
+  orderIndex
+  assignee {
+    id
+    name
+    avatarUrl
+  }
+  phase {
+    id
+    name
+  }
+  milestone {
+    id
+    title
+  }
+  subtasks {
+    id
+    title
+    status
+    orderIndex
+    assignee {
+      id
+      name
+    }
+  }
+  dependencies {
+    id
+    type
+    dependsOnTask {
+      id
+      title
+      status
+      dueDate
+    }
+  }
+}
+
+fragment TaskDetail on Task {
+  ...TaskCard
+  description
+  parentTask {
+    id
+    title
+  }
+}
+
+fragment MilestoneFields on Milestone {
+  id
+  title
+  description
+  dueDate
+  status
+  requiresClientApproval
+  approvedAt
+  orderIndex
+  tasks {
+    id
+    title
+    status
+  }
+  approvals {
+    id
+    status
+    approverName
+    decidedAt
+  }
+}
+
+query ProjectList($filter: ProjectFilter, $page: PageInput) {
+  projects(filter: $filter, page: $page) {
+    totalCount
+    pageInfo {
+      page
+      pageSize
+      totalPages
+      hasNextPage
+      hasPreviousPage
+    }
+    nodes {
+      ...ProjectRow
+    }
+  }
+}
+
+query ProjectDetailHeader($id: ID!) {
+  project(id: $id) {
+    ...ProjectHeader
+  }
+}
+
+query ProjectBoard($id: ID!) {
+  project(id: $id) {
+    id
+    name
+    tasks {
+      ...TaskCard
+      parentTask {
+        id
+      }
+    }
+  }
+}
+
+query ProjectPlan($id: ID!) {
+  project(id: $id) {
+    id
+    name
+    startDate
+    endDate
+    phases {
+      id
+      name
+      orderIndex
+      startDate
+      dueDate
+      status
+      milestones {
+        ...MilestoneFields
+      }
+      tasks {
+        ...TaskCard
+        parentTask {
+          id
+        }
+      }
+    }
+    tasks {
+      ...TaskCard
+      parentTask {
+        id
+      }
+    }
+    milestones {
+      ...MilestoneFields
+      phase {
+        id
+        name
+      }
+    }
+  }
+}
+
+query ProjectChangeRequests($id: ID!) {
+  project(id: $id) {
+    id
+    name
+    changeRequests {
+      id
+      reference
+      title
+      type
+      status
+      priority
+      impactCost
+      impactTimelineDays
+      createdAt
+      updatedAt
+      requestedByContact {
+        id
+        fullName
+      }
+      assignedPm {
+        id
+        name
+      }
+    }
+  }
+}
+
+query ProjectForEdit($id: ID!) {
+  project(id: $id) {
+    id
+    name
+    description
+    status
+    priority
+    startDate
+    endDate
+    budget
+    company {
+      id
+      name
+    }
+    projectManager {
+      id
+    }
+    tags {
+      id
+    }
+  }
+}
+
+query ProjectFormOptions {
+  users {
+    id
+    name
+    email
+    avatarUrl
+  }
+  tags {
+    ...TagFields
+  }
+  companies(page: { page: 1, pageSize: 100, sortBy: "name" }) {
+    nodes {
+      id
+      name
+    }
+  }
+}
+
+mutation CreateProject($input: ProjectInput!) {
+  createProject(input: $input) {
+    ...ProjectRow
+  }
+}
+
+mutation UpdateProject($id: ID!, $input: ProjectInput!) {
+  updateProject(id: $id, input: $input) {
+    ...ProjectRow
+    ...ProjectHeader
+  }
+}
+
+mutation CreateTask($input: TaskInput!) {
+  createTask(input: $input) {
+    ...TaskDetail
+  }
+}
+
+mutation UpdateTask($id: ID!, $input: TaskInput!) {
+  updateTask(id: $id, input: $input) {
+    ...TaskDetail
+  }
+}
+
+mutation UpdateTaskStatus($id: ID!, $status: TaskStatus!, $orderIndex: Int!) {
+  updateTaskStatus(id: $id, status: $status, orderIndex: $orderIndex) {
+    id
+    status
+    orderIndex
+  }
+}
+
+mutation CreatePhase($input: PhaseInput!) {
+  createPhase(input: $input) {
+    id
+    name
+    orderIndex
+    startDate
+    dueDate
+    status
+  }
+}
+
+mutation UpdatePhase($id: ID!, $input: PhaseInput!) {
+  updatePhase(id: $id, input: $input) {
+    id
+    name
+    orderIndex
+    startDate
+    dueDate
+    status
+  }
+}
+
+mutation CreateMilestone($input: MilestoneInput!) {
+  createMilestone(input: $input) {
+    ...MilestoneFields
+  }
+}
+
+mutation UpdateMilestone($id: ID!, $input: MilestoneInput!) {
+  updateMilestone(id: $id, input: $input) {
+    ...MilestoneFields
+  }
+}
+
+mutation AddTaskDependency($taskId: ID!, $dependsOnTaskId: ID!, $type: DependencyType!) {
+  addTaskDependency(taskId: $taskId, dependsOnTaskId: $dependsOnTaskId, type: $type) {
+    ...TaskDetail
+  }
+}
+
+mutation RemoveTaskDependency($id: ID!) {
+  removeTaskDependency(id: $id) {
+    ...TaskDetail
+  }
+}
