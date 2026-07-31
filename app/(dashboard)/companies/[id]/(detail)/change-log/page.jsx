@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
 import { GitPullRequestArrow } from "lucide-react";
 
+import { fetchChangeRequestQueue } from "@/app/lib/api/change-requests";
+import { asArray } from "@/app/lib/api/safe-list";
 import { EmptyState } from "@/app/components/domain/states";
 import { StatusBadge } from "@/app/components/domain/status-badge";
 import { formatCurrency, formatRelativeDays, humanizeType } from "@/app/lib/format";
 import { getClient } from "@/app/lib/graphql/apollo-client";
-import { CompanyChangeLogDocument } from "@/app/lib/graphql/generated/documents";
+import { CompanyDetailHeaderDocument } from "@/app/lib/graphql/generated/documents";
 import { cn } from "@/app/lib/utils";
 
 export const metadata = { title: "Change log" };
@@ -13,15 +15,19 @@ export const metadata = { title: "Change log" };
 export default async function CompanyChangeLogPage({ params }) {
   const { id } = await params;
   const { data } = await getClient().query({
-    query: CompanyChangeLogDocument,
+    query: CompanyDetailHeaderDocument,
     variables: { id },
   });
 
   if (!data.company) notFound();
 
-  const requests = [...data.company.changeRequests].sort(
-    (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt),
-  );
+  const { rows = [] } = await fetchChangeRequestQueue().catch((error) => {
+    console.error("[company change-log]", error);
+    return { rows: [] };
+  });
+  const requests = asArray(rows)
+    .filter((request) => request.companyId === id)
+    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
   if (requests.length === 0) {
     return (
@@ -46,15 +52,12 @@ export default async function CompanyChangeLogPage({ params }) {
                 <span className="font-medium text-pretty">{request.title}</span>
               </p>
               <p className="mt-1 text-caption text-muted-foreground">
-                {humanizeType(request.type)} on {request.project.name}
-                {request.requestedByContact
-                  ? ` · raised by ${request.requestedByContact.fullName}`
-                  : ""}
+                {humanizeType(request.type)} on {request.project?.name ?? "Project"}
               </p>
             </div>
 
             <div className="flex shrink-0 flex-wrap items-center gap-2">
-              <StatusBadge kind="priority" value={request.priority} size="sm" />
+              <StatusBadge kind="priority" value={request.priority?.toUpperCase()} size="sm" />
               <StatusBadge kind="changeRequestStatus" value={request.status} size="sm" />
             </div>
           </div>
@@ -88,12 +91,6 @@ export default async function CompanyChangeLogPage({ params }) {
                 <time dateTime={request.updatedAt}>{formatRelativeDays(request.updatedAt)}</time>
               </dd>
             </div>
-            {request.assignedPm ? (
-              <div className="flex items-center gap-1.5">
-                <dt className="text-muted-foreground">PM</dt>
-                <dd className="font-medium">{request.assignedPm.name}</dd>
-              </div>
-            ) : null}
           </dl>
         </li>
       ))}

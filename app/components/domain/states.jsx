@@ -53,7 +53,11 @@ export function ErrorState({
         <CircleAlert aria-hidden="true" className="size-5" />
       </span>
       <p className="text-subheading text-foreground">{title}</p>
-      <p className="mt-1.5 max-w-md text-caption text-muted-foreground">{description}</p>
+      {description ? (
+        <p className="mt-1.5 max-w-md whitespace-pre-wrap text-caption text-muted-foreground">
+          {description}
+        </p>
+      ) : null}
       {onRetry ? (
         <Button className="mt-5" variant="outline" size="sm" onClick={onRetry}>
           {retryLabel}

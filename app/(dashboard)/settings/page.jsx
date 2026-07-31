@@ -1,19 +1,27 @@
-import { PhasePlaceholder } from "@/app/components/domain/phase-placeholder";
+import { PageHeader } from "@/app/components/domain/page-header";
+import { pickList } from "@/app/lib/api/safe-list";
+import { getClient } from "@/app/lib/graphql/apollo-client";
+import { TeamListDocument } from "@/app/lib/graphql/generated/documents";
+import { requireViewer } from "@/app/lib/graphql/viewer";
+
+import { TeamPanel } from "./team-panel";
 
 export const metadata = { title: "Settings" };
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const viewer = await requireViewer("INTERNAL");
+  const { data } = await getClient().query({ query: TeamListDocument });
+  const users = pickList(data, "users");
+  const isAdmin = viewer.role === "admin";
+
   return (
-    <PhasePlaceholder
-      eyebrow="Workspace"
-      title="Settings"
-      description="Organisation, users and roles, templates, tags, approval thresholds and integrations."
-      phase="a later phase"
-      scope={[
-        "user management and role assignment",
-        "approval thresholds that drive change request routing",
-        "template and tag libraries",
-      ]}
-    />
+    <>
+      <PageHeader
+        eyebrow="Workspace"
+        title="Settings"
+        description="Manage your team, roles, and who can work with clients and projects."
+      />
+      <TeamPanel users={users} currentUserId={viewer.id} isAdmin={isAdmin} />
+    </>
   );
 }

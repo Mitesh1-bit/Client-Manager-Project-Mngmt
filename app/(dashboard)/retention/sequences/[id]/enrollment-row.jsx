@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
-import { LoaderCircle, Pause, Play, X } from "lucide-react";
+import { LoaderCircle, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { HealthScoreBadge } from "@/app/components/domain/health-score-badge";
@@ -21,27 +21,21 @@ import {
 } from "@/app/components/ui/alert-dialog";
 import { Button } from "@/app/components/ui/button";
 import { formatDate } from "@/app/lib/format";
-import { UpdateEnrollmentStatusDocument } from "@/app/lib/graphql/generated/documents";
+import { CancelEnrollmentDocument } from "@/app/lib/graphql/generated/documents";
 
 export function EnrollmentRow({ enrollment, totalSteps }) {
   const router = useRouter();
-  const [updateStatus, { loading }] = useMutation(UpdateEnrollmentStatusDocument);
+  const [cancelEnrollment, { loading }] = useMutation(CancelEnrollmentDocument);
   const [confirmingCancel, setConfirmingCancel] = useState(false);
 
-  async function setStatus(status) {
+  async function cancel() {
     try {
-      await updateStatus({ variables: { id: enrollment.id, status } });
-      toast.success(
-        status === "PAUSED"
-          ? `Paused for ${enrollment.company.name}`
-          : status === "ACTIVE"
-            ? `Resumed for ${enrollment.company.name}`
-            : `Cancelled for ${enrollment.company.name}`,
-      );
+      await cancelEnrollment({ variables: { enrollmentId: enrollment.id } });
+      toast.success(`Cancelled for ${enrollment.company?.name ?? "company"}`);
       setConfirmingCancel(false);
       router.refresh();
     } catch (error) {
-      toast.error("Couldn't update this enrollment", { description: error?.message });
+      toast.error("Couldn't cancel this enrollment", { description: error?.message });
     }
   }
 
@@ -70,27 +64,6 @@ export function EnrollmentRow({ enrollment, totalSteps }) {
 
       {!finished ? (
         <div className="flex items-center gap-1.5">
-          {enrollment.status === "ACTIVE" ? (
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={loading}
-              onClick={() => setStatus("PAUSED")}
-            >
-              <Pause aria-hidden="true" />
-              Pause
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={loading}
-              onClick={() => setStatus("ACTIVE")}
-            >
-              <Play aria-hidden="true" />
-              Resume
-            </Button>
-          )}
           <Button
             variant="ghost"
             size="icon-sm"
@@ -119,7 +92,7 @@ export function EnrollmentRow({ enrollment, totalSteps }) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Keep it</AlertDialogCancel>
-            <AlertDialogAction onClick={() => setStatus("CANCELLED")}>
+            <AlertDialogAction onClick={cancel}>
               Cancel enrollment
             </AlertDialogAction>
           </AlertDialogFooter>

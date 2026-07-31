@@ -21,6 +21,7 @@ import {
 } from "@/app/components/ui/select";
 import { Textarea } from "@/app/components/ui/textarea";
 import { CreateChangeRequestDocument } from "@/app/lib/graphql/generated/documents";
+import { toCreateChangeRequestVariables } from "@/app/lib/api/portal";
 
 import { CHANGE_REQUEST_TYPES, changeRequestSchema } from "./change-request-schema";
 
@@ -52,14 +53,18 @@ export function ChangeRequestForm({ projects }) {
     },
   });
 
-  async function onSubmit(input) {
+  async function onSubmit(values) {
     setServerError(null);
     try {
-      const { data } = await createChangeRequest({ variables: { input } });
-      toast.success(`${data.createChangeRequest.reference} sent`, {
+      const { data } = await createChangeRequest({
+        variables: toCreateChangeRequestVariables(values),
+      });
+      const created = data.createChangeRequest;
+      const reference = created.id.slice(0, 8);
+      toast.success(`${reference} sent`, {
         description: "We'll come back to you with the impact shortly.",
       });
-      router.push(`/portal/change-requests/${data.createChangeRequest.id}`);
+      router.push(`/portal/change-requests/${created.id}`);
       router.refresh();
     } catch (error) {
       setServerError(error?.message ?? "We couldn't send this. Try again.");

@@ -13,8 +13,11 @@ import { SequenceCard } from "./sequence-card";
 export const metadata = { title: "Sequences" };
 
 export default async function RetentionSequencesPage() {
-  const { data } = await getClient().query({ query: RetentionSequencesDocument });
-  const sequences = data.retentionSequences;
+  const { data } = await getClient().query({
+    query: RetentionSequencesDocument,
+    variables: { activeOnly: false },
+  });
+  const sequences = data.retentionSequences ?? [];
 
   return (
     <>

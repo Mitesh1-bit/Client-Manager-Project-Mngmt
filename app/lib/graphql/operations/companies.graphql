@@ -1,40 +1,55 @@
-fragment TagFields on Tag {
+fragment TagFields on TagType {
   id
   name
-  color
 }
 
-fragment CompanyRow on Company {
+fragment UserSummaryFields on UserSummaryType {
+  id
+  name
+  email
+  role
+  avatarUrl
+}
+
+fragment ContactFields on ContactType {
+  id
+  companyId
+  firstName
+  lastName
+  email
+  phone
+  title
+  department
+  isPrimary
+  preferredChannel
+  timezone
+  portalAccessEnabled
+  linkedinUrl
+  status
+}
+
+fragment CompanyRow on CompanyType {
   id
   name
   industry
   status
   healthScore
-  # Powers the trend arrow in the list — a bare score can't show direction.
-  healthScoreTrend {
-    id
-    score
-  }
+  logoUrl
   contactCount
   projectCount
-  openChangeRequestCount
-  updatedAt
   accountOwner {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
+    ...UserSummaryFields
   }
   primaryContact {
     id
-    fullName
+    firstName
+    lastName
     email
+    isPrimary
   }
 }
 
-fragment CompanyHeader on Company {
+fragment CompanyHeader on CompanyType {
   id
   name
   industry
@@ -43,81 +58,13 @@ fragment CompanyHeader on Company {
   status
   healthScore
   accountOwner {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
+    ...UserSummaryFields
   }
 }
 
-fragment ContactFields on Contact {
-  id
-  firstName
-  lastName
-  fullName
-  email
-  phone
-  title
-  department
-  isPrimary
-  preferredChannel
-  bestTimeToContact
-  doNotContact
-  timezone
-  portalAccessEnabled
-  linkedinUrl
-  status
-  updatedAt
-}
-
-fragment ActivityFields on ActivityEntry {
-  id
-  action
-  entityType
-  entityId
-  summary
-  actorName
-  actorAvatarUrl
-  createdAt
-}
-
-fragment TouchpointFields on Touchpoint {
-  id
-  type
-  status
-  outcome
-  notes
-  scheduledAt
-  completedAt
-  contact {
-    id
-    fullName
-  }
-  project {
-    id
-    name
-  }
-  createdBy {
-    id
-    name
-  }
-}
-
-query CompanyList($filter: CompanyFilter, $page: PageInput) {
-  companies(filter: $filter, page: $page) {
-    totalCount
-    pageInfo {
-      page
-      pageSize
-      totalPages
-      hasNextPage
-      hasPreviousPage
-    }
-    nodes {
-      ...CompanyRow
-    }
+query CompanyList {
+  companies {
+    ...CompanyRow
   }
 }
 
@@ -133,45 +80,22 @@ query CompanyOverview($id: ID!) {
     name
     industry
     website
-    size
-    timezone
     status
     healthScore
-    createdAt
-    updatedAt
-    address {
-      line1
-      line2
-      city
-      region
-      postalCode
-      country
-    }
     accountOwner {
-      id
-      name
-      email
-      avatarUrl
-    }
-    healthScoreTrend {
-      id
-      score
-      calculatedAt
-    }
-    contracts {
-      id
-      startDate
-      endDate
-      value
-      autoRenew
-      status
+      ...UserSummaryFields
     }
     primaryContact {
       ...ContactFields
     }
-    activity {
-      ...ActivityFields
-    }
+  }
+  contracts(companyId: $id) {
+    id
+    startDate
+    endDate
+    value
+    autoRenew
+    status
   }
 }
 
@@ -181,12 +105,6 @@ query CompanyContacts($id: ID!) {
     name
     contacts {
       ...ContactFields
-      activity {
-        ...ActivityFields
-      }
-      touchpoints {
-        ...TouchpointFields
-      }
     }
   }
 }
@@ -195,81 +113,16 @@ query CompanyProjects($id: ID!) {
   company(id: $id) {
     id
     name
-    projects {
-      id
-      name
-      status
-      health
-      priority
-      startDate
-      endDate
-      budget
-      actualCost
-      completionPercent
-      projectManager {
-        id
-        name
-        avatarUrl
-      }
-    }
   }
-}
-
-query CompanyTouchpoints($id: ID!) {
-  company(id: $id) {
+  projects(companyId: $id) {
     id
     name
-    touchpoints {
-      ...TouchpointFields
-    }
-  }
-}
-
-query CompanyDocuments($id: ID!) {
-  company(id: $id) {
-    id
-    name
-    documents {
-      id
-      name
-      fileUrl
-      mimeType
-      sizeBytes
-      version
-      uploadedByName
-      createdAt
-    }
-  }
-}
-
-query CompanyChangeLog($id: ID!) {
-  company(id: $id) {
-    id
-    name
-    changeRequests {
-      id
-      reference
-      title
-      type
-      status
-      priority
-      impactCost
-      impactTimelineDays
-      createdAt
-      updatedAt
-      project {
-        id
-        name
-      }
-      requestedByContact {
-        id
-        fullName
-      }
-      assignedPm {
-        id
-        name
-      }
-    }
+    status
+    health
+    priority
+    budget
+    actualCost
+    projectManagerId
   }
 }
 
@@ -280,78 +133,185 @@ query CompanyForEdit($id: ID!) {
     industry
     website
     logoUrl
-    size
-    timezone
     status
     accountOwner {
       id
-    }
-    tags {
-      id
-    }
-    address {
-      line1
-      line2
-      city
-      region
-      postalCode
-      country
     }
   }
 }
 
 query CompanyFormOptions {
   users {
-    id
-    name
-    email
-    role
-    avatarUrl
+    ...UserSummaryFields
   }
   tags {
     ...TagFields
   }
 }
 
-mutation CreateCompany($input: CompanyInput!) {
-  createCompany(input: $input) {
+mutation CreateCompany(
+  $name: String!
+  $industry: String
+  $website: String
+  $logoUrl: String
+  $status: String!
+  $accountOwnerId: ID
+  $healthScore: Float
+) {
+  createCompany(
+    name: $name
+    industry: $industry
+    website: $website
+    logoUrl: $logoUrl
+    status: $status
+    accountOwnerId: $accountOwnerId
+    healthScore: $healthScore
+  ) {
     ...CompanyRow
   }
 }
 
-mutation UpdateCompany($id: ID!, $input: CompanyInput!) {
-  updateCompany(id: $id, input: $input) {
+mutation UpdateCompany(
+  $id: ID!
+  $name: String
+  $industry: String
+  $website: String
+  $logoUrl: String
+  $status: String
+  $accountOwnerId: ID
+  $healthScore: Float
+) {
+  updateCompany(
+    id: $id
+    name: $name
+    industry: $industry
+    website: $website
+    logoUrl: $logoUrl
+    status: $status
+    accountOwnerId: $accountOwnerId
+    healthScore: $healthScore
+  ) {
     ...CompanyRow
     ...CompanyHeader
   }
 }
 
-mutation CreateContact($input: ContactInput!) {
-  createContact(input: $input) {
+mutation CreateContact(
+  $companyId: ID!
+  $firstName: String!
+  $lastName: String!
+  $email: String
+  $phone: String
+  $title: String
+  $department: String
+  $isPrimary: Boolean!
+  $preferredChannel: String
+  $timezone: String
+  $portalAccessEnabled: Boolean!
+  $portalPassword: String
+  $linkedinUrl: String
+  $status: String!
+) {
+  createContact(
+    companyId: $companyId
+    firstName: $firstName
+    lastName: $lastName
+    email: $email
+    phone: $phone
+    title: $title
+    department: $department
+    isPrimary: $isPrimary
+    preferredChannel: $preferredChannel
+    timezone: $timezone
+    portalAccessEnabled: $portalAccessEnabled
+    portalPassword: $portalPassword
+    linkedinUrl: $linkedinUrl
+    status: $status
+  ) {
     ...ContactFields
-    company {
-      id
-      contactCount
-    }
   }
 }
 
-mutation UpdateContact($id: ID!, $input: ContactInput!) {
-  updateContact(id: $id, input: $input) {
+mutation UpdateContact(
+  $id: ID!
+  $firstName: String
+  $lastName: String
+  $email: String
+  $phone: String
+  $title: String
+  $department: String
+  $isPrimary: Boolean
+  $preferredChannel: String
+  $timezone: String
+  $portalAccessEnabled: Boolean
+  $portalPassword: String
+  $linkedinUrl: String
+  $status: String
+) {
+  updateContact(
+    id: $id
+    firstName: $firstName
+    lastName: $lastName
+    email: $email
+    phone: $phone
+    title: $title
+    department: $department
+    isPrimary: $isPrimary
+    preferredChannel: $preferredChannel
+    timezone: $timezone
+    portalAccessEnabled: $portalAccessEnabled
+    portalPassword: $portalPassword
+    linkedinUrl: $linkedinUrl
+    status: $status
+  ) {
     ...ContactFields
-    company {
-      id
-      contactCount
-    }
+  }
+}
+
+mutation SetContactPortalPassword($id: ID!, $password: String!) {
+  setContactPortalPassword(id: $id, password: $password) {
+    id
+    portalAccessEnabled
   }
 }
 
 mutation ArchiveContact($id: ID!) {
-  archiveContact(id: $id) {
-    ...ContactFields
-    company {
+  deleteContact(id: $id)
+}
+
+query CompanyTouchpointContext($id: ID!) {
+  company(id: $id) {
+    id
+    name
+    contacts {
       id
-      contactCount
+      firstName
+      lastName
+      email
+      isPrimary
     }
+  }
+}
+
+query CompanyDocuments($companyId: ID!) {
+  companyDocuments(companyId: $companyId) {
+    id
+    fileUrl
+    version
+    uploadedBy
+  }
+}
+
+query CompanyTouchpoints {
+  upcomingTouchpoints {
+    id
+    type
+    status
+    outcome
+    notes
+    scheduledAt
+    completedAt
+    companyId
+    contactId
   }
 }

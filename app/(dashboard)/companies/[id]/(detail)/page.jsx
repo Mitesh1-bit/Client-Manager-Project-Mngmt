@@ -8,6 +8,8 @@ import { HealthScoreBadge } from "@/app/components/domain/health-score-badge";
 import { EmptyState, SectionCard } from "@/app/components/domain/states";
 import { Button } from "@/app/components/ui/button";
 import { formatCurrency, formatDate, displayUrl } from "@/app/lib/format";
+import { normalizeCompany } from "@/app/lib/api/normalize";
+import { asArray } from "@/app/lib/api/safe-list";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { CompanyOverviewDocument } from "@/app/lib/graphql/generated/documents";
 
@@ -20,11 +22,15 @@ export default async function CompanyOverviewPage({ params }) {
     variables: { id },
   });
 
-  const company = data.company;
+  const company = normalizeCompany(data.company);
   if (!company) notFound();
 
-  const history = company.healthScoreTrend.map((point) => point.score);
-  const activeContract = company.contracts.find((contract) => contract.status === "ACTIVE");
+  const contracts = asArray(data.contracts);
+  const history = asArray(company.healthScoreTrend).map((point) => point?.score ?? 0);
+  const activeContract = contracts.find(
+    (contract) => String(contract.status).toLowerCase() === "active",
+  );
+  const activity = company.activity ?? [];
 
   return (
     <div className="grid gap-5 lg:grid-cols-3">
@@ -40,8 +46,8 @@ export default async function CompanyOverviewPage({ params }) {
               className="self-start"
             />
             <dl className="grid flex-1 grid-cols-2 gap-x-6 gap-y-3 text-caption sm:grid-cols-3">
-              <Detail label="Client since" value={formatDate(company.createdAt)} />
-              <Detail label="Last updated" value={formatDate(company.updatedAt)} />
+              <Detail label="Client since" value={company.createdAt ? formatDate(company.createdAt) : "—"} />
+              <Detail label="Last updated" value={company.updatedAt ? formatDate(company.updatedAt) : "—"} />
               <Detail
                 label="Contract ends"
                 value={activeContract ? formatDate(activeContract.endDate) : "No active contract"}
@@ -68,14 +74,14 @@ export default async function CompanyOverviewPage({ params }) {
             </Button>
           }
         >
-          {company.activity.length === 0 ? (
+          {activity.length === 0 ? (
             <EmptyState
               icon={History}
               title="Nothing has happened yet"
               description="Once you log a touchpoint or start a project, it shows up here."
             />
           ) : (
-            <ActivityTimeline entries={company.activity} limit={TIMELINE_LIMIT} />
+            <ActivityTimeline entries={activity} limit={TIMELINE_LIMIT} />
           )}
         </SectionCard>
       </div>

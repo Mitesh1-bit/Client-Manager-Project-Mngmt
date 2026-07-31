@@ -1,214 +1,155 @@
-fragment ChangeRequestRow on ChangeRequest {
+fragment ChangeRequestRow on ChangeRequestType {
   id
-  reference
+  projectId
+  companyId
   title
   type
   status
   priority
   impactCost
   impactTimelineDays
-  awaitingParty
-  responseDueAt
-  isOverdue
+  assignedPmId
+  requestedByContactId
   createdAt
-  updatedAt
-  company {
-    id
-    name
-  }
-  project {
-    id
-    name
-  }
-  requestedByContact {
-    id
-    fullName
-  }
-  assignedPm {
-    id
-    name
-    avatarUrl
-  }
 }
 
-fragment ChangeRequestDetail on ChangeRequest {
-  ...ChangeRequestRow
+fragment ChangeRequestDetailFields on ChangeRequestType {
+  id
+  projectId
+  companyId
+  title
+  type
   description
-  desiredDueDate
+  status
+  priority
   impactHours
+  impactCost
+  impactTimelineDays
   assessmentNotes
+  assignedPmId
+  requestedByContactId
   requiresClientApproval
   requiresInternalApproval
   revisionCount
-  decidedAt
-  decisionReason
-  approvals {
-    id
-    approverType
-    approverName
-    status
-    comment
-    decidedAt
-    createdAt
-  }
-  comments {
-    id
-    body
-    authorType
-    authorName
-    authorAvatarUrl
-    isClientVisible
-    createdAt
-  }
-  attachments {
-    id
-    name
-    fileUrl
-    mimeType
-    sizeBytes
-    version
-    uploadedByName
-    createdAt
-  }
-}
-
-query ChangeRequestQueue($filter: ChangeRequestFilter, $page: PageInput) {
-  changeRequestQueue(filter: $filter, page: $page) {
-    totalCount
-    pageInfo {
-      page
-      pageSize
-      totalPages
-      hasNextPage
-      hasPreviousPage
-    }
-    nodes {
-      ...ChangeRequestRow
-    }
-  }
-}
-
-query ChangeRequestQueueCounts {
-  all: changeRequestQueue(page: { pageSize: 1 }) {
-    totalCount
-  }
-  submitted: changeRequestQueue(
-    filter: { status: [SUBMITTED, UNDER_REVIEW, PENDING_IMPACT_ASSESSMENT] }
-    page: { pageSize: 1 }
-  ) {
-    totalCount
-  }
-  pendingApproval: changeRequestQueue(
-    filter: { status: [PENDING_APPROVAL] }
-    page: { pageSize: 1 }
-  ) {
-    totalCount
-  }
-  overdue: changeRequestQueue(filter: { overdueOnly: true }, page: { pageSize: 1 }) {
-    totalCount
-  }
-}
-
-query ChangeRequestDetail($id: ID!) {
-  me {
-    id
-    name
-    scope
-    contact {
-      id
-      fullName
-    }
-    organization {
-      id
-      settings
-    }
-  }
-  changeRequest(id: $id) {
-    ...ChangeRequestDetail
-  }
+  desiredDueDate
+  submittedAt
+  createdAt
 }
 
 query ChangeRequestFormOptions {
   users {
     id
     name
-    email
     avatarUrl
   }
-  companies(page: { page: 1, pageSize: 100, sortBy: "name" }) {
-    nodes {
-      id
-      name
-    }
-  }
-}
-
-query PortalChangeRequests {
-  me {
+  companies {
     id
-    contact {
-      id
-      fullName
-    }
+    name
   }
-  changeRequestQueue(page: { pageSize: 50, sortBy: "age", sortDirection: DESC }) {
-    totalCount
-    nodes {
-      ...ChangeRequestRow
-    }
-  }
-  projects(page: { pageSize: 50 }) {
-    nodes {
-      id
-      name
-    }
-  }
-}
-
-mutation CreateChangeRequest($input: ChangeRequestInput!) {
-  createChangeRequest(input: $input) {
-    ...ChangeRequestDetail
-  }
-}
-
-mutation AssessChangeRequest($id: ID!, $input: ImpactAssessmentInput!) {
-  assessChangeRequest(id: $id, input: $input) {
-    ...ChangeRequestDetail
-  }
-}
-
-mutation DecideChangeRequest($id: ID!, $decision: ChangeRequestDecision!) {
-  decideChangeRequest(id: $id, decision: $decision) {
-    ...ChangeRequestDetail
-  }
-}
-
-mutation UpdateChangeRequestStatus($id: ID!, $status: ChangeRequestStatus!, $note: String) {
-  updateChangeRequestStatus(id: $id, status: $status, note: $note) {
-    ...ChangeRequestDetail
-  }
-}
-
-mutation AssignChangeRequest($id: ID!, $assignedPmId: ID) {
-  assignChangeRequest(id: $id, assignedPmId: $assignedPmId) {
-    ...ChangeRequestDetail
-  }
-}
-
-mutation WithdrawChangeRequest($id: ID!, $reason: String) {
-  withdrawChangeRequest(id: $id, reason: $reason) {
-    ...ChangeRequestDetail
-  }
-}
-
-mutation AddComment($input: CommentInput!) {
-  addComment(input: $input) {
+  projects {
     id
-    body
-    authorType
-    authorName
-    authorAvatarUrl
-    isClientVisible
-    createdAt
+    name
+    companyId
+  }
+}
+
+query ChangeRequestQueue {
+  changeRequestDashboard {
+    openCount
+    pendingApprovalCount
+    overdueCount
+    slaDays
+  }
+  projects {
+    id
+    name
+    companyId
+  }
+}
+
+query ChangeRequestQueueCounts {
+  changeRequestDashboard {
+    openCount
+    pendingApprovalCount
+    overdueCount
+  }
+}
+
+query ChangeRequestsByProject($projectId: ID!, $status: String) {
+  changeRequests(projectId: $projectId, status: $status) {
+    ...ChangeRequestRow
+  }
+}
+
+query ChangeRequestDetail($id: ID!) {
+  changeRequest(id: $id) {
+    ...ChangeRequestDetailFields
+  }
+  projects {
+    id
+    name
+    companyId
+  }
+  companies {
+    id
+    name
+  }
+  users {
+    id
+    name
+    avatarUrl
+  }
+}
+
+mutation CreateChangeRequest(
+  $projectId: ID!
+  $title: String!
+  $type: String!
+  $description: String
+  $priority: String!
+) {
+  createChangeRequest(
+    projectId: $projectId
+    title: $title
+    type: $type
+    description: $description
+    priority: $priority
+  ) {
+    ...ChangeRequestDetailFields
+  }
+}
+
+mutation AssessChangeRequest(
+  $id: ID!
+  $impactHours: Float
+  $impactCost: Float
+  $impactTimelineDays: Int
+  $assessmentNotes: String
+) {
+  submitImpactAssessment(
+    id: $id
+    impactHours: $impactHours
+    impactCost: $impactCost
+    impactTimelineDays: $impactTimelineDays
+    assessmentNotes: $assessmentNotes
+  ) {
+    ...ChangeRequestDetailFields
+  }
+}
+
+mutation DecideChangeRequest(
+  $id: ID!
+  $approvalId: ID!
+  $decision: String!
+  $comment: String
+) {
+  decideChangeRequest(id: $id, approvalId: $approvalId, decision: $decision, comment: $comment) {
+    ...ChangeRequestDetailFields
+  }
+}
+
+mutation UpdateChangeRequestStatus($id: ID!, $toStatus: String!, $reason: String) {
+  transitionChangeRequest(id: $id, toStatus: $toStatus, reason: $reason) {
+    ...ChangeRequestDetailFields
   }
 }

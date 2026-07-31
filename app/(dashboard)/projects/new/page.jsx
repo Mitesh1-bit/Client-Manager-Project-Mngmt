@@ -4,13 +4,27 @@ import { ChevronLeft } from "lucide-react";
 import { PageHeader } from "@/app/components/domain/page-header";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { ProjectFormOptionsDocument } from "@/app/lib/graphql/generated/documents";
+import { pickList } from "@/app/lib/api/safe-list";
 
 import { ProjectForm } from "../project-form";
 
 export const metadata = { title: "New project" };
 
 export default async function NewProjectPage() {
-  const { data } = await getClient().query({ query: ProjectFormOptionsDocument });
+  let companies = [];
+  let users = [];
+  let tags = [];
+
+  try {
+    const { data } = await getClient().query({ query: ProjectFormOptionsDocument });
+    companies = pickList(data, "companies");
+    users = pickList(data, "users");
+    tags = pickList(data, "tags");
+  } catch {
+    companies = [];
+    users = [];
+    tags = [];
+  }
 
   return (
     <div className="mx-auto w-full max-w-3xl">
@@ -27,12 +41,7 @@ export default async function NewProjectPage() {
         description="Set up the shape of the engagement — phases, milestones and tasks come next."
       />
 
-      <ProjectForm
-        mode="create"
-        companies={data.companies.nodes}
-        users={data.users}
-        tags={data.tags}
-      />
+      <ProjectForm mode="create" companies={companies} users={users} tags={tags} />
     </div>
   );
 }

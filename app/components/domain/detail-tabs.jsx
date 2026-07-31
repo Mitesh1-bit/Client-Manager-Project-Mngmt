@@ -15,7 +15,7 @@ export function DetailTabs({ tabs, className }) {
   const pathname = usePathname();
 
   return (
-    <div className={cn("-mx-(--content-gutter) overflow-x-auto px-(--content-gutter)", className)}>
+    <div className={cn("min-w-0 overflow-x-auto overscroll-x-contain scroll-px-1", className)}>
       <nav aria-label="Sections">
         <ul className="flex min-w-max items-center gap-1 border-b">
           {tabs.map((tab) => {

@@ -39,10 +39,7 @@ import {
 } from "@/app/components/ui/select";
 import { Switch } from "@/app/components/ui/switch";
 import { Textarea } from "@/app/components/ui/textarea";
-import {
-  CreateRetentionSequenceDocument,
-  UpdateRetentionSequenceDocument,
-} from "@/app/lib/graphql/generated/documents";
+import { CreateRetentionSequenceDocument } from "@/app/lib/graphql/generated/documents";
 
 import { SequenceStepCard } from "./sequence-step-card";
 import {
@@ -64,7 +61,6 @@ export function SequenceBuilder({ mode, sequence }) {
   const router = useRouter();
   const [serverError, setServerError] = useState(null);
   const [createSequence] = useMutation(CreateRetentionSequenceDocument);
-  const [updateSequence] = useMutation(UpdateRetentionSequenceDocument);
 
   const {
     register,
@@ -104,15 +100,18 @@ export function SequenceBuilder({ mode, sequence }) {
     try {
       if (mode === "create") {
         const { data } = await createSequence({
-          variables: { input },
+          variables: {
+            name: input.name,
+            triggerType: input.triggerType?.toLowerCase() ?? "manual",
+            isTemplate: input.isTemplate ?? false,
+          },
           update: (cache) => cache.evict({ fieldName: "retentionSequences" }),
         });
         toast.success(`"${data.createRetentionSequence.name}" created`);
         router.push(`/retention/sequences/${data.createRetentionSequence.id}`);
       } else {
-        const { data } = await updateSequence({ variables: { id: sequence.id, input } });
-        toast.success(`"${data.updateRetentionSequence.name}" updated`);
-        router.push(`/retention/sequences/${sequence.id}`);
+        setServerError("Editing sequences is not exposed by the API yet.");
+        return;
       }
       router.refresh();
     } catch (error) {
@@ -215,7 +214,7 @@ export function SequenceBuilder({ mode, sequence }) {
               append({
                 clientId: nextClientId(),
                 name: "",
-                channel: "EMAIL",
+                channel: "CALL",
                 offsetDays: offsets.at(-1) ?? 0,
                 assigneeRole: "",
                 templateId: "",

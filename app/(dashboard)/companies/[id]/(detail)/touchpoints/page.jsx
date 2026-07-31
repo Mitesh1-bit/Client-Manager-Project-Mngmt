@@ -3,20 +3,31 @@ import { CalendarClock } from "lucide-react";
 
 import { EmptyState } from "@/app/components/domain/states";
 import { TouchpointTimeline } from "@/app/components/domain/touchpoint-timeline";
+import { asArray } from "@/app/lib/api/safe-list";
 import { getClient } from "@/app/lib/graphql/apollo-client";
-import { CompanyTouchpointsDocument } from "@/app/lib/graphql/generated/documents";
+import {
+  CompanyDetailHeaderDocument,
+  CompanyTouchpointsDocument,
+} from "@/app/lib/graphql/generated/documents";
 
 export const metadata = { title: "Touchpoints" };
 
 export default async function CompanyTouchpointsPage({ params }) {
   const { id } = await params;
-  const { data } = await getClient().query({
-    query: CompanyTouchpointsDocument,
-    variables: { id },
-  });
+  const [{ data: header }, { data: touchpointData }] = await Promise.all([
+    getClient().query({ query: CompanyDetailHeaderDocument, variables: { id } }),
+    getClient().query({ query: CompanyTouchpointsDocument }),
+  ]);
 
-  if (!data.company) notFound();
-  const touchpoints = data.company.touchpoints;
+  if (!header.company) notFound();
+
+  const touchpoints = asArray(touchpointData.upcomingTouchpoints)
+    .filter((tp) => tp.companyId === id)
+    .map((tp) => ({
+      ...tp,
+      status: tp.status?.toUpperCase() ?? "SCHEDULED",
+      contact: { id: tp.contactId, fullName: "Contact" },
+    }));
 
   if (touchpoints.length === 0) {
     return (

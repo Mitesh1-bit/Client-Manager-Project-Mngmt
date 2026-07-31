@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useLazyQuery, useMutation } from "@apollo/client/react";
+import { useLazyQuery } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { LoaderCircle } from "lucide-react";
@@ -29,10 +29,7 @@ import {
 } from "@/app/components/ui/sheet";
 import { Textarea } from "@/app/components/ui/textarea";
 import { CHANNEL_OPTIONS } from "@/app/lib/channels";
-import {
-  CompanyTouchpointContextDocument,
-  LogTouchpointDocument,
-} from "@/app/lib/graphql/generated/documents";
+import { CompanyTouchpointContextDocument } from "@/app/lib/graphql/generated/documents";
 
 const NONE = "__none__";
 const today = () => new Date().toISOString().slice(0, 10);
@@ -65,7 +62,6 @@ export function LogTouchpointSheet({ trigger, companyId, companyName, companies 
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [serverError, setServerError] = useState(null);
-  const [logTouchpoint] = useMutation(LogTouchpointDocument);
   const [loadContext, { data: contextData, loading: contextLoading }] = useLazyQuery(
     CompanyTouchpointContextDocument,
   );
@@ -101,33 +97,8 @@ export function LogTouchpointSheet({ trigger, companyId, companyName, companies 
   const contacts = contextData?.company?.contacts ?? [];
   const projects = contextData?.company?.projects ?? [];
 
-  async function onSubmit(values) {
-    setServerError(null);
-    try {
-      const { data } = await logTouchpoint({
-        variables: {
-          input: {
-            companyId: values.companyId,
-            contactId: values.contactId,
-            projectId: values.projectId,
-            type: values.type,
-            outcome: values.when === "COMPLETED" ? values.outcome : null,
-            notes: values.notes,
-            completedAt: values.when === "COMPLETED" ? new Date(values.date).toISOString() : null,
-            scheduledAt: values.when === "SCHEDULED" ? new Date(values.date).toISOString() : null,
-          },
-        },
-      });
-      toast.success(
-        values.when === "COMPLETED" ? "Touchpoint logged" : "Touchpoint scheduled",
-        { description: data.logTouchpoint.company.name },
-      );
-      setOpen(false);
-      reset();
-      router.refresh();
-    } catch (error) {
-      setServerError(error?.message ?? "We couldn't save this. Try again.");
-    }
+  async function onSubmit(_values) {
+    setServerError("Manual touchpoint logging is not exposed by the API yet. Use retention enrollments instead.");
   }
 
   return (

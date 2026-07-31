@@ -1,13 +1,14 @@
 "use client";
 
-import { ErrorState } from "@/app/components/domain/states";
+import { RouteErrorState } from "@/app/components/domain/route-error-state";
 
 export default function CompanyDetailError({ error, reset }) {
   return (
-    <ErrorState
+    <RouteErrorState
+      scope="company-detail"
       title="We couldn't load this section"
-      description={error?.message ?? "The request to the API failed. Try again."}
-      onRetry={reset}
+      error={error}
+      reset={reset}
     />
   );
 }

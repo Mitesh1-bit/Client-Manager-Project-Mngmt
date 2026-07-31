@@ -57,7 +57,7 @@ const PHASE_STATUS_OPTIONS = listStatuses("phaseStatus");
  * roll up to them. Client sign-off state is shown but not actioned here — the
  * approval flow itself belongs to the client portal in Phase 4.
  */
-export function ProjectPlan({ projectId, phases, milestones }) {
+export function ProjectPlan({ projectId, phases = [], milestones = [] }) {
   const [panel, setPanel] = useState(null);
   const close = () => setPanel(null);
 

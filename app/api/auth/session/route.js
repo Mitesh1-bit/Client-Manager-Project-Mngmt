@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { REFRESH_COOKIE, SESSION_COOKIE, readTokenClaims } from "@/app/lib/auth/token";
+import { authCookieOptions } from "@/app/lib/auth/cookie-options";
+import { PORTAL_REFRESH_COOKIE, REFRESH_COOKIE, SESSION_COOKIE, readTokenClaims } from "@/app/lib/auth/token";
 
 /**
  * Cookie plumbing only — no business logic. The login mutation runs against
@@ -15,13 +16,6 @@ import { REFRESH_COOKIE, SESSION_COOKIE, readTokenClaims } from "@/app/lib/auth/
  */
 export const runtime = "nodejs";
 
-const baseCookie = {
-  httpOnly: true,
-  sameSite: "lax",
-  secure: process.env.NODE_ENV === "production",
-  path: "/",
-};
-
 export async function POST(request) {
   const body = await request.json().catch(() => null);
   const accessToken = body?.accessToken;
@@ -33,7 +27,7 @@ export async function POST(request) {
 
   const response = NextResponse.json({ scope: claims.scope });
   response.cookies.set(SESSION_COOKIE, accessToken, {
-    ...baseCookie,
+    ...authCookieOptions(),
     expires: new Date(claims.exp * 1000),
   });
   return response;
@@ -41,7 +35,9 @@ export async function POST(request) {
 
 export async function DELETE() {
   const response = NextResponse.json({ ok: true });
-  response.cookies.set(SESSION_COOKIE, "", { ...baseCookie, maxAge: 0 });
-  response.cookies.set(REFRESH_COOKIE, "", { ...baseCookie, maxAge: 0 });
+  const cleared = authCookieOptions({ maxAge: 0 });
+  response.cookies.set(SESSION_COOKIE, "", cleared);
+  response.cookies.set(REFRESH_COOKIE, "", cleared);
+  response.cookies.set(PORTAL_REFRESH_COOKIE, "", cleared);
   return response;
 }

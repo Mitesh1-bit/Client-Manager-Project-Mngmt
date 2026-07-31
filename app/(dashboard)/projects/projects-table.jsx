@@ -100,7 +100,7 @@ export function ProjectsTable({ connection, sort, emptyState }) {
         header: "Tags",
         enableSorting: false,
         cell: ({ row }) =>
-          row.original.tags.length ? (
+          row.original.tags?.length ? (
             <TagList tags={row.original.tags} max={2} />
           ) : (
             <span className="text-caption text-muted-foreground">—</span>

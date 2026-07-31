@@ -30,7 +30,7 @@ const STATUS_OPTIONS = listStatuses("taskStatus");
  * The flat, scannable counterpart to the board: every task grouped by phase,
  * with subtasks nested under their parent and status editable inline.
  */
-export function TaskList({ projectId, tasks, phases, milestones, users }) {
+export function TaskList({ projectId, tasks = [], phases = [], milestones = [], users = [] }) {
   const router = useRouter();
   const [updateTaskStatus] = useMutation(UpdateTaskStatusDocument);
 

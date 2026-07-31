@@ -11,7 +11,8 @@ import { StatusBadge } from "@/app/components/domain/status-badge";
 import { Button } from "@/app/components/ui/button";
 import { Progress } from "@/app/components/ui/progress";
 import { APPROVAL_STATE, getMilestoneApprovalState } from "@/app/lib/approvals";
-import { formatBytes, formatDate, formatRelativeDays, initials } from "@/app/lib/format";
+import { normalizePortalProject, portalContactName } from "@/app/lib/api/portal";
+import { formatDate, formatRelativeDays, initials } from "@/app/lib/format";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { PortalProjectDocument } from "@/app/lib/graphql/generated/documents";
 import { parseDay, startOfDay } from "@/app/lib/project";
@@ -27,14 +28,12 @@ export default async function PortalProjectPage({ params }) {
   const { id } = await params;
   const { data } = await getClient().query({ query: PortalProjectDocument, variables: { id } });
 
-  // The API scopes `project` to the caller's own company, so a project from
-  // another client reads as "not found" rather than "forbidden".
-  const project = data.project;
+  const project = normalizePortalProject(data.project);
   if (!project) notFound();
 
-  const viewerName = data.me?.contact?.fullName ?? null;
+  const viewerName = portalContactName(data.me?.contact);
 
-  const milestoneStates = project.milestones.map((milestone) => ({
+  const milestoneStates = (project.milestones ?? []).map((milestone) => ({
     milestone,
     approvalState: getMilestoneApprovalState(milestone, viewerName),
   }));
@@ -122,9 +121,7 @@ export default async function PortalProjectPage({ params }) {
               </span>
               <div className="min-w-0">
                 <p className="text-caption font-medium">{project.projectManager.name}</p>
-                <p className="text-[0.75rem] text-muted-foreground">
-                  Your project manager at Meridian
-                </p>
+                <p className="text-[0.75rem] text-muted-foreground">Your project manager</p>
               </div>
               <Button variant="outline" size="sm" className="ml-auto" asChild>
                 <a href={`mailto:${project.projectManager.email}`}>
@@ -204,8 +201,7 @@ export default async function PortalProjectPage({ params }) {
                           {document.name}
                         </span>
                         <span className="block text-[0.75rem] text-muted-foreground">
-                          v{document.version} · {formatBytes(document.sizeBytes)} ·{" "}
-                          {formatDate(document.createdAt)}
+                          v{document.version}
                         </span>
                       </span>
                     </a>
@@ -229,23 +225,25 @@ export default async function PortalProjectPage({ params }) {
             ) : (
               <ul className="mt-3 space-y-2">
                 {project.changeRequests.map((request) => (
-                  <li
-                    key={request.id}
-                    className="flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2.5"
-                  >
-                    <GitPullRequestArrow
-                      aria-hidden="true"
-                      className="size-4 shrink-0 text-muted-foreground"
-                    />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-caption font-medium">
-                        {request.title}
+                  <li key={request.id}>
+                    <Link
+                      href={`/portal/change-requests/${request.id}`}
+                      className="flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2.5 transition-colors hover:bg-accent focus-ring"
+                    >
+                      <GitPullRequestArrow
+                        aria-hidden="true"
+                        className="size-4 shrink-0 text-muted-foreground"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-caption font-medium">
+                          {request.title}
+                        </span>
+                        <span className="tabular block text-[0.75rem] text-muted-foreground">
+                          {request.reference} · updated {formatRelativeDays(request.updatedAt)}
+                        </span>
                       </span>
-                      <span className="tabular block text-[0.75rem] text-muted-foreground">
-                        {request.reference} · updated {formatRelativeDays(request.updatedAt)}
-                      </span>
-                    </span>
-                    <StatusBadge kind="changeRequestStatus" value={request.status} size="sm" />
+                      <StatusBadge kind="changeRequestStatus" value={request.status} size="sm" />
+                    </Link>
                   </li>
                 ))}
               </ul>

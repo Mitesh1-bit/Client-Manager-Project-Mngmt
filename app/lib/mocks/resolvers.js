@@ -557,12 +557,11 @@ export const resolvers = {
               };
             })();
 
-      const { token, expiresAt } = signMockToken(claims);
+      const { token } = signMockToken(claims);
       return {
         accessToken: token,
-        expiresAt,
-        scope: claims.scope,
-        user: resolveViewer(claims),
+        requires2fa: false,
+        challengeToken: null,
       };
     },
 
@@ -572,12 +571,11 @@ export const resolvers = {
           extensions: { code: "UNAUTHENTICATED" },
         });
       }
-      const { token, expiresAt } = signMockToken(ctx.claims);
+      const { token } = signMockToken(ctx.claims);
       return {
         accessToken: token,
-        expiresAt,
-        scope: ctx.claims.scope,
-        user: resolveViewer(ctx.claims),
+        requires2fa: false,
+        challengeToken: null,
       };
     },
 

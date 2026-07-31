@@ -44,7 +44,7 @@ const screenReaderInstructions = {
     "To pick up a task, press space or enter. While dragging, use the arrow keys to move it between positions and columns. Press space or enter again to drop, or escape to cancel.",
 };
 
-export function ProjectBoard({ projectId, tasks, phases, milestones, users }) {
+export function ProjectBoard({ projectId, tasks = [], phases = [], milestones = [], users = [] }) {
   const router = useRouter();
   const [updateTaskStatus] = useMutation(UpdateTaskStatusDocument);
 

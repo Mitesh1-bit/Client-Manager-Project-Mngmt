@@ -13,7 +13,7 @@ export default function NotFound() {
         description="The page you're looking for doesn't exist, or you may not have access to it."
         action={
           <Button asChild>
-            <Link href="/">Back to dashboard</Link>
+            <Link href="/dashboard">Back to dashboard</Link>
           </Button>
         }
         className="max-w-md"

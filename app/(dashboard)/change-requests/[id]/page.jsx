@@ -8,6 +8,7 @@ import { ChangeRequestTimeline } from "@/app/components/domain/change-request-ti
 import { CommentThread } from "@/app/components/domain/comment-thread";
 import { SectionCard } from "@/app/components/domain/states";
 import { formatBytes, formatDate, humanizeType } from "@/app/lib/format";
+import { pickList } from "@/app/lib/api/safe-list";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   ChangeRequestDetailDocument,
@@ -71,7 +72,7 @@ export default async function ChangeRequestDetailPage({ params }) {
         </div>
 
         {request.status !== "CLOSED" ? (
-          <ChangeRequestActions request={request} users={options.users} />
+          <ChangeRequestActions request={request} users={pickList(options, "users")} />
         ) : null}
       </header>
 

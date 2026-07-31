@@ -22,7 +22,7 @@ import { Label } from "@/app/components/ui/label";
 import { Textarea } from "@/app/components/ui/textarea";
 import { APPROVAL_STATE, approvalNextAction, getMilestoneApprovalState } from "@/app/lib/approvals";
 import { formatBytes, formatDate, formatDateTime, initials } from "@/app/lib/format";
-import { DecideMilestoneApprovalDocument } from "@/app/lib/graphql/generated/documents";
+import { ApproveMilestoneDocument, RequestMilestoneChangesDocument } from "@/app/lib/graphql/generated/documents";
 import { cn } from "@/app/lib/utils";
 
 const STATE_STYLES = {
@@ -75,7 +75,8 @@ const STATE_STYLES = {
  */
 export function MilestoneApprovalPanel({ milestone, viewerName, projectName, compact = false }) {
   const router = useRouter();
-  const [decideApproval] = useMutation(DecideMilestoneApprovalDocument);
+  const [approveMilestone] = useMutation(ApproveMilestoneDocument);
+  const [requestChanges] = useMutation(RequestMilestoneChangesDocument);
 
   const [pendingOutcome, setPendingOutcome] = useState(null);
   const [mode, setMode] = useState(null); // null | 'approve' | 'reject'
@@ -116,13 +117,24 @@ export function MilestoneApprovalPanel({ milestone, viewerName, projectName, com
     setCommentError(null);
     setPendingOutcome(outcome);
 
+    const approvalId =
+      resolved.yourApproval?.id ??
+      milestone.approvals?.find(
+        (a) => a.approverType === "CLIENT" && a.status === "PENDING",
+      )?.id;
+
+    if (!approvalId) {
+      toast.error("No pending approval found for this milestone.");
+      setPendingOutcome(null);
+      return;
+    }
+
     try {
-      await decideApproval({
-        variables: {
-          id: milestone.id,
-          decision: { outcome, approverType: "CLIENT", comment: comment.trim() || null },
-        },
-      });
+      if (outcome === "APPROVED") {
+        await approveMilestone({ variables: { approvalId } });
+      } else {
+        await requestChanges({ variables: { approvalId, comment: comment.trim() } });
+      }
       toast.success(
         outcome === "APPROVED"
           ? `“${milestone.title}” approved`

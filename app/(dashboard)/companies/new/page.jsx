@@ -10,7 +10,17 @@ import { CompanyForm } from "../company-form";
 export const metadata = { title: "New company" };
 
 export default async function NewCompanyPage() {
-  const { data } = await getClient().query({ query: CompanyFormOptionsDocument });
+  let owners = [];
+  let tags = [];
+
+  try {
+    const { data } = await getClient().query({ query: CompanyFormOptionsDocument });
+    owners = data?.users ?? [];
+    tags = data?.tags ?? [];
+  } catch {
+    owners = [];
+    tags = [];
+  }
 
   return (
     <div className="mx-auto w-full max-w-3xl">
@@ -27,7 +37,7 @@ export default async function NewCompanyPage() {
         description="Start with the essentials — you can fill in the rest once the relationship is underway."
       />
 
-      <CompanyForm mode="create" owners={data.users} tags={data.tags} />
+      <CompanyForm mode="create" owners={owners} tags={tags} />
     </div>
   );
 }

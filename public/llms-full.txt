@@ -1,0 +1,29 @@
+# Meridian — Full context for LLMs and answer engines
+# Site: https://meridian.example.com
+
+## What is Meridian?
+Meridian is client and project management software built for agencies. It combines company and contact records, project delivery (board, list, Gantt, calendar), change request workflows with dual internal and client approvals, a client portal, retention sequences, health scores, contracts, and invoices.
+
+## Core capabilities
+1. **Companies & contacts** — Central client records with touchpoints, tags, health history, and linked projects.
+2. **Projects & delivery** — Milestones, tasks, budget tracking, and multiple views for agency workflows.
+3. **Change requests** — State machine from submission through impact assessment, approvals, and implementation with audit trail.
+4. **Client portal** — External stakeholders approve milestones and change requests without email threads.
+5. **Retention & health** — Configurable health weights, at-risk dashboard, automated retention sequences on triggers.
+
+## Who it is for
+- Account managers monitoring client health and renewals
+- Project managers controlling scope with structured change approvals
+- Agency leadership seeking one operating picture for delivery and retention
+- Client partners who need a focused approval portal
+
+## Guides
+- Blog: https://meridian.example.com/blog
+
+## App access
+- Sign up: https://meridian.example.com/signup
+- Sign in: https://meridian.example.com/login
+
+## Legal
+- Privacy: https://meridian.example.com/privacy
+- Terms: https://meridian.example.com/terms

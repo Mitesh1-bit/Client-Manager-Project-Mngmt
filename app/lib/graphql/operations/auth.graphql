@@ -1,4 +1,4 @@
-fragment ViewerFields on User {
+fragment ViewerFields on ViewerType {
   id
   name
   email
@@ -36,22 +36,34 @@ query Me {
 mutation Login($email: String!, $password: String!) {
   login(email: $email, password: $password) {
     accessToken
-    expiresAt
-    scope
-    user {
-      ...ViewerFields
-    }
+    requires2fa
+    challengeToken
+  }
+}
+
+mutation Signup(
+  $organizationName: String!
+  $fullName: String!
+  $email: String!
+  $password: String!
+) {
+  signup(
+    organizationName: $organizationName
+    fullName: $fullName
+    email: $email
+    password: $password
+  ) {
+    accessToken
+    requires2fa
+    challengeToken
   }
 }
 
 mutation RefreshToken {
   refreshToken {
     accessToken
-    expiresAt
-    scope
-    user {
-      ...ViewerFields
-    }
+    requires2fa
+    challengeToken
   }
 }
 

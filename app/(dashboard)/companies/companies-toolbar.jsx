@@ -8,7 +8,7 @@ const STATUS_OPTIONS = listStatuses("companyStatus").map((status) => ({
   label: status.label,
 }));
 
-export function CompaniesToolbar({ owners, tags }) {
+export function CompaniesToolbar({ owners = [], tags = [] }) {
   return (
     <ListToolbar
       searchPlaceholder="Search companies…"

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { contactFullName, toApiStatus, toUiStatus } from "@/app/lib/api/normalize";
+
 /**
  * Client-side validation for the contact form. Mirrors `ContactInput` in
  * schema.graphql; the API remains the source of truth (uniqueness of email, for
@@ -53,6 +55,7 @@ export const contactSchema = z.object({
     ),
   isPrimary: z.boolean().default(false),
   portalAccessEnabled: z.boolean().default(false),
+  portalPassword: z.string().optional().transform((value) => value?.trim() || ""),
   doNotContact: z.boolean().default(false),
   status: z.enum(["ACTIVE", "INACTIVE"]).default("ACTIVE"),
 });
@@ -74,7 +77,40 @@ export const contactFormSchema = contactSchema
   .refine((values) => !(values.status === "INACTIVE" && values.isPrimary), {
     path: ["isPrimary"],
     message: "An inactive contact can't be the primary contact.",
-  });
+  })
+  .refine(
+    (values) =>
+      !values.portalAccessEnabled || (values.portalPassword?.length ?? 0) >= 12,
+    {
+      path: ["portalPassword"],
+      message: "Set a portal password of at least 12 characters.",
+    },
+  );
+
+// Edit mode allows empty portal password (unchanged)
+export const contactEditFormSchema = contactSchema
+  .refine((values) => !(values.doNotContact && values.isPrimary), {
+    path: ["isPrimary"],
+    message: "A do-not-contact person can't be the primary contact.",
+  })
+  .refine((values) => !(values.doNotContact && values.portalAccessEnabled), {
+    path: ["portalAccessEnabled"],
+    message: "Turn off do-not-contact before granting portal access.",
+  })
+  .refine((values) => !(values.status === "INACTIVE" && values.isPrimary), {
+    path: ["isPrimary"],
+    message: "An inactive contact can't be the primary contact.",
+  })
+  .refine(
+    (values) =>
+      !values.portalAccessEnabled ||
+      (values.portalPassword?.length ?? 0) === 0 ||
+      (values.portalPassword?.length ?? 0) >= 12,
+    {
+      path: ["portalPassword"],
+      message: "Portal password must be at least 12 characters.",
+    },
+  );
 
 export function contactToFormValues(contact) {
   return {
@@ -90,11 +126,52 @@ export function contactToFormValues(contact) {
     linkedinUrl: contact?.linkedinUrl ?? "",
     isPrimary: contact?.isPrimary ?? false,
     portalAccessEnabled: contact?.portalAccessEnabled ?? false,
+    portalPassword: "",
     doNotContact: contact?.doNotContact ?? false,
-    status: contact?.status ?? "ACTIVE",
+    status: toUiStatus("contactStatus", contact?.status) ?? "ACTIVE",
   };
 }
 
 export function toContactInput(values, companyId) {
   return { ...values, companyId };
 }
+
+export function toCreateContactVariables(values, companyId) {
+  return {
+    companyId,
+    firstName: values.firstName,
+    lastName: values.lastName,
+    email: values.email.trim().toLowerCase(),
+    phone: values.phone,
+    title: values.title,
+    department: values.department,
+    isPrimary: values.isPrimary,
+    preferredChannel: values.preferredChannel?.toLowerCase() ?? null,
+    timezone: values.timezone,
+    portalAccessEnabled: values.portalAccessEnabled,
+    portalPassword: values.portalAccessEnabled && values.portalPassword ? values.portalPassword : null,
+    linkedinUrl: values.linkedinUrl,
+    status: toApiStatus("contactStatus", values.status),
+  };
+}
+
+export function toUpdateContactVariables(id, values) {
+  return {
+    id,
+    firstName: values.firstName,
+    lastName: values.lastName,
+    email: values.email.trim().toLowerCase(),
+    phone: values.phone,
+    title: values.title,
+    department: values.department,
+    isPrimary: values.isPrimary,
+    preferredChannel: values.preferredChannel?.toLowerCase() ?? null,
+    timezone: values.timezone,
+    portalAccessEnabled: values.portalAccessEnabled,
+    portalPassword: values.portalAccessEnabled && values.portalPassword ? values.portalPassword : null,
+    linkedinUrl: values.linkedinUrl,
+    status: toApiStatus("contactStatus", values.status),
+  };
+}
+
+export { contactFullName };

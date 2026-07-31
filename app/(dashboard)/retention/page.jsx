@@ -1,8 +1,6 @@
-import { CircleCheck, ShieldCheck } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 
-import { LogTouchpointSheet } from "@/app/components/domain/log-touchpoint-sheet";
 import { PageHeader } from "@/app/components/domain/page-header";
-import { Button } from "@/app/components/ui/button";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   AtRiskDashboardDocument,
@@ -20,7 +18,8 @@ export default async function RetentionAtRiskPage() {
     getClient().query({ query: RetentionFormOptionsDocument }),
   ]);
 
-  const rows = data.atRiskCompanies;
+  const rows = data.atRiskCompanies ?? [];
+  const sequences = options.retentionSequences ?? [];
 
   return (
     <>
@@ -28,17 +27,6 @@ export default async function RetentionAtRiskPage() {
         eyebrow="Operations"
         title="Retention"
         description="Accounts that need attention before they churn, and why each one is flagged."
-        actions={
-          <LogTouchpointSheet
-            companies={options.companies.nodes}
-            trigger={
-              <Button variant="outline">
-                <ShieldCheck aria-hidden="true" />
-                Log a touchpoint
-              </Button>
-            }
-          />
-        }
       />
 
       <div className="space-y-4">
@@ -60,11 +48,7 @@ export default async function RetentionAtRiskPage() {
         ) : (
           <div className="space-y-3">
             {rows.map((row) => (
-              <AtRiskCompanyCard
-                key={row.company.id}
-                row={row}
-                sequences={options.retentionSequences}
-              />
+              <AtRiskCompanyCard key={row.company.id} row={row} sequences={sequences} />
             ))}
           </div>
         )}

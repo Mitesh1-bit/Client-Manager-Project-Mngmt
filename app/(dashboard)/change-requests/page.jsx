@@ -6,11 +6,13 @@ import { ListToolbar } from "@/app/components/domain/list-toolbar";
 import { PageHeader } from "@/app/components/domain/page-header";
 import { EmptyState, TableSkeleton } from "@/app/components/domain/states";
 import { Button } from "@/app/components/ui/button";
+import { paginateList } from "@/app/lib/api/connection";
+import { fetchChangeRequestQueue } from "@/app/lib/api/change-requests";
+import { pickList } from "@/app/lib/api/safe-list";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   ChangeRequestFormOptionsDocument,
   ChangeRequestQueueCountsDocument,
-  ChangeRequestQueueDocument,
 } from "@/app/lib/graphql/generated/documents";
 import { hasActiveFilters, parseListParams, readList, readString } from "@/app/lib/list-params";
 import { listStatuses } from "@/app/lib/status";
@@ -34,10 +36,20 @@ export default async function ChangeRequestsPage({ searchParams }) {
   const params = await searchParams;
   const bucket = readString(params, "bucket") ?? "all";
 
-  const [{ data: counts }, { data: options }] = await Promise.all([
+  const [{ data: counts }, optionsResult] = await Promise.all([
     getClient().query({ query: ChangeRequestQueueCountsDocument }),
     getClient().query({ query: ChangeRequestFormOptionsDocument }),
   ]);
+
+  const users = pickList(optionsResult.data, "users");
+  const companies = pickList(optionsResult.data, "companies");
+
+  const countShape = {
+    all: { totalCount: counts.changeRequestDashboard?.openCount ?? 0 },
+    submitted: { totalCount: counts.changeRequestDashboard?.openCount ?? 0 },
+    pendingApproval: { totalCount: counts.changeRequestDashboard?.pendingApprovalCount ?? 0 },
+    overdue: { totalCount: counts.changeRequestDashboard?.overdueCount ?? 0 },
+  };
 
   return (
     <>
@@ -51,10 +63,10 @@ export default async function ChangeRequestsPage({ searchParams }) {
         <QueueTabs
           active={bucket}
           counts={{
-            all: counts.all.totalCount,
-            submitted: counts.submitted.totalCount,
-            "pending-approval": counts.pendingApproval.totalCount,
-            overdue: counts.overdue.totalCount,
+            all: countShape.all.totalCount,
+            submitted: countShape.submitted.totalCount,
+            "pending-approval": countShape.pendingApproval.totalCount,
+            overdue: countShape.overdue.totalCount,
           }}
         />
 
@@ -95,14 +107,14 @@ export default async function ChangeRequestsPage({ searchParams }) {
               label: "PM",
               multi: false,
               allLabel: "Anyone",
-              options: options.users.map((user) => ({ value: user.id, label: user.name })),
+              options: users.map((user) => ({ value: user.id, label: user.name })),
             },
             {
               key: "company",
               label: "Client",
               multi: false,
               allLabel: "All clients",
-              options: options.companies.nodes.map((company) => ({
+              options: companies.map((company) => ({
                 value: company.id,
                 label: company.name,
               })),
@@ -139,18 +151,38 @@ async function QueueResults({ params, bucket }) {
     ...(statuses.length ? { status: statuses } : {}),
   };
 
-  const { data } = await getClient().query({
-    query: ChangeRequestQueueDocument,
-    variables: { filter, page: pageInput },
-  });
+  const { rows } = await fetchChangeRequestQueue();
+  let filtered = rows;
 
-  const filtered = hasActiveFilters(params, FILTER_KEYS) || bucket !== "all";
+  if (filter.search) {
+    const q = filter.search.toLowerCase();
+    filtered = filtered.filter(
+      (row) =>
+        row.title?.toLowerCase().includes(q) ||
+        row.reference?.toLowerCase().includes(q),
+    );
+  }
+  if (filter.status?.length) {
+    filtered = filtered.filter((row) => filter.status.includes(row.status));
+  }
+  if (filter.companyId) {
+    filtered = filtered.filter((row) => row.companyId === filter.companyId);
+  }
+  if (filter.assignedPmId) {
+    filtered = filtered.filter((row) => row.assignedPmId === filter.assignedPmId);
+  }
+  if (filter.overdueOnly) {
+    filtered = filtered.filter((row) => row.status === "PENDING_APPROVAL");
+  }
+
+  const connection = paginateList(filtered, pageInput);
+  const filteredActive = hasActiveFilters(params, FILTER_KEYS) || bucket !== "all";
 
   return (
     <ChangeRequestsTable
-      connection={data.changeRequestQueue}
+      connection={connection}
       sort={sort}
-      emptyState={filtered ? <NothingInBucket bucket={bucket} /> : <NoRequests />}
+      emptyState={filteredActive ? <NothingInBucket bucket={bucket} /> : <NoRequests />}
     />
   );
 }

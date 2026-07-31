@@ -29,10 +29,7 @@ import {
 } from "@/app/components/ui/dropdown-menu";
 import { Textarea } from "@/app/components/ui/textarea";
 import { allowedTransitions } from "@/app/lib/change-requests";
-import {
-  AssignChangeRequestDocument,
-  UpdateChangeRequestStatusDocument,
-} from "@/app/lib/graphql/generated/documents";
+import { UpdateChangeRequestStatusDocument } from "@/app/lib/graphql/generated/documents";
 import { getStatusMeta } from "@/app/lib/status";
 
 /**
@@ -41,10 +38,9 @@ import { getStatusMeta } from "@/app/lib/status";
  * transitions `allowedTransitions()` says are legal from the current status
  * are ever offered, so this can't be used to skip a step in the lifecycle.
  */
-export function ChangeRequestActions({ request, users }) {
+export function ChangeRequestActions({ request, users = [] }) {
   const router = useRouter();
   const [updateStatus] = useMutation(UpdateChangeRequestStatusDocument);
-  const [assign] = useMutation(AssignChangeRequestDocument);
 
   const [confirming, setConfirming] = useState(null); // { status, note } | null
   const [note, setNote] = useState("");
@@ -55,7 +51,13 @@ export function ChangeRequestActions({ request, users }) {
   async function move(status) {
     setBusy(true);
     try {
-      await updateStatus({ variables: { id: request.id, status, note: note.trim() || null } });
+      await updateStatus({
+        variables: {
+          id: request.id,
+          toStatus: status.toLowerCase(),
+          reason: note.trim() || null,
+        },
+      });
       toast.success(`Moved to ${getStatusMeta("changeRequestStatus", status).label.toLowerCase()}`);
       setConfirming(null);
       setNote("");
@@ -67,14 +69,8 @@ export function ChangeRequestActions({ request, users }) {
     }
   }
 
-  async function reassign(userId) {
-    try {
-      await assign({ variables: { id: request.id, assignedPmId: userId || null } });
-      toast.success(userId ? "Reassigned" : "Unassigned");
-      router.refresh();
-    } catch (error) {
-      toast.error("Couldn't reassign this", { description: error?.message });
-    }
+  async function reassign(_userId) {
+    toast.message("PM assignment is not exposed by the API yet.");
   }
 
   return (

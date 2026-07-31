@@ -3,28 +3,31 @@ import { Download, FileText } from "lucide-react";
 
 import { EmptyState } from "@/app/components/domain/states";
 import { Button } from "@/app/components/ui/button";
-import { formatBytes, formatDate } from "@/app/lib/format";
+import { asArray } from "@/app/lib/api/safe-list";
 import { getClient } from "@/app/lib/graphql/apollo-client";
-import { CompanyDocumentsDocument } from "@/app/lib/graphql/generated/documents";
+import {
+  CompanyDetailHeaderDocument,
+  CompanyDocumentsDocument,
+} from "@/app/lib/graphql/generated/documents";
 
 export const metadata = { title: "Documents" };
 
 export default async function CompanyDocsPage({ params }) {
   const { id } = await params;
-  const { data } = await getClient().query({
-    query: CompanyDocumentsDocument,
-    variables: { id },
-  });
+  const [{ data: header }, { data: docs }] = await Promise.all([
+    getClient().query({ query: CompanyDetailHeaderDocument, variables: { id } }),
+    getClient().query({ query: CompanyDocumentsDocument, variables: { companyId: id } }),
+  ]);
 
-  if (!data.company) notFound();
-  const documents = data.company.documents;
+  if (!header.company) notFound();
+  const documents = asArray(docs.companyDocuments);
 
   if (documents.length === 0) {
     return (
       <EmptyState
         icon={FileText}
         title="No documents yet"
-        description="Contracts, briefs and deliverables attached to this company will be listed here. Uploading arrives with the documents module."
+        description="Contracts, briefs and deliverables attached to this company will be listed here."
       />
     );
   }
@@ -38,10 +41,9 @@ export default async function CompanyDocsPage({ params }) {
           </span>
 
           <div className="min-w-0 flex-1">
-            <p className="truncate font-medium">{document.name}</p>
+            <p className="truncate font-medium">{document.fileUrl.split("/").pop()}</p>
             <p className="mt-0.5 text-caption text-muted-foreground">
-              Version {document.version} · {formatBytes(document.sizeBytes)} ·{" "}
-              {document.uploadedByName ?? "Unknown"} · {formatDate(document.createdAt)}
+              Version {document.version}
             </p>
           </div>
 
@@ -49,7 +51,6 @@ export default async function CompanyDocsPage({ params }) {
             <a href={document.fileUrl} download>
               <Download aria-hidden="true" />
               <span className="sr-only sm:not-sr-only">Download</span>
-              <span className="sr-only"> {document.name}</span>
             </a>
           </Button>
         </li>

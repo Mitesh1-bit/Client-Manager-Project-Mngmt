@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarClock, Mail, Phone, TriangleAlert, UserRound, Workflow } from "lucide-react";
+import { CalendarClock, Phone, TriangleAlert, UserRound, Workflow } from "lucide-react";
 
 import { EnrollInSequenceDialog } from "@/app/components/domain/enroll-in-sequence-dialog";
 import { EntityAvatar } from "@/app/components/domain/entity-avatar";
 import { HealthScoreBadge } from "@/app/components/domain/health-score-badge";
-import { LogTouchpointSheet } from "@/app/components/domain/log-touchpoint-sheet";
 import { StatusBadge } from "@/app/components/domain/status-badge";
 import { Button } from "@/app/components/ui/button";
 import { formatRelativeDays } from "@/app/lib/format";
@@ -120,16 +119,6 @@ export function AtRiskCompanyCard({ row, sequences }) {
       ) : null}
 
       <div className="mt-4 flex flex-wrap items-center gap-2 border-t pt-3.5">
-        <LogTouchpointSheet
-          companyId={company.id}
-          companyName={company.name}
-          trigger={
-            <Button variant="outline" size="sm">
-              <CalendarClock aria-hidden="true" />
-              Log touchpoint
-            </Button>
-          }
-        />
         <EnrollInSequenceDialog
           companyId={company.id}
           companyName={company.name}
@@ -141,14 +130,6 @@ export function AtRiskCompanyCard({ row, sequences }) {
             </Button>
           }
         />
-        {company.primaryContact?.email ? (
-          <Button variant="ghost" size="sm" asChild>
-            <a href={`mailto:${company.primaryContact.email}`}>
-              <Mail aria-hidden="true" />
-              Email
-            </a>
-          </Button>
-        ) : null}
         {company.primaryContact?.phone ? (
           <Button variant="ghost" size="sm" asChild>
             <a href={`tel:${company.primaryContact.phone}`}>

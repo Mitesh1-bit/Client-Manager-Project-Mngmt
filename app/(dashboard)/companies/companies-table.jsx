@@ -58,7 +58,7 @@ export function CompaniesTable({ connection, sort, emptyState }) {
         cell: ({ row }) => (
           <HealthScoreBadge
             score={row.original.healthScore}
-            history={row.original.healthScoreTrend.map((point) => point.score)}
+            history={(row.original.healthScoreTrend ?? []).map((point) => point.score)}
             size="sm"
             showSparkline={false}
           />
@@ -117,7 +117,7 @@ export function CompaniesTable({ connection, sort, emptyState }) {
         header: "Tags",
         enableSorting: false,
         cell: ({ row }) =>
-          row.original.tags.length ? (
+          row.original.tags?.length ? (
             <TagList tags={row.original.tags} max={2} />
           ) : (
             <span className="text-caption text-muted-foreground">—</span>
@@ -147,7 +147,7 @@ export function CompaniesTable({ connection, sort, emptyState }) {
   return (
     <>
       <DataTable
-        data={connection.nodes}
+        data={connection?.nodes ?? []}
         columns={columns}
         sort={sort}
         onSortChange={handleSortChange}

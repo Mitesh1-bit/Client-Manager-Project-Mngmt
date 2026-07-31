@@ -112,6 +112,24 @@
   --shadow-card: 0 1px 2px 0 oklch(0 0 0 / 0.04), 0 1px 3px 0 oklch(0 0 0 / 0.06);
   --shadow-raised: 0 2px 4px -1px oklch(0 0 0 / 0.05), 0 6px 16px -4px oklch(0 0 0 / 0.1);
   --shadow-overlay: 0 8px 12px -4px oklch(0 0 0 / 0.08), 0 20px 44px -12px oklch(0 0 0 / 0.18);
+
+  /* Marketing surface tokens */
+  --font-mkt-display: var(--font-mkt-display);
+  --font-mkt-sans: var(--font-mkt-sans);
+  --color-mkt-navy: var(--mkt-navy);
+  --color-mkt-navy-muted: var(--mkt-navy-muted);
+  --color-mkt-lime: var(--mkt-lime);
+  --color-mkt-coral: var(--mkt-coral);
+  --color-mkt-sky: var(--mkt-sky);
+  --color-mkt-sun: var(--mkt-sun);
+  --color-mkt-pink: var(--mkt-pink);
+  --color-mkt-cta: var(--mkt-cta);
+  --color-mkt-cta-hover: var(--mkt-cta-hover);
+  --color-mkt-block-lime: var(--mkt-block-lime);
+  --color-mkt-block-coral: var(--mkt-block-coral);
+  --color-mkt-block-sky: var(--mkt-block-sky);
+  --color-mkt-block-sun: var(--mkt-block-sun);
+  --color-mkt-block-pink: var(--mkt-block-pink);
 }
 
 :root {
@@ -357,4 +375,198 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ── App surface (dashboard, portal) — aligned with marketing palette ── */
+[data-surface="app"] {
+  --mkt-navy: #0a1550;
+  --mkt-navy-muted: #1e2875;
+  --mkt-lime: #c5f042;
+  --mkt-coral: #ff6b5b;
+  --mkt-cta: #e85d04;
+  --mkt-cta-hover: #cf5203;
+
+  --brand-50: oklch(0.972 0.02 264);
+  --brand-100: oklch(0.938 0.04 264);
+  --brand-200: oklch(0.884 0.07 264);
+  --brand-300: oklch(0.806 0.1 264);
+  --brand-400: oklch(0.706 0.12 264);
+  --brand-500: oklch(0.606 0.14 264);
+  --brand-600: oklch(0.522 0.12 264);
+  --brand-700: oklch(0.442 0.1 264);
+  --brand-800: oklch(0.312 0.08 264);
+  --brand-900: #0a1550;
+
+  --background: oklch(0.994 0.002 264);
+  --foreground: #0a1550;
+  --card: oklch(1 0 0);
+  --card-foreground: #0a1550;
+  --popover: oklch(1 0 0);
+  --popover-foreground: #0a1550;
+  --primary: var(--mkt-cta);
+  --primary-foreground: oklch(0.99 0.005 50);
+  --secondary: oklch(0.968 0.008 264);
+  --secondary-foreground: #0a1550;
+  --muted: oklch(0.968 0.008 264);
+  --muted-foreground: oklch(0.48 0.04 264);
+  --accent: oklch(0.958 0.015 264);
+  --accent-foreground: #0a1550;
+  --border: oklch(0.912 0.012 264);
+  --input: oklch(0.912 0.012 264);
+  --ring: var(--mkt-cta);
+
+  --chart-1: var(--mkt-cta);
+  --chart-2: oklch(0.66 0.13 195);
+  --chart-3: oklch(0.72 0.15 145);
+  --chart-4: oklch(0.76 0.15 75);
+  --chart-5: oklch(0.64 0.19 12);
+
+  --tone-accent: var(--mkt-cta);
+  --tone-accent-bg: oklch(0.968 0.04 50);
+  --tone-accent-fg: #9a3412;
+  --tone-accent-border: oklch(0.878 0.08 50);
+
+  --sidebar: #0a1550;
+  --sidebar-foreground: oklch(0.878 0.011 264);
+  --sidebar-primary: var(--mkt-lime);
+  --sidebar-primary-foreground: #0a1550;
+  --sidebar-accent: #1e2875;
+  --sidebar-accent-foreground: oklch(0.981 0.004 264);
+  --sidebar-border: #1e2875;
+  --sidebar-ring: var(--mkt-lime);
+
+  font-family: var(--font-mkt-sans), system-ui, sans-serif;
+  @apply bg-background text-foreground antialiased;
+}
+
+[data-surface="app"] .text-title,
+[data-surface="app"] .text-display,
+[data-surface="app"] .text-heading {
+  font-family: var(--font-mkt-display), Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+[data-surface="app"] ::selection {
+  background-color: color-mix(in oklab, var(--mkt-lime) 55%, white);
+  color: var(--mkt-navy);
+}
+
+/* ── Marketing surface (public site) ── */
+[data-surface="marketing"] {
+  --mkt-navy: #0a1550;
+  --mkt-navy-muted: #1e2875;
+  --mkt-lime: #c5f042;
+  --mkt-coral: #ff6b5b;
+  --mkt-sky: #4ec0e8;
+  --mkt-sun: #ffe24a;
+  --mkt-pink: #ff4d8d;
+  --mkt-cta: #e85d04;
+  --mkt-cta-hover: #cf5203;
+  --mkt-block-lime: #c5f042;
+  --mkt-block-coral: #ff8a7a;
+  --mkt-block-sky: #7dd3fc;
+  --mkt-block-sun: #fff176;
+  --mkt-block-pink: #ff80ab;
+
+  --primary: var(--mkt-cta);
+  --primary-foreground: #ffffff;
+  --ring: var(--mkt-cta);
+  --foreground: var(--mkt-navy);
+  --muted-foreground: color-mix(in oklab, var(--mkt-navy) 55%, white);
+  --border: color-mix(in oklab, var(--mkt-navy) 12%, white);
+  --input: color-mix(in oklab, var(--mkt-navy) 12%, white);
+  --accent: color-mix(in oklab, var(--mkt-sun) 35%, white);
+  --accent-foreground: var(--mkt-navy);
+
+  @apply bg-white font-mkt-sans text-mkt-navy antialiased;
+}
+
+[data-surface="marketing"] .font-mkt-display {
+  font-family: var(--font-mkt-display), Georgia, "Times New Roman", serif;
+}
+
+[data-surface="marketing"] .font-mkt-sans {
+  font-family: var(--font-mkt-sans), system-ui, sans-serif;
+}
+
+[data-surface="marketing"] .prose-marketing {
+  @apply max-w-prose leading-relaxed text-mkt-navy/90;
+}
+
+[data-surface="marketing"] .prose-marketing h2 {
+  @apply font-mkt-display mt-10 mb-4 text-3xl text-mkt-navy;
+}
+
+[data-surface="marketing"] .prose-marketing h3 {
+  @apply mt-6 mb-2 text-xl font-semibold text-mkt-navy;
+}
+
+[data-surface="marketing"] .prose-marketing p {
+  @apply mb-4;
+}
+
+[data-surface="marketing"] .prose-marketing a {
+  @apply text-mkt-cta underline-offset-2 hover:underline;
+}
+
+[data-surface="marketing"] .mkt-btn-primary {
+  @apply inline-flex items-center justify-center rounded-md bg-mkt-cta px-6 py-3 text-sm font-bold text-white transition-all duration-300 hover:bg-mkt-cta-hover hover:shadow-lg hover:shadow-mkt-cta/30;
+}
+
+[data-surface="marketing"] .mkt-btn-secondary {
+  @apply inline-flex items-center justify-center rounded-md border-2 border-mkt-navy px-6 py-3 text-sm font-bold text-mkt-navy transition-all duration-300 hover:bg-mkt-navy hover:text-white;
+}
+
+@keyframes mkt-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--mkt-y, 24px));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[data-surface="marketing"] .mkt-animate-fade-in {
+  animation: mkt-fade-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-surface="marketing"] .mkt-animate-fade-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes mkt-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 72%;
+  }
+}
+
+[data-surface="marketing"] .mkt-progress-bar {
+  width: 72%;
+  animation: mkt-progress 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.6s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-surface="marketing"] .mkt-progress-bar {
+    animation: none;
+    width: 72%;
+  }
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
 }

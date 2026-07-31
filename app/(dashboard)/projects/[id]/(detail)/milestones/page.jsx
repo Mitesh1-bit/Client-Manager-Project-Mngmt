@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { normalizeProjectPlan } from "@/app/lib/api/project-plan";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { ProjectPlanDocument } from "@/app/lib/graphql/generated/documents";
 
@@ -13,11 +14,13 @@ export default async function ProjectMilestonesPage({ params }) {
 
   if (!data.project) notFound();
 
+  const plan = normalizeProjectPlan(data.project);
+
   return (
     <ProjectPlan
-      projectId={data.project.id}
-      phases={data.project.phases}
-      milestones={data.project.milestones}
+      projectId={plan.project.id}
+      phases={plan.phases}
+      milestones={plan.milestones}
     />
   );
 }

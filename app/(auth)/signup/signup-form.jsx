@@ -1,15 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useApolloClient, useMutation } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { CircleCheck } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { z } from "zod";
 
 import { FormField } from "@/app/components/domain/form-field";
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
+import { establishSession } from "@/app/lib/auth/establish-session";
+import { SignupDocument } from "@/app/lib/graphql/generated/documents";
+import { formatGraphqlError } from "@/app/lib/graphql/format-error";
 
 const schema = z
   .object({
@@ -29,7 +34,10 @@ const schema = z
   });
 
 export function SignupForm() {
-  const [submitted, setSubmitted] = useState(false);
+  const searchParams = useSearchParams();
+  const apollo = useApolloClient();
+  const [submitError, setSubmitError] = useState(null);
+  const [signup] = useMutation(SignupDocument);
 
   const {
     register,
@@ -46,21 +54,45 @@ export function SignupForm() {
     },
   });
 
-  if (submitted) {
-    return (
-      <Alert>
-        <CircleCheck />
-        <AlertTitle>Check your inbox</AlertTitle>
-        <AlertDescription>
-          Signup isn&apos;t wired to the API yet. Once the backend exposes an organisation signup
-          mutation, this form will create your workspace and send a verification email.
-        </AlertDescription>
-      </Alert>
-    );
+  async function onSubmit(values) {
+    setSubmitError(null);
+    try {
+      const { data } = await signup({
+        variables: {
+          organizationName: values.organizationName,
+          fullName: values.fullName,
+          email: values.email,
+          password: values.password,
+        },
+      });
+      const payload = data?.signup;
+      if (!payload?.accessToken) {
+        throw new Error("We couldn't create your workspace. Try again.");
+      }
+
+      await establishSession(apollo, payload.accessToken, searchParams.get("next"));
+    } catch (error) {
+      setSubmitError(formatGraphqlError(error, "Something went wrong. Try again."));
+    }
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit(() => setSubmitted(true))} className="space-y-5">
+    <form
+      method="post"
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault();
+        void handleSubmit(onSubmit)(event);
+      }}
+      className="space-y-5"
+    >
+      {submitError ? (
+        <Alert variant="destructive">
+          <AlertTitle>Couldn&apos;t create your workspace</AlertTitle>
+          <AlertDescription>{submitError}</AlertDescription>
+        </Alert>
+      ) : null}
+
       <FormField label="Agency or company name" error={errors.organizationName?.message} required>
         {(field) => (
           <Input
@@ -122,7 +154,14 @@ export function SignupForm() {
       </FormField>
 
       <Button type="submit" size="lg" className="h-10 w-full" disabled={isSubmitting}>
-        Create workspace
+        {isSubmitting ? (
+          <>
+            <LoaderCircle aria-hidden="true" className="animate-spin" />
+            Creating workspace…
+          </>
+        ) : (
+          "Create workspace"
+        )}
       </Button>
     </form>
   );

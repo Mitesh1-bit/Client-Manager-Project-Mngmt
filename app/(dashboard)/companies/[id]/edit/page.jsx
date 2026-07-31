@@ -45,8 +45,8 @@ export default async function EditCompanyPage({ params }) {
       <CompanyForm
         mode="edit"
         company={data.company}
-        owners={options.users}
-        tags={options.tags}
+        owners={options?.users ?? []}
+        tags={options?.tags ?? []}
       />
     </div>
   );

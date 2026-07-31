@@ -5,6 +5,8 @@ import { EmptyState } from "@/app/components/domain/states";
 import { StatusBadge } from "@/app/components/domain/status-badge";
 import { Progress } from "@/app/components/ui/progress";
 import { formatCurrency, formatDate, initials } from "@/app/lib/format";
+import { normalizeProject } from "@/app/lib/api/normalize";
+import { asArray } from "@/app/lib/api/safe-list";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { CompanyProjectsDocument } from "@/app/lib/graphql/generated/documents";
 import { cn } from "@/app/lib/utils";
@@ -19,7 +21,7 @@ export default async function CompanyProjectsPage({ params }) {
   });
 
   if (!data.company) notFound();
-  const projects = data.company.projects;
+  const projects = asArray(data.projects).map((project) => normalizeProject(project));
 
   if (projects.length === 0) {
     return (

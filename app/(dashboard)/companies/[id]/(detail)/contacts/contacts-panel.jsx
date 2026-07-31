@@ -49,6 +49,8 @@ import {
   SheetTitle,
 } from "@/app/components/ui/sheet";
 import { displayUrl, formatRelativeDays } from "@/app/lib/format";
+import { normalizeContact } from "@/app/lib/api/normalize";
+import { asArray } from "@/app/lib/api/safe-list";
 import { cn } from "@/app/lib/utils";
 import {
   ArchiveContactDocument,
@@ -56,7 +58,7 @@ import {
 } from "@/app/lib/graphql/generated/documents";
 
 import { ContactForm } from "./contact-form";
-import { contactToFormValues, toContactInput } from "./contact-schema";
+import { contactToFormValues, toUpdateContactVariables } from "./contact-schema";
 
 const CHANNEL_LABELS = { EMAIL: "Email", PHONE: "Phone", MEETING: "Meeting" };
 
@@ -64,28 +66,30 @@ const CHANNEL_LABELS = { EMAIL: "Email", PHONE: "Phone", MEETING: "Meeting" };
  * Contacts nested under a company. One side panel serves three jobs — view,
  * create and edit — so the user never loses their place in the list.
  */
-export function ContactsPanel({ companyId, companyName, contacts }) {
+export function ContactsPanel({ companyId, companyName, contacts = [] }) {
   const router = useRouter();
   const [panel, setPanel] = useState(null); // { mode: 'view' | 'edit' | 'create', contactId? }
   const [archiveTarget, setArchiveTarget] = useState(null);
+
+  const rows = useMemo(
+    () => asArray(contacts).map((contact) => normalizeContact(contact)),
+    [contacts],
+  );
 
   const [updateContact] = useMutation(UpdateContactDocument);
   const [archiveContact] = useMutation(ArchiveContactDocument);
 
   const selected = panel?.contactId
-    ? contacts.find((contact) => contact.id === panel.contactId)
+    ? rows.find((contact) => contact.id === panel.contactId)
     : null;
 
   async function makePrimary(contact) {
     try {
       await updateContact({
-        variables: {
-          id: contact.id,
-          input: toContactInput(
-            { ...contactToFormValues(contact), isPrimary: true },
-            companyId,
-          ),
-        },
+        variables: toUpdateContactVariables(contact.id, {
+          ...contactToFormValues(contact),
+          isPrimary: true,
+        }),
       });
       toast.success(`${contact.fullName} is now the primary contact`);
       router.refresh();
@@ -243,7 +247,7 @@ export function ContactsPanel({ companyId, companyName, contacts }) {
     <>
       <div className="mb-4 flex items-center justify-between gap-3">
         <p className="text-caption text-muted-foreground" aria-live="polite">
-          {contacts.length} {contacts.length === 1 ? "contact" : "contacts"} at {companyName}
+          {rows.length} {rows.length === 1 ? "contact" : "contacts"} at {companyName}
         </p>
         <Button size="sm" onClick={() => setPanel({ mode: "create" })}>
           <Plus aria-hidden="true" />
@@ -252,7 +256,7 @@ export function ContactsPanel({ companyId, companyName, contacts }) {
       </div>
 
       <DataTable
-        data={contacts}
+        data={rows}
         columns={columns}
         getRowId={(row) => row.id}
         onRowClick={(row) => setPanel({ mode: "view", contactId: row.id })}
@@ -273,10 +277,10 @@ export function ContactsPanel({ companyId, companyName, contacts }) {
       />
 
       <Sheet open={Boolean(panel)} onOpenChange={(open) => !open && setPanel(null)}>
-        <SheetContent className="w-full gap-0 p-0 sm:max-w-xl">
+        <SheetContent className="flex h-svh max-h-svh w-full max-w-[min(100vw,42rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
           {panel?.mode === "create" ? (
-            <>
-              <SheetHeader className="border-b">
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+              <SheetHeader className="shrink-0 border-b">
                 <SheetTitle>Add a contact</SheetTitle>
                 <SheetDescription>New contact at {companyName}.</SheetDescription>
               </SheetHeader>
@@ -285,12 +289,12 @@ export function ContactsPanel({ companyId, companyName, contacts }) {
                 onDone={() => setPanel(null)}
                 onCancel={() => setPanel(null)}
               />
-            </>
+            </div>
           ) : null}
 
           {panel?.mode === "edit" && selected ? (
-            <>
-              <SheetHeader className="border-b">
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+              <SheetHeader className="shrink-0 border-b">
                 <SheetTitle>Edit {selected.fullName}</SheetTitle>
                 <SheetDescription>Contact at {companyName}.</SheetDescription>
               </SheetHeader>
@@ -300,7 +304,7 @@ export function ContactsPanel({ companyId, companyName, contacts }) {
                 onDone={() => setPanel({ mode: "view", contactId: selected.id })}
                 onCancel={() => setPanel({ mode: "view", contactId: selected.id })}
               />
-            </>
+            </div>
           ) : null}
 
           {panel?.mode === "view" && selected ? (
@@ -336,9 +340,9 @@ export function ContactsPanel({ companyId, companyName, contacts }) {
 
 function ContactDetail({ contact, onEdit }) {
   return (
-    <>
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {/* pr-12 keeps the header clear of the sheet's own close button. */}
-      <SheetHeader className="border-b pr-12">
+      <SheetHeader className="shrink-0 border-b pr-12">
         <div className="flex items-start gap-3">
           <EntityAvatar name={contact.fullName} size="md" />
           <div className="min-w-0 flex-1">
@@ -356,7 +360,7 @@ function ContactDetail({ contact, onEdit }) {
         </div>
       </SheetHeader>
 
-      <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5">
+      <div className="min-h-0 flex-1 space-y-6 overflow-x-hidden overflow-y-auto overscroll-contain px-5 py-5 pb-6">
         <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-caption">
           <Field label="Email">
             <a href={`mailto:${contact.email}`} className="rounded-sm text-primary hover:underline focus-ring">
@@ -391,21 +395,21 @@ function ContactDetail({ contact, onEdit }) {
 
         <section>
           <h3 className="mb-3 text-subheading">Touchpoints</h3>
-          {contact.touchpoints.length === 0 ? (
+          {(contact.touchpoints ?? []).length === 0 ? (
             <p className="text-caption text-muted-foreground">
               No touchpoints logged with this person yet.
             </p>
           ) : (
-            <TouchpointTimeline touchpoints={contact.touchpoints} />
+            <TouchpointTimeline touchpoints={contact.touchpoints ?? []} />
           )}
         </section>
 
         <section>
           <h3 className="mb-3 text-subheading">History</h3>
-          <ActivityTimeline entries={contact.activity} />
+          <ActivityTimeline entries={contact.activity ?? []} />
         </section>
       </div>
-    </>
+    </div>
   );
 }
 

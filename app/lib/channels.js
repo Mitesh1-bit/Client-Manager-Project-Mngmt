@@ -25,6 +25,9 @@ export const CHANNEL_OPTIONS = Object.entries(CHANNEL_LABELS).map(([value, label
   label,
 }));
 
+/** Sequence builder channels — email steps are disabled while mail is off. */
+export const SEQUENCE_CHANNEL_OPTIONS = CHANNEL_OPTIONS.filter(({ value }) => value !== "EMAIL");
+
 export function channelIcon(channel) {
   return CHANNEL_ICONS[channel] ?? CalendarClock;
 }

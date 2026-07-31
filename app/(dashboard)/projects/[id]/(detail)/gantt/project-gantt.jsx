@@ -32,10 +32,10 @@ const PHASE_HEADER_HEIGHT = 32;
 export function ProjectGantt({
   projectId,
   project,
-  phases,
-  tasks,
-  milestones,
-  users,
+  phases = [],
+  tasks = [],
+  milestones = [],
+  users = [],
 }) {
   const [panel, setPanel] = useState(null);
   const scrollRef = useRef(null);

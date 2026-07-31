@@ -29,7 +29,12 @@ import {
 } from "@/app/lib/graphql/generated/documents";
 import { listStatuses } from "@/app/lib/status";
 
-import { projectSchema, projectToFormValues } from "./project-schema";
+import {
+  projectSchema,
+  projectToFormValues,
+  toCreateProjectVariables,
+  toUpdateProjectVariables,
+} from "./project-schema";
 
 const STATUS_OPTIONS = listStatuses("projectStatus");
 const PRIORITY_OPTIONS = listStatuses("priority");
@@ -39,7 +44,7 @@ const PRIORITY_OPTIONS = listStatuses("priority");
  * RHF + Zod, `<FormField>` for label/error wiring, sections in `<SectionCard>`,
  * server errors above a sticky action bar.
  */
-export function ProjectForm({ mode, project, companies, users, tags }) {
+export function ProjectForm({ mode, project, companies = [], users = [], tags = [] }) {
   const router = useRouter();
   const [serverError, setServerError] = useState(null);
 
@@ -64,13 +69,15 @@ export function ProjectForm({ mode, project, companies, users, tags }) {
     try {
       if (mode === "create") {
         const { data } = await createProject({
-          variables: { input },
+          variables: toCreateProjectVariables(input),
           update: (cache) => cache.evict({ fieldName: "projects" }),
         });
         toast.success(`${data.createProject.name} created`);
         router.push(`/projects/${data.createProject.id}`);
       } else {
-        const { data } = await updateProject({ variables: { id: project.id, input } });
+        const { data } = await updateProject({
+          variables: toUpdateProjectVariables(project.id, input),
+        });
         toast.success(`${data.updateProject.name} updated`);
         router.push(`/projects/${project.id}`);
       }

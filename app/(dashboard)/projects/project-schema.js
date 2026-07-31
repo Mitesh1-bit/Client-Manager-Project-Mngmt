@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { toApiStatus } from "@/app/lib/api/normalize";
+
 /**
  * Client-side validation for the project form. Mirrors `ProjectInput`; the API
  * stays the source of truth.
@@ -54,15 +56,42 @@ export const projectSchema = z
 
 export function projectToFormValues(project) {
   return {
-    companyId: project?.company?.id ?? "",
+    companyId: project?.company?.id ?? project?.companyId ?? "",
     name: project?.name ?? "",
     description: project?.description ?? "",
     status: project?.status ?? "PLANNING",
     priority: project?.priority ?? "MEDIUM",
-    projectManagerId: project?.projectManager?.id ?? "",
+    projectManagerId: project?.projectManager?.id ?? project?.projectManagerId ?? "",
     startDate: project?.startDate ?? "",
     endDate: project?.endDate ?? "",
     budget: project?.budget ?? "",
     tagIds: project?.tags?.map((tag) => tag.id) ?? [],
+  };
+}
+
+/** Maps validated form values to backend createProject variables. */
+export function toCreateProjectVariables(values) {
+  return {
+    companyId: values.companyId,
+    name: values.name,
+    description: values.description,
+    status: toApiStatus("projectStatus", values.status),
+    priority: values.priority ? String(values.priority).toLowerCase() : null,
+    projectManagerId: values.projectManagerId || null,
+    budget: values.budget,
+    health: toApiStatus("projectHealth", "ON_TRACK"),
+  };
+}
+
+/** Maps validated form values to backend updateProject variables. */
+export function toUpdateProjectVariables(id, values) {
+  return {
+    id,
+    name: values.name,
+    description: values.description,
+    status: toApiStatus("projectStatus", values.status),
+    priority: values.priority ? String(values.priority).toLowerCase() : null,
+    budget: values.budget,
+    health: toApiStatus("projectHealth", "ON_TRACK"),
   };
 }

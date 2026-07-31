@@ -10,7 +10,7 @@ const localRequire = createRequire(__filename);
  * @type {import('@graphql-codegen/cli').CodegenConfig}
  */
 module.exports = {
-  schema: "./schema.graphql",
+  schema: process.env.GRAPHQL_SCHEMA || "./schema.backend.graphql",
   documents: ["app/**/*.graphql"],
   ignoreNoDocuments: false,
   pluginLoader: async (name) => {

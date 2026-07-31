@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 
+import { pickList } from "@/app/lib/api/safe-list";
+import { normalizeProjectPlan, usersByIdFromData } from "@/app/lib/api/project-plan";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   ProjectFormOptionsDocument,
@@ -20,14 +22,16 @@ export default async function ProjectCalendarPage({ params }) {
 
   if (!data.project) notFound();
 
+  const plan = normalizeProjectPlan(data.project, usersByIdFromData(options));
+
   return (
     <ProjectCalendar
-      projectId={data.project.id}
-      project={data.project}
-      tasks={data.project.tasks}
-      phases={data.project.phases}
-      milestones={data.project.milestones}
-      users={options.users}
+      projectId={plan.project.id}
+      project={plan.project}
+      tasks={plan.tasks}
+      phases={plan.phases}
+      milestones={plan.milestones}
+      users={pickList(options, "users")}
     />
   );
 }

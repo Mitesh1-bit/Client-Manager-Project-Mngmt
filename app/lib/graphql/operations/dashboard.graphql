@@ -1,24 +1,19 @@
 query FoundationSummary {
-  companies(page: { pageSize: 100 }) {
-    totalCount
-    nodes {
-      id
-      name
-      status
-      healthScore
-    }
-  }
-  projects(page: { pageSize: 100 }) {
-    totalCount
-    nodes {
-      id
-      name
-      status
-      health
-    }
-  }
-  changeRequests {
+  companies {
     id
+    name
     status
+    healthScore
+  }
+  projects {
+    id
+    name
+    status
+    health
+  }
+  changeRequestDashboard {
+    openCount
+    pendingApprovalCount
+    overdueCount
   }
 }

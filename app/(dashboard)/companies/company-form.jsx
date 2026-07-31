@@ -34,6 +34,8 @@ import {
   companySchema,
   companyToFormValues,
   toCompanyInput,
+  toCreateCompanyVariables,
+  toUpdateCompanyVariables,
 } from "./company-schema";
 
 const STATUS_OPTIONS = listStatuses("companyStatus");
@@ -46,7 +48,7 @@ const STATUS_OPTIONS = listStatuses("companyStatus");
  *
  * @param {{ mode: 'create' | 'edit', company?: unknown, owners: unknown[], tags: unknown[] }} props
  */
-export function CompanyForm({ mode, company, owners, tags }) {
+export function CompanyForm({ mode, company, owners = [], tags = [] }) {
   const router = useRouter();
   const [serverError, setServerError] = useState(null);
 
@@ -73,14 +75,13 @@ export function CompanyForm({ mode, company, owners, tags }) {
     try {
       if (mode === "create") {
         const { data } = await createCompany({
-          variables: { input },
-          // The new row invalidates every cached page of the list.
+          variables: toCreateCompanyVariables(values),
           update: (cache) => cache.evict({ fieldName: "companies" }),
         });
         toast.success(`${data.createCompany.name} created`);
         router.push(`/companies/${data.createCompany.id}`);
       } else {
-        const { data } = await updateCompany({ variables: { id: company.id, input } });
+        const { data } = await updateCompany({ variables: toUpdateCompanyVariables(company.id, values) });
         toast.success(`${data.updateCompany.name} updated`);
         router.push(`/companies/${company.id}`);
       }

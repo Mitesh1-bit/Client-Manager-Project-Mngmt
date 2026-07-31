@@ -1,5 +1,11 @@
 export const SESSION_COOKIE = "cpm_session";
 export const REFRESH_COOKIE = "cpm_refresh";
+export const PORTAL_REFRESH_COOKIE = "cpm_portal_refresh";
+
+const ACTOR_SCOPE = {
+  internal: "INTERNAL",
+  portal: "PORTAL",
+};
 
 function base64UrlDecode(segment) {
   const padded = segment.replace(/-/g, "+").replace(/_/g, "/");
@@ -12,8 +18,10 @@ function base64UrlDecode(segment) {
  * Reads the claims out of an access token without verifying its signature.
  * Verification is the API's job — this only drives navigation and chrome.
  *
+ * Normalizes backend JWT (`actor_type`) and mock tokens (`scope`).
+ *
  * @param {string | undefined | null} token
- * @returns {{ sub: string, scope: 'INTERNAL' | 'PORTAL', email: string, name: string, role: string, companyId?: string, exp: number } | null}
+ * @returns {{ sub: string, scope: 'INTERNAL' | 'PORTAL', email?: string, name?: string, role?: string, companyId?: string, org_id?: string, actor_type?: string, exp: number } | null}
  */
 export function readTokenClaims(token) {
   if (!token) return null;
@@ -22,7 +30,18 @@ export function readTokenClaims(token) {
   try {
     const claims = JSON.parse(base64UrlDecode(segments[1]));
     if (!claims || typeof claims.sub !== "string") return null;
-    return claims;
+
+    const scope =
+      claims.scope === "INTERNAL" || claims.scope === "PORTAL"
+        ? claims.scope
+        : ACTOR_SCOPE[claims.actor_type] ?? null;
+    if (!scope) return null;
+
+    return {
+      ...claims,
+      scope,
+      companyId: claims.companyId ?? claims.company_id,
+    };
   } catch {
     return null;
   }

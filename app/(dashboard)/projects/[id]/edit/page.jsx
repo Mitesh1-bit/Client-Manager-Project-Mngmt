@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 
 import { PageHeader } from "@/app/components/domain/page-header";
+import { pickList } from "@/app/lib/api/safe-list";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   ProjectForEditDocument,
@@ -42,9 +43,9 @@ export default async function EditProjectPage({ params }) {
       <ProjectForm
         mode="edit"
         project={data.project}
-        companies={options.companies.nodes}
-        users={options.users}
-        tags={options.tags}
+        companies={pickList(options, "companies")}
+        users={pickList(options, "users")}
+        tags={pickList(options, "tags")}
       />
     </div>
   );

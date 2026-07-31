@@ -33,6 +33,7 @@ export function UserMenu({
   side = "bottom",
   className,
   compact = false,
+  scope = "INTERNAL",
 }) {
   return (
     <DropdownMenu>
@@ -71,7 +72,7 @@ export function UserMenu({
         <DropdownMenuItem disabled>Profile &amp; preferences</DropdownMenuItem>
         <DropdownMenuItem disabled>Notification settings</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <SignOutMenuItem />
+        <SignOutMenuItem scope={scope} />
       </DropdownMenuContent>
     </DropdownMenu>
   );

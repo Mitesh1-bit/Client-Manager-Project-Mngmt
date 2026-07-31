@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 
+import { normalizeContact } from "@/app/lib/api/normalize";
+import { asArray } from "@/app/lib/api/safe-list";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { CompanyContactsDocument } from "@/app/lib/graphql/generated/documents";
 
@@ -16,11 +18,13 @@ export default async function CompanyContactsPage({ params }) {
 
   if (!data.company) notFound();
 
+  const contacts = asArray(data.company.contacts).map((contact) => normalizeContact(contact));
+
   return (
     <ContactsPanel
       companyId={data.company.id}
       companyName={data.company.name}
-      contacts={data.company.contacts}
+      contacts={contacts}
     />
   );
 }

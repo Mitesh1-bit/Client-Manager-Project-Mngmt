@@ -20,10 +20,10 @@ import {
   SelectValue,
 } from "@/app/components/ui/select";
 import { Textarea } from "@/app/components/ui/textarea";
-import { CreateTaskDocument, UpdateTaskDocument } from "@/app/lib/graphql/generated/documents";
+import { CreateTaskDocument, CreatePhaseDocument, UpdateTaskDocument } from "@/app/lib/graphql/generated/documents";
 import { listStatuses } from "@/app/lib/status";
 
-import { taskSchema, taskToFormValues, toTaskInput } from "./task-schema";
+import { taskSchema, taskToFormValues, toCreateTaskVariables, toUpdateTaskVariables } from "./task-schema";
 
 const STATUS_OPTIONS = listStatuses("taskStatus");
 const PRIORITY_OPTIONS = listStatuses("priority");
@@ -33,12 +33,13 @@ const NONE = "__none__";
  * Task create/edit. Rendered inside the task sheet, so it lays out as a
  * scrolling body with a pinned action row rather than a page.
  */
-export function TaskForm({ projectId, task, defaults, phases, milestones, users, tasks, onDone, onCancel }) {
+export function TaskForm({ projectId, task, defaults, phases = [], milestones = [], users = [], tasks = [], onDone, onCancel }) {
   const router = useRouter();
   const mode = task ? "edit" : "create";
   const [serverError, setServerError] = useState(null);
 
   const [createTask] = useMutation(CreateTaskDocument);
+  const [createPhase] = useMutation(CreatePhaseDocument);
   const [updateTask] = useMutation(UpdateTaskDocument);
 
   const {
@@ -56,20 +57,37 @@ export function TaskForm({ projectId, task, defaults, phases, milestones, users,
     (candidate) => candidate.id !== task?.id && !candidate.parentTask,
   );
 
+  async function resolvePhaseId(values) {
+    if (values.phaseId) return values.phaseId;
+    if (phases.length > 0) return phases[0].id;
+
+    const { data } = await createPhase({
+      variables: {
+        projectId,
+        name: "General",
+        orderIndex: 0,
+        status: "not_started",
+      },
+    });
+    return data.createPhase.id;
+  }
+
   async function onSubmit(values) {
     setServerError(null);
-    const input = toTaskInput(values, projectId);
 
     try {
       if (mode === "create") {
+        const phaseId = await resolvePhaseId(values);
         const { data } = await createTask({
-          variables: { input },
+          variables: toCreateTaskVariables(values, projectId, phaseId),
           update: (cache) =>
-            cache.evict({ id: cache.identify({ __typename: "Project", id: projectId }) }),
+            cache.evict({ id: cache.identify({ __typename: "ProjectType", id: projectId }) }),
         });
         toast.success(`“${data.createTask.title}” added`);
       } else {
-        const { data } = await updateTask({ variables: { id: task.id, input } });
+        const { data } = await updateTask({
+          variables: toUpdateTaskVariables(task.id, values),
+        });
         toast.success(`“${data.updateTask.title}” updated`);
       }
       router.refresh();

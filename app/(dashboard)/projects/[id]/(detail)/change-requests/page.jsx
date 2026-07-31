@@ -4,6 +4,7 @@ import { GitPullRequestArrow } from "lucide-react";
 import { EmptyState } from "@/app/components/domain/states";
 import { StatusBadge } from "@/app/components/domain/status-badge";
 import { formatCurrency, formatRelativeDays, humanizeType } from "@/app/lib/format";
+import { normalizeChangeRequest } from "@/app/lib/api/normalize";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { ProjectChangeRequestsDocument } from "@/app/lib/graphql/generated/documents";
 import { cn } from "@/app/lib/utils";
@@ -19,9 +20,9 @@ export default async function ProjectChangeRequestsPage({ params }) {
 
   if (!data.project) notFound();
 
-  const requests = [...data.project.changeRequests].sort(
-    (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt),
-  );
+  const requests = [...(data.project.changeRequests ?? [])]
+    .map(normalizeChangeRequest)
+    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
   if (requests.length === 0) {
     return (

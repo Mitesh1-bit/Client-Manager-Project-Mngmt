@@ -16,7 +16,7 @@ import { humanize } from "@/app/lib/status";
  */
 export async function requireViewer(expectedScope) {
   const claims = await getSessionClaims();
-  if (!claims) redirect("/login");
+  if (!claims) redirect(expectedScope === "PORTAL" ? "/client-login" : "/login");
 
   let me = null;
   try {
@@ -26,7 +26,7 @@ export async function requireViewer(expectedScope) {
     me = null;
   }
 
-  if (!me) redirect("/login");
+  if (!me) redirect(expectedScope === "PORTAL" ? "/client-login" : "/login");
   if (me.scope !== expectedScope) redirect(me.scope === "PORTAL" ? "/portal" : "/");
 
   return {

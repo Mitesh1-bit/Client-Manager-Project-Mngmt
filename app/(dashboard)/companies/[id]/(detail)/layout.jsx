@@ -7,6 +7,7 @@ import { EntityAvatar } from "@/app/components/domain/entity-avatar";
 import { TagList } from "@/app/components/domain/tag-list";
 import { Button } from "@/app/components/ui/button";
 import { displayUrl } from "@/app/lib/format";
+import { normalizeCompany } from "@/app/lib/api/normalize";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { CompanyDetailHeaderDocument } from "@/app/lib/graphql/generated/documents";
 
@@ -28,7 +29,7 @@ export default async function CompanyDetailLayout({ children, params }) {
     variables: { id },
   });
 
-  const company = data.company;
+  const company = normalizeCompany(data.company);
   if (!company) notFound();
 
   const tabs = [
@@ -41,7 +42,7 @@ export default async function CompanyDetailLayout({ children, params }) {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       <div>
         <Link
           href="/companies"
@@ -84,7 +85,7 @@ export default async function CompanyDetailLayout({ children, params }) {
                 )}
               </div>
 
-              {company.tags.length ? <TagList tags={company.tags} className="mt-2.5" /> : null}
+              {(company.tags?.length ?? 0) > 0 ? <TagList tags={company.tags} className="mt-2.5" /> : null}
             </div>
           </div>
 
@@ -106,7 +107,7 @@ export default async function CompanyDetailLayout({ children, params }) {
 
       <DetailTabs tabs={tabs} />
 
-      {children}
+      <div className="min-w-0">{children}</div>
     </div>
   );
 }

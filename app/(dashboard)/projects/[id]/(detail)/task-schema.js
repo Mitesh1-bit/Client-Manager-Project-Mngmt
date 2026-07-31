@@ -65,6 +65,40 @@ export function taskToFormValues(task, defaults = {}) {
   };
 }
 
-export function toTaskInput(values, projectId) {
-  return { ...values, projectId };
+export function toCreateTaskVariables(values, projectId, phaseId) {
+  return {
+    projectId,
+    phaseId,
+    title: values.title,
+    milestoneId: values.milestoneId || undefined,
+    parentTaskId: values.parentTaskId || undefined,
+    assigneeId: values.assigneeId || undefined,
+    status: mapTaskStatus(values.status),
+    priority: mapPriority(values.priority),
+    estimatedHours: values.estimatedHours ?? undefined,
+  };
+}
+
+export function toUpdateTaskVariables(taskId, values) {
+  return {
+    id: taskId,
+    title: values.title,
+    status: mapTaskStatus(values.status),
+    priority: mapPriority(values.priority),
+    estimatedHours: values.estimatedHours ?? undefined,
+  };
+}
+
+function mapTaskStatus(status) {
+  const map = {
+    TODO: "todo",
+    IN_PROGRESS: "in_progress",
+    REVIEW: "review",
+    DONE: "done",
+  };
+  return map[status] ?? String(status).toLowerCase();
+}
+
+function mapPriority(priority) {
+  return String(priority).toLowerCase();
 }

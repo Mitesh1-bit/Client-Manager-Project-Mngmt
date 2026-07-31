@@ -10,6 +10,8 @@ import {
   CompanyFormOptionsDocument,
   CompanyListDocument,
 } from "@/app/lib/graphql/generated/documents";
+import { paginateList } from "@/app/lib/api/connection";
+import { filterCompanies, normalizeCompany } from "@/app/lib/api/normalize";
 import { hasActiveFilters, parseListParams, readList, readString } from "@/app/lib/list-params";
 
 import { CompaniesTable } from "./companies-table";
@@ -22,7 +24,17 @@ const FILTER_KEYS = ["q", "status", "tag", "owner"];
 
 export default async function CompaniesPage({ searchParams }) {
   const params = await searchParams;
-  const { data: options } = await getClient().query({ query: CompanyFormOptionsDocument });
+  let owners = [];
+  let tags = [];
+
+  try {
+    const { data: options } = await getClient().query({ query: CompanyFormOptionsDocument });
+    owners = options?.users ?? [];
+    tags = options?.tags ?? [];
+  } catch {
+    owners = [];
+    tags = [];
+  }
 
   return (
     <>
@@ -41,7 +53,7 @@ export default async function CompaniesPage({ searchParams }) {
       />
 
       <div className="space-y-4">
-        <CompaniesToolbar owners={options.users} tags={options.tags} />
+        <CompaniesToolbar owners={owners} tags={tags} />
 
         {/* Keyed on the query so changing a filter re-suspends and shows the
             skeleton, rather than leaving stale rows on screen. */}
@@ -66,22 +78,24 @@ async function CompaniesResults({ params }) {
   const filter = {
     search: readString(params, "q"),
     status: statuses.length ? statuses : null,
-    tagIds: tagIds.length ? tagIds : null,
     accountOwnerId: readString(params, "owner"),
   };
 
   const { data } = await getClient().query({
     query: CompanyListDocument,
-    variables: { filter, page: pageInput },
   });
 
-  const filtered = hasActiveFilters(params, FILTER_KEYS);
+  const normalized = (data.companies ?? []).map(normalizeCompany);
+  const filtered = filterCompanies(normalized, filter);
+  const connection = paginateList(filtered, pageInput);
+
+  const filteredActive = hasActiveFilters(params, FILTER_KEYS);
 
   return (
     <CompaniesTable
-      connection={data.companies}
+      connection={connection}
       sort={sort}
-      emptyState={filtered ? <NoMatches /> : <NoCompanies />}
+      emptyState={filteredActive ? <NoMatches /> : <NoCompanies />}
     />
   );
 }

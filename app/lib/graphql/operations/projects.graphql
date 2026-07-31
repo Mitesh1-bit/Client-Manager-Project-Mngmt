@@ -1,155 +1,129 @@
-fragment ProjectRow on Project {
+fragment TagFields on TagType {
+  id
+  name
+}
+
+fragment UserSummaryFields on UserSummaryType {
+  id
+  name
+  email
+  role
+  avatarUrl
+}
+
+fragment ProjectRow on ProjectType {
   id
   name
   status
   health
   priority
-  startDate
-  endDate
   budget
   actualCost
-  completionPercent
-  updatedAt
-  company {
-    id
-    name
-  }
-  projectManager {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
-  }
+  companyId
+  projectManagerId
 }
 
-fragment ProjectHeader on Project {
+fragment ProjectHeader on ProjectType {
   id
   name
   description
   status
   health
   priority
-  startDate
-  endDate
   budget
   actualCost
-  completionPercent
-  company {
-    id
-    name
-  }
-  projectManager {
-    id
-    name
-    avatarUrl
-  }
-  team {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
-  }
+  companyId
+  projectManagerId
 }
 
-fragment TaskCard on Task {
+fragment PhaseFields on PhaseType {
   id
+  projectId
+  name
+  orderIndex
+  status
+}
+
+fragment MilestoneFields on MilestoneType {
+  id
+  phaseId
   title
   status
+  orderIndex
+}
+
+fragment TaskFields on TaskType {
+  id
+  projectId
+  phaseId
+  milestoneId
+  parentTaskId
+  title
+  description
+  assigneeId
+  status
   priority
-  startDate
-  dueDate
   estimatedHours
   actualHours
-  orderIndex
-  assignee {
-    id
-    name
-    avatarUrl
-  }
-  phase {
-    id
-    name
-  }
-  milestone {
-    id
-    title
-  }
   subtasks {
     id
     title
     status
-    orderIndex
-    assignee {
-      id
-      name
-    }
+    assigneeId
+    parentTaskId
   }
   dependencies {
     id
     type
-    dependsOnTask {
-      id
-      title
-      status
-      dueDate
-    }
+    dependsOnTaskId
   }
 }
 
-fragment TaskDetail on Task {
-  ...TaskCard
-  description
-  parentTask {
-    id
-    title
+query ProjectList($companyId: ID) {
+  projects(companyId: $companyId) {
+    ...ProjectRow
   }
-}
-
-fragment MilestoneFields on Milestone {
-  id
-  title
-  description
-  dueDate
-  status
-  requiresClientApproval
-  approvedAt
-  orderIndex
-  tasks {
+  companies {
     id
-    title
-    status
+    name
   }
-  approvals {
-    id
-    status
-    approverName
-    decidedAt
-  }
-}
-
-query ProjectList($filter: ProjectFilter, $page: PageInput) {
-  projects(filter: $filter, page: $page) {
-    totalCount
-    pageInfo {
-      page
-      pageSize
-      totalPages
-      hasNextPage
-      hasPreviousPage
-    }
-    nodes {
-      ...ProjectRow
-    }
+  users {
+    ...UserSummaryFields
   }
 }
 
 query ProjectDetailHeader($id: ID!) {
   project(id: $id) {
     ...ProjectHeader
+  }
+  companies {
+    id
+    name
+  }
+  users {
+    ...UserSummaryFields
+  }
+}
+
+query ProjectPlan($id: ID!) {
+  project(id: $id) {
+    id
+    name
+    phases {
+      ...PhaseFields
+      milestones {
+        ...MilestoneFields
+      }
+      tasks {
+        ...TaskFields
+      }
+    }
+    tasks {
+      ...TaskFields
+    }
+  }
+  users {
+    ...UserSummaryFields
   }
 }
 
@@ -158,196 +132,214 @@ query ProjectBoard($id: ID!) {
     id
     name
     tasks {
-      ...TaskCard
-      parentTask {
-        id
-      }
+      ...TaskFields
     }
+  }
+  users {
+    ...UserSummaryFields
   }
 }
 
-query ProjectPlan($id: ID!) {
-  project(id: $id) {
+query ProjectFormOptions {
+  companies {
     id
     name
-    startDate
-    endDate
-    phases {
-      id
-      name
-      orderIndex
-      startDate
-      dueDate
-      status
-      milestones {
-        ...MilestoneFields
-      }
-      tasks {
-        ...TaskCard
-        parentTask {
-          id
-        }
-      }
-    }
-    tasks {
-      ...TaskCard
-      parentTask {
-        id
-      }
-    }
-    milestones {
-      ...MilestoneFields
-      phase {
-        id
-        name
-      }
-    }
   }
-}
-
-query ProjectChangeRequests($id: ID!) {
-  project(id: $id) {
-    id
-    name
-    changeRequests {
-      id
-      reference
-      title
-      type
-      status
-      priority
-      impactCost
-      impactTimelineDays
-      createdAt
-      updatedAt
-      requestedByContact {
-        id
-        fullName
-      }
-      assignedPm {
-        id
-        name
-      }
-    }
+  users {
+    ...UserSummaryFields
   }
 }
 
 query ProjectForEdit($id: ID!) {
   project(id: $id) {
-    id
-    name
-    description
-    status
-    priority
-    startDate
-    endDate
-    budget
-    company {
-      id
-      name
-    }
-    projectManager {
-      id
-    }
-    tags {
-      id
-    }
-  }
-}
-
-query ProjectFormOptions {
-  users {
-    id
-    name
-    email
-    avatarUrl
-  }
-  tags {
-    ...TagFields
-  }
-  companies(page: { page: 1, pageSize: 100, sortBy: "name" }) {
-    nodes {
-      id
-      name
-    }
-  }
-}
-
-mutation CreateProject($input: ProjectInput!) {
-  createProject(input: $input) {
-    ...ProjectRow
-  }
-}
-
-mutation UpdateProject($id: ID!, $input: ProjectInput!) {
-  updateProject(id: $id, input: $input) {
-    ...ProjectRow
     ...ProjectHeader
   }
 }
 
-mutation CreateTask($input: TaskInput!) {
-  createTask(input: $input) {
-    ...TaskDetail
+mutation CreateProject(
+  $companyId: ID!
+  $name: String!
+  $description: String
+  $status: String!
+  $priority: String
+  $projectManagerId: ID
+  $budget: Float
+  $health: String
+) {
+  createProject(
+    companyId: $companyId
+    name: $name
+    description: $description
+    status: $status
+    priority: $priority
+    projectManagerId: $projectManagerId
+    budget: $budget
+    health: $health
+  ) {
+    ...ProjectRow
   }
 }
 
-mutation UpdateTask($id: ID!, $input: TaskInput!) {
-  updateTask(id: $id, input: $input) {
-    ...TaskDetail
+mutation UpdateProject(
+  $id: ID!
+  $name: String
+  $description: String
+  $status: String
+  $priority: String
+  $budget: Float
+  $health: String
+) {
+  updateProject(
+    id: $id
+    name: $name
+    description: $description
+    status: $status
+    priority: $priority
+    budget: $budget
+    health: $health
+  ) {
+    ...ProjectHeader
   }
 }
 
-mutation UpdateTaskStatus($id: ID!, $status: TaskStatus!, $orderIndex: Int!) {
-  updateTaskStatus(id: $id, status: $status, orderIndex: $orderIndex) {
-    id
-    status
-    orderIndex
+mutation CreatePhase($projectId: ID!, $name: String!, $orderIndex: Int!, $status: String!) {
+  createPhase(projectId: $projectId, name: $name, orderIndex: $orderIndex, status: $status) {
+    ...PhaseFields
   }
 }
 
-mutation CreatePhase($input: PhaseInput!) {
-  createPhase(input: $input) {
-    id
-    name
-    orderIndex
-    startDate
-    dueDate
-    status
+mutation UpdatePhase($id: ID!, $name: String, $orderIndex: Int, $status: String) {
+  updatePhase(id: $id, name: $name, orderIndex: $orderIndex, status: $status) {
+    ...PhaseFields
   }
 }
 
-mutation UpdatePhase($id: ID!, $input: PhaseInput!) {
-  updatePhase(id: $id, input: $input) {
-    id
-    name
-    orderIndex
-    startDate
-    dueDate
-    status
-  }
-}
-
-mutation CreateMilestone($input: MilestoneInput!) {
-  createMilestone(input: $input) {
+mutation CreateMilestone(
+  $phaseId: ID!
+  $title: String!
+  $orderIndex: Int!
+  $status: String!
+) {
+  createMilestone(phaseId: $phaseId, title: $title, orderIndex: $orderIndex, status: $status) {
     ...MilestoneFields
   }
 }
 
-mutation UpdateMilestone($id: ID!, $input: MilestoneInput!) {
-  updateMilestone(id: $id, input: $input) {
+mutation UpdateMilestone($id: ID!, $title: String, $orderIndex: Int, $status: String) {
+  updateMilestone(id: $id, title: $title, orderIndex: $orderIndex, status: $status) {
     ...MilestoneFields
   }
 }
 
-mutation AddTaskDependency($taskId: ID!, $dependsOnTaskId: ID!, $type: DependencyType!) {
-  addTaskDependency(taskId: $taskId, dependsOnTaskId: $dependsOnTaskId, type: $type) {
-    ...TaskDetail
+mutation CreateTask(
+  $projectId: ID!
+  $phaseId: ID!
+  $title: String!
+  $milestoneId: ID
+  $parentTaskId: ID
+  $assigneeId: ID
+  $status: String!
+  $priority: String!
+  $estimatedHours: Float
+) {
+  createTask(
+    projectId: $projectId
+    phaseId: $phaseId
+    title: $title
+    milestoneId: $milestoneId
+    parentTaskId: $parentTaskId
+    assigneeId: $assigneeId
+    status: $status
+    priority: $priority
+    estimatedHours: $estimatedHours
+  ) {
+    ...TaskFields
+  }
+}
+
+mutation UpdateTask(
+  $id: ID!
+  $title: String
+  $status: String
+  $priority: String
+  $estimatedHours: Float
+  $actualHours: Float
+) {
+  updateTask(
+    id: $id
+    title: $title
+    status: $status
+    priority: $priority
+    estimatedHours: $estimatedHours
+    actualHours: $actualHours
+  ) {
+    ...TaskFields
+  }
+}
+
+mutation UpdateTaskStatus($id: ID!, $status: String!) {
+  updateTask(id: $id, status: $status) {
+    ...TaskFields
+  }
+}
+
+mutation AddTaskDependency(
+  $projectId: ID!
+  $taskId: ID!
+  $dependsOnTaskId: ID!
+  $type: String!
+) {
+  addTaskDependency(
+    projectId: $projectId
+    taskId: $taskId
+    dependsOnTaskId: $dependsOnTaskId
+    type: $type
+  ) {
+    id
+    taskId
+    dependsOnTaskId
+    type
+  }
+}
+
+query ProjectChangeRequests($projectId: ID!) {
+  changeRequests(projectId: $projectId) {
+    id
+    title
+    status
+    priority
+    type
+    createdAt
+  }
+}
+
+query ProjectCalendar($id: ID!) {
+  project(id: $id) {
+    id
+    tasks {
+      ...TaskFields
+    }
+  }
+}
+
+query ProjectGantt($id: ID!) {
+  project(id: $id) {
+    id
+    phases {
+      ...PhaseFields
+      milestones {
+        ...MilestoneFields
+      }
+      tasks {
+        ...TaskFields
+      }
+    }
+  }
+  users {
+    ...UserSummaryFields
   }
 }
 
 mutation RemoveTaskDependency($id: ID!) {
-  removeTaskDependency(id: $id) {
-    ...TaskDetail
-  }
+  removeTaskDependency(id: $id)
 }

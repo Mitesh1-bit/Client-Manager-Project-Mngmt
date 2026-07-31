@@ -6,6 +6,9 @@ import { ListToolbar } from "@/app/components/domain/list-toolbar";
 import { PageHeader } from "@/app/components/domain/page-header";
 import { EmptyState, TableSkeleton } from "@/app/components/domain/states";
 import { Button } from "@/app/components/ui/button";
+import { paginateList } from "@/app/lib/api/connection";
+import { filterProjects, normalizeProject } from "@/app/lib/api/normalize";
+import { pickList } from "@/app/lib/api/safe-list";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   ProjectFormOptionsDocument,
@@ -23,7 +26,17 @@ const FILTER_KEYS = ["q", "status", "health", "priority", "pm", "company"];
 
 export default async function ProjectsPage({ searchParams }) {
   const params = await searchParams;
-  const { data: options } = await getClient().query({ query: ProjectFormOptionsDocument });
+  let users = [];
+  let companies = [];
+
+  try {
+    const { data: options } = await getClient().query({ query: ProjectFormOptionsDocument });
+    users = pickList(options, "users");
+    companies = pickList(options, "companies");
+  } catch {
+    users = [];
+    companies = [];
+  }
 
   const filters = [
     { key: "status", label: "Status", options: toOptions(listStatuses("projectStatus")) },
@@ -34,14 +47,14 @@ export default async function ProjectsPage({ searchParams }) {
       label: "PM",
       multi: false,
       allLabel: "Anyone",
-      options: options.users.map((user) => ({ value: user.id, label: user.name })),
+      options: users.map((user) => ({ value: user.id, label: user.name })),
     },
     {
       key: "company",
       label: "Client",
       multi: false,
       allLabel: "All clients",
-      options: options.companies.nodes.map((company) => ({
+      options: companies.map((company) => ({
         value: company.id,
         label: company.name,
       })),
@@ -99,12 +112,20 @@ async function ProjectResults({ params }) {
 
   const { data } = await getClient().query({
     query: ProjectListDocument,
-    variables: { filter, page: pageInput },
+    variables: { companyId: filter.companyId },
   });
+
+  const usersById = new Map((data.users ?? []).map((user) => [user.id, user]));
+  const companiesById = new Map((data.companies ?? []).map((company) => [company.id, company]));
+  const normalized = (data.projects ?? []).map((project) =>
+    normalizeProject(project, usersById, companiesById),
+  );
+  const filtered = filterProjects(normalized, filter);
+  const connection = paginateList(filtered, pageInput);
 
   return (
     <ProjectsTable
-      connection={data.projects}
+      connection={connection}
       sort={sort}
       emptyState={hasActiveFilters(params, FILTER_KEYS) ? <NoMatches /> : <NoProjects />}
     />

@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/app/components/ui/select";
 import { Button } from "@/app/components/ui/button";
-import { CHANNEL_OPTIONS, channelIcon } from "@/app/lib/channels";
+import { SEQUENCE_CHANNEL_OPTIONS, channelIcon } from "@/app/lib/channels";
 import { cn } from "@/app/lib/utils";
 
 import { ASSIGNEE_ROLES } from "./sequence-schema";
@@ -42,7 +42,7 @@ export const SequenceStepCard = forwardRef(function SequenceStepCard(
   ref,
 ) {
   const ChannelIcon = channelIcon(channel);
-  const showTemplate = channel === "EMAIL";
+  const showTemplate = false;
   const stepErrors = errors?.steps?.[index];
 
   return (
@@ -102,7 +102,7 @@ export const SequenceStepCard = forwardRef(function SequenceStepCard(
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {CHANNEL_OPTIONS.map((option) => (
+                      {SEQUENCE_CHANNEL_OPTIONS.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>

@@ -3,128 +3,48 @@
 
 import { gql } from "@apollo/client";
 
-export const ActivityFieldsFragmentDoc = gql`
-fragment ActivityFields on ActivityEntry {
+export const ChangeRequestDetailFieldsFragmentDoc = gql`
+fragment ChangeRequestDetailFields on ChangeRequestType {
   id
-  action
-  entityType
-  entityId
-  summary
-  actorName
-  actorAvatarUrl
-  createdAt
-}`;
-
-export const ChangeRequestDetailFragmentDoc = gql`
-fragment ChangeRequestDetail on ChangeRequest {
-  ...ChangeRequestRow
+  projectId
+  companyId
+  title
+  type
   description
-  desiredDueDate
+  status
+  priority
   impactHours
+  impactCost
+  impactTimelineDays
   assessmentNotes
+  assignedPmId
+  requestedByContactId
   requiresClientApproval
   requiresInternalApproval
   revisionCount
-  decidedAt
-  decisionReason
-  approvals {
-    id
-    approverType
-    approverName
-    status
-    comment
-    decidedAt
-    createdAt
-  }
-  comments {
-    id
-    body
-    authorType
-    authorName
-    authorAvatarUrl
-    isClientVisible
-    createdAt
-  }
-  attachments {
-    id
-    name
-    fileUrl
-    mimeType
-    sizeBytes
-    version
-    uploadedByName
-    createdAt
-  }
-}
-fragment ChangeRequestRow on ChangeRequest {
-  id
-  reference
-  title
-  type
-  status
-  priority
-  impactCost
-  impactTimelineDays
-  awaitingParty
-  responseDueAt
-  isOverdue
+  desiredDueDate
+  submittedAt
   createdAt
-  updatedAt
-  company {
-    id
-    name
-  }
-  project {
-    id
-    name
-  }
-  requestedByContact {
-    id
-    fullName
-  }
-  assignedPm {
-    id
-    name
-    avatarUrl
-  }
 }`;
 
 export const ChangeRequestRowFragmentDoc = gql`
-fragment ChangeRequestRow on ChangeRequest {
+fragment ChangeRequestRow on ChangeRequestType {
   id
-  reference
+  projectId
+  companyId
   title
   type
   status
   priority
   impactCost
   impactTimelineDays
-  awaitingParty
-  responseDueAt
-  isOverdue
+  assignedPmId
+  requestedByContactId
   createdAt
-  updatedAt
-  company {
-    id
-    name
-  }
-  project {
-    id
-    name
-  }
-  requestedByContact {
-    id
-    fullName
-  }
-  assignedPm {
-    id
-    name
-    avatarUrl
-  }
 }`;
 
 export const CompanyHeaderFragmentDoc = gql`
-fragment CompanyHeader on Company {
+fragment CompanyHeader on CompanyType {
   id
   name
   industry
@@ -133,165 +53,139 @@ fragment CompanyHeader on Company {
   status
   healthScore
   accountOwner {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
+    ...UserSummaryFields
   }
 }
-fragment TagFields on Tag {
+fragment UserSummaryFields on UserSummaryType {
   id
   name
-  color
+  email
+  role
+  avatarUrl
 }`;
 
 export const CompanyRowFragmentDoc = gql`
-fragment CompanyRow on Company {
+fragment CompanyRow on CompanyType {
   id
   name
   industry
   status
   healthScore
-  healthScoreTrend {
-    id
-    score
-  }
+  logoUrl
   contactCount
   projectCount
-  openChangeRequestCount
-  updatedAt
   accountOwner {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
+    ...UserSummaryFields
   }
   primaryContact {
     id
-    fullName
+    firstName
+    lastName
     email
+    isPrimary
   }
 }
-fragment TagFields on Tag {
+fragment UserSummaryFields on UserSummaryType {
   id
   name
-  color
+  email
+  role
+  avatarUrl
 }`;
 
 export const ContactFieldsFragmentDoc = gql`
-fragment ContactFields on Contact {
+fragment ContactFields on ContactType {
   id
+  companyId
   firstName
   lastName
-  fullName
   email
   phone
   title
   department
   isPrimary
   preferredChannel
-  bestTimeToContact
-  doNotContact
   timezone
   portalAccessEnabled
   linkedinUrl
   status
-  updatedAt
 }`;
 
 export const MilestoneFieldsFragmentDoc = gql`
-fragment MilestoneFields on Milestone {
+fragment MilestoneFields on MilestoneType {
   id
+  phaseId
   title
-  description
-  dueDate
   status
-  requiresClientApproval
-  approvedAt
   orderIndex
-  tasks {
-    id
-    title
-    status
-  }
+}`;
+
+export const PhaseFieldsFragmentDoc = gql`
+fragment PhaseFields on PhaseType {
+  id
+  projectId
+  name
+  orderIndex
+  status
+}`;
+
+export const PortalChangeRequestFieldsFragmentDoc = gql`
+fragment PortalChangeRequestFields on ChangeRequestType {
+  id
+  projectId
+  companyId
+  title
+  type
+  description
+  status
+  priority
+  impactCost
+  impactTimelineDays
+  impactHours
+  assessmentNotes
+  requiresClientApproval
+  requiresInternalApproval
+  revisionCount
+  desiredDueDate
+  submittedAt
+  createdAt
+  updatedAt
   approvals {
     id
+    approverType
     status
-    approverName
+    comment
     decidedAt
+    approverName
   }
-}`;
-
-export const PortalApprovalFieldsFragmentDoc = gql`
-fragment PortalApprovalFields on Approval {
-  id
-  approverType
-  approverName
-  status
-  comment
-  decidedAt
-  createdAt
-}`;
-
-export const PortalDocumentFieldsFragmentDoc = gql`
-fragment PortalDocumentFields on Document {
-  id
-  name
-  fileUrl
-  mimeType
-  sizeBytes
-  version
-  uploadedByName
-  createdAt
 }`;
 
 export const PortalMilestoneFieldsFragmentDoc = gql`
-fragment PortalMilestoneFields on Milestone {
+fragment PortalMilestoneFields on MilestoneType {
   id
   title
   description
+  status
   dueDate
-  status
-  requiresClientApproval
   approvedAt
+  requiresClientApproval
   approvals {
-    ...PortalApprovalFields
+    id
+    approverType
+    status
+    comment
+    decidedAt
+    approverName
   }
-  documents {
-    ...PortalDocumentFields
-  }
-}
-fragment PortalApprovalFields on Approval {
-  id
-  approverType
-  approverName
-  status
-  comment
-  decidedAt
-  createdAt
-}
-fragment PortalDocumentFields on Document {
-  id
-  name
-  fileUrl
-  mimeType
-  sizeBytes
-  version
-  uploadedByName
-  createdAt
 }`;
 
-export const PortalProjectSummaryFragmentDoc = gql`
-fragment PortalProjectSummary on Project {
+export const PortalProjectRowFragmentDoc = gql`
+fragment PortalProjectRow on PortalProjectType {
   id
   name
-  description
   status
   health
+  description
   startDate
   endDate
   completionPercent
@@ -299,262 +193,90 @@ fragment PortalProjectSummary on Project {
     id
     name
     email
-    avatarUrl
   }
 }`;
 
 export const ProjectHeaderFragmentDoc = gql`
-fragment ProjectHeader on Project {
+fragment ProjectHeader on ProjectType {
   id
   name
   description
   status
   health
   priority
-  startDate
-  endDate
   budget
   actualCost
-  completionPercent
-  company {
-    id
-    name
-  }
-  projectManager {
-    id
-    name
-    avatarUrl
-  }
-  team {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
-  }
-}
-fragment TagFields on Tag {
-  id
-  name
-  color
+  companyId
+  projectManagerId
 }`;
 
 export const ProjectRowFragmentDoc = gql`
-fragment ProjectRow on Project {
+fragment ProjectRow on ProjectType {
   id
   name
   status
   health
   priority
-  startDate
-  endDate
   budget
   actualCost
-  completionPercent
-  updatedAt
-  company {
-    id
-    name
-  }
-  projectManager {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
-  }
-}
-fragment TagFields on Tag {
-  id
-  name
-  color
+  companyId
+  projectManagerId
 }`;
 
-export const SequenceEnrollmentFieldsFragmentDoc = gql`
-fragment SequenceEnrollmentFields on SequenceEnrollment {
-  id
-  status
-  currentStep
-  enrolledAt
-  company {
-    id
-    name
-    healthScore
-  }
-  contact {
-    id
-    fullName
-  }
-}`;
-
-export const SequenceStepFieldsFragmentDoc = gql`
-fragment SequenceStepFields on RetentionSequenceStep {
-  id
-  stepOrder
-  name
-  channel
-  offsetDays
-  assigneeRole
-  templateId
-}`;
-
-export const SequenceSummaryFragmentDoc = gql`
-fragment SequenceSummary on RetentionSequence {
+export const RetentionSequenceRowFragmentDoc = gql`
+fragment RetentionSequenceRow on RetentionSequenceType {
   id
   name
-  description
   triggerType
   isActive
   isTemplate
-  activeEnrollmentCount
-  steps {
-    ...SequenceStepFields
-  }
-}
-fragment SequenceStepFields on RetentionSequenceStep {
-  id
-  stepOrder
-  name
-  channel
-  offsetDays
-  assigneeRole
-  templateId
 }`;
 
 export const TagFieldsFragmentDoc = gql`
-fragment TagFields on Tag {
+fragment TagFields on TagType {
   id
   name
-  color
 }`;
 
-export const TaskCardFragmentDoc = gql`
-fragment TaskCard on Task {
+export const TaskFieldsFragmentDoc = gql`
+fragment TaskFields on TaskType {
   id
+  projectId
+  phaseId
+  milestoneId
+  parentTaskId
   title
-  status
-  priority
-  startDate
-  dueDate
-  estimatedHours
-  actualHours
-  orderIndex
-  assignee {
-    id
-    name
-    avatarUrl
-  }
-  phase {
-    id
-    name
-  }
-  milestone {
-    id
-    title
-  }
-  subtasks {
-    id
-    title
-    status
-    orderIndex
-    assignee {
-      id
-      name
-    }
-  }
-  dependencies {
-    id
-    type
-    dependsOnTask {
-      id
-      title
-      status
-      dueDate
-    }
-  }
-}`;
-
-export const TaskDetailFragmentDoc = gql`
-fragment TaskDetail on Task {
-  ...TaskCard
   description
-  parentTask {
-    id
-    title
-  }
-}
-fragment TaskCard on Task {
-  id
-  title
+  assigneeId
   status
   priority
-  startDate
-  dueDate
   estimatedHours
   actualHours
-  orderIndex
-  assignee {
-    id
-    name
-    avatarUrl
-  }
-  phase {
-    id
-    name
-  }
-  milestone {
-    id
-    title
-  }
   subtasks {
     id
     title
     status
-    orderIndex
-    assignee {
-      id
-      name
-    }
+    assigneeId
+    parentTaskId
   }
   dependencies {
     id
     type
-    dependsOnTask {
-      id
-      title
-      status
-      dueDate
-    }
+    dependsOnTaskId
   }
 }`;
 
-export const TouchpointFieldsFragmentDoc = gql`
-fragment TouchpointFields on Touchpoint {
+export const UserSummaryFieldsFragmentDoc = gql`
+fragment UserSummaryFields on UserSummaryType {
   id
-  type
-  status
-  outcome
-  notes
-  scheduledAt
-  completedAt
-  contact {
-    id
-    fullName
-  }
-  project {
-    id
-    name
-  }
-  createdBy {
-    id
-    name
-  }
+  name
+  email
+  role
+  avatarUrl
 }`;
 
 export const ViewerFieldsFragmentDoc = gql`
-fragment ViewerFields on User {
+fragment ViewerFields on ViewerType {
   id
   name
   email
@@ -583,400 +305,137 @@ fragment ViewerFields on User {
   }
 }`;
 
-export const AddCommentDocument = gql`
-mutation AddComment($input: CommentInput!) {
-  addComment(input: $input) {
-    id
-    body
-    authorType
-    authorName
-    authorAvatarUrl
-    isClientVisible
-    createdAt
-  }
-}`;
-
 export const AddTaskDependencyDocument = gql`
-mutation AddTaskDependency($taskId: ID!, $dependsOnTaskId: ID!, $type: DependencyType!) {
+mutation AddTaskDependency($projectId: ID!, $taskId: ID!, $dependsOnTaskId: ID!, $type: String!) {
   addTaskDependency(
+    projectId: $projectId
     taskId: $taskId
     dependsOnTaskId: $dependsOnTaskId
     type: $type
   ) {
-    ...TaskDetail
-  }
-}
-fragment TaskCard on Task {
-  id
-  title
-  status
-  priority
-  startDate
-  dueDate
-  estimatedHours
-  actualHours
-  orderIndex
-  assignee {
     id
-    name
-    avatarUrl
-  }
-  phase {
-    id
-    name
-  }
-  milestone {
-    id
-    title
-  }
-  subtasks {
-    id
-    title
-    status
-    orderIndex
-    assignee {
-      id
-      name
-    }
-  }
-  dependencies {
-    id
+    taskId
+    dependsOnTaskId
     type
-    dependsOnTask {
-      id
-      title
-      status
-      dueDate
-    }
   }
-}
-fragment TaskDetail on Task {
-  ...TaskCard
-  description
-  parentTask {
+}`;
+
+export const ApproveMilestoneDocument = gql`
+mutation ApproveMilestone($approvalId: ID!) {
+  approveMilestone(approvalId: $approvalId) {
     id
-    title
+    status
+    decidedAt
   }
 }`;
 
 export const ArchiveContactDocument = gql`
 mutation ArchiveContact($id: ID!) {
-  archiveContact(id: $id) {
-    ...ContactFields
-    company {
-      id
-      contactCount
-    }
-  }
-}
-fragment ContactFields on Contact {
-  id
-  firstName
-  lastName
-  fullName
-  email
-  phone
-  title
-  department
-  isPrimary
-  preferredChannel
-  bestTimeToContact
-  doNotContact
-  timezone
-  portalAccessEnabled
-  linkedinUrl
-  status
-  updatedAt
+  deleteContact(id: $id)
 }`;
 
 export const AssessChangeRequestDocument = gql`
-mutation AssessChangeRequest($id: ID!, $input: ImpactAssessmentInput!) {
-  assessChangeRequest(id: $id, input: $input) {
-    ...ChangeRequestDetail
+mutation AssessChangeRequest($id: ID!, $impactHours: Float, $impactCost: Float, $impactTimelineDays: Int, $assessmentNotes: String) {
+  submitImpactAssessment(
+    id: $id
+    impactHours: $impactHours
+    impactCost: $impactCost
+    impactTimelineDays: $impactTimelineDays
+    assessmentNotes: $assessmentNotes
+  ) {
+    ...ChangeRequestDetailFields
   }
 }
-fragment ChangeRequestDetail on ChangeRequest {
-  ...ChangeRequestRow
+fragment ChangeRequestDetailFields on ChangeRequestType {
+  id
+  projectId
+  companyId
+  title
+  type
   description
-  desiredDueDate
+  status
+  priority
   impactHours
+  impactCost
+  impactTimelineDays
   assessmentNotes
+  assignedPmId
+  requestedByContactId
   requiresClientApproval
   requiresInternalApproval
   revisionCount
-  decidedAt
-  decisionReason
-  approvals {
-    id
-    approverType
-    approverName
-    status
-    comment
-    decidedAt
-    createdAt
-  }
-  comments {
-    id
-    body
-    authorType
-    authorName
-    authorAvatarUrl
-    isClientVisible
-    createdAt
-  }
-  attachments {
-    id
-    name
-    fileUrl
-    mimeType
-    sizeBytes
-    version
-    uploadedByName
-    createdAt
-  }
-}
-fragment ChangeRequestRow on ChangeRequest {
-  id
-  reference
-  title
-  type
-  status
-  priority
-  impactCost
-  impactTimelineDays
-  awaitingParty
-  responseDueAt
-  isOverdue
-  createdAt
-  updatedAt
-  company {
-    id
-    name
-  }
-  project {
-    id
-    name
-  }
-  requestedByContact {
-    id
-    fullName
-  }
-  assignedPm {
-    id
-    name
-    avatarUrl
-  }
-}`;
-
-export const AssignChangeRequestDocument = gql`
-mutation AssignChangeRequest($id: ID!, $assignedPmId: ID) {
-  assignChangeRequest(id: $id, assignedPmId: $assignedPmId) {
-    ...ChangeRequestDetail
-  }
-}
-fragment ChangeRequestDetail on ChangeRequest {
-  ...ChangeRequestRow
-  description
   desiredDueDate
-  impactHours
-  assessmentNotes
-  requiresClientApproval
-  requiresInternalApproval
-  revisionCount
-  decidedAt
-  decisionReason
-  approvals {
-    id
-    approverType
-    approverName
-    status
-    comment
-    decidedAt
-    createdAt
-  }
-  comments {
-    id
-    body
-    authorType
-    authorName
-    authorAvatarUrl
-    isClientVisible
-    createdAt
-  }
-  attachments {
-    id
-    name
-    fileUrl
-    mimeType
-    sizeBytes
-    version
-    uploadedByName
-    createdAt
-  }
-}
-fragment ChangeRequestRow on ChangeRequest {
-  id
-  reference
-  title
-  type
-  status
-  priority
-  impactCost
-  impactTimelineDays
-  awaitingParty
-  responseDueAt
-  isOverdue
+  submittedAt
   createdAt
-  updatedAt
-  company {
-    id
-    name
-  }
-  project {
-    id
-    name
-  }
-  requestedByContact {
-    id
-    fullName
-  }
-  assignedPm {
-    id
-    name
-    avatarUrl
-  }
 }`;
 
 export const AtRiskDashboardDocument = gql`
 query AtRiskDashboard {
   atRiskCompanies {
-    reasons
-    overdueTouchpointCount
-    lastTouchpointAt
-    company {
-      id
-      name
-      industry
-      status
-      healthScore
-      healthScoreTrend {
-        id
-        score
-      }
-      accountOwner {
-        id
-        name
-        avatarUrl
-      }
-      primaryContact {
-        id
-        fullName
-        email
-        phone
-      }
-    }
-    activeEnrollments {
-      id
-      currentStep
-      enrolledAt
-      sequence {
-        id
-        name
-      }
-    }
+    id
+    name
+    status
+    healthScore
+  }
+  upcomingTouchpoints {
+    id
+    type
+    status
+    scheduledAt
+    companyId
+    contactId
+  }
+}`;
+
+export const CancelEnrollmentDocument = gql`
+mutation CancelEnrollment($enrollmentId: ID!) {
+  cancelEnrollment(enrollmentId: $enrollmentId) {
+    id
+    status
   }
 }`;
 
 export const ChangeRequestDetailDocument = gql`
 query ChangeRequestDetail($id: ID!) {
-  me {
-    id
-    name
-    scope
-    contact {
-      id
-      fullName
-    }
-    organization {
-      id
-      settings
-    }
-  }
   changeRequest(id: $id) {
-    ...ChangeRequestDetail
+    ...ChangeRequestDetailFields
   }
-}
-fragment ChangeRequestDetail on ChangeRequest {
-  ...ChangeRequestRow
-  description
-  desiredDueDate
-  impactHours
-  assessmentNotes
-  requiresClientApproval
-  requiresInternalApproval
-  revisionCount
-  decidedAt
-  decisionReason
-  approvals {
-    id
-    approverType
-    approverName
-    status
-    comment
-    decidedAt
-    createdAt
-  }
-  comments {
-    id
-    body
-    authorType
-    authorName
-    authorAvatarUrl
-    isClientVisible
-    createdAt
-  }
-  attachments {
+  projects {
     id
     name
-    fileUrl
-    mimeType
-    sizeBytes
-    version
-    uploadedByName
-    createdAt
+    companyId
   }
-}
-fragment ChangeRequestRow on ChangeRequest {
-  id
-  reference
-  title
-  type
-  status
-  priority
-  impactCost
-  impactTimelineDays
-  awaitingParty
-  responseDueAt
-  isOverdue
-  createdAt
-  updatedAt
-  company {
+  companies {
     id
     name
   }
-  project {
-    id
-    name
-  }
-  requestedByContact {
-    id
-    fullName
-  }
-  assignedPm {
+  users {
     id
     name
     avatarUrl
   }
+}
+fragment ChangeRequestDetailFields on ChangeRequestType {
+  id
+  projectId
+  companyId
+  title
+  type
+  description
+  status
+  priority
+  impactHours
+  impactCost
+  impactTimelineDays
+  assessmentNotes
+  assignedPmId
+  requestedByContactId
+  requiresClientApproval
+  requiresInternalApproval
+  revisionCount
+  desiredDueDate
+  submittedAt
+  createdAt
 }`;
 
 export const ChangeRequestFormOptionsDocument = gql`
@@ -984,118 +443,62 @@ query ChangeRequestFormOptions {
   users {
     id
     name
-    email
     avatarUrl
   }
-  companies(page: {page: 1, pageSize: 100, sortBy: "name"}) {
-    nodes {
-      id
-      name
-    }
+  companies {
+    id
+    name
+  }
+  projects {
+    id
+    name
+    companyId
   }
 }`;
 
 export const ChangeRequestQueueDocument = gql`
-query ChangeRequestQueue($filter: ChangeRequestFilter, $page: PageInput) {
-  changeRequestQueue(filter: $filter, page: $page) {
-    totalCount
-    pageInfo {
-      page
-      pageSize
-      totalPages
-      hasNextPage
-      hasPreviousPage
-    }
-    nodes {
-      ...ChangeRequestRow
-    }
+query ChangeRequestQueue {
+  changeRequestDashboard {
+    openCount
+    pendingApprovalCount
+    overdueCount
+    slaDays
+  }
+  projects {
+    id
+    name
+    companyId
+  }
+}`;
+
+export const ChangeRequestQueueCountsDocument = gql`
+query ChangeRequestQueueCounts {
+  changeRequestDashboard {
+    openCount
+    pendingApprovalCount
+    overdueCount
+  }
+}`;
+
+export const ChangeRequestsByProjectDocument = gql`
+query ChangeRequestsByProject($projectId: ID!, $status: String) {
+  changeRequests(projectId: $projectId, status: $status) {
+    ...ChangeRequestRow
   }
 }
-fragment ChangeRequestRow on ChangeRequest {
+fragment ChangeRequestRow on ChangeRequestType {
   id
-  reference
+  projectId
+  companyId
   title
   type
   status
   priority
   impactCost
   impactTimelineDays
-  awaitingParty
-  responseDueAt
-  isOverdue
+  assignedPmId
+  requestedByContactId
   createdAt
-  updatedAt
-  company {
-    id
-    name
-  }
-  project {
-    id
-    name
-  }
-  requestedByContact {
-    id
-    fullName
-  }
-  assignedPm {
-    id
-    name
-    avatarUrl
-  }
-}`;
-
-export const ChangeRequestQueueCountsDocument = gql`
-query ChangeRequestQueueCounts {
-  all: changeRequestQueue(page: {pageSize: 1}) {
-    totalCount
-  }
-  submitted: changeRequestQueue(
-    filter: {status: [SUBMITTED, UNDER_REVIEW, PENDING_IMPACT_ASSESSMENT]}
-    page: {pageSize: 1}
-  ) {
-    totalCount
-  }
-  pendingApproval: changeRequestQueue(
-    filter: {status: [PENDING_APPROVAL]}
-    page: {pageSize: 1}
-  ) {
-    totalCount
-  }
-  overdue: changeRequestQueue(filter: {overdueOnly: true}, page: {pageSize: 1}) {
-    totalCount
-  }
-}`;
-
-export const CompanyChangeLogDocument = gql`
-query CompanyChangeLog($id: ID!) {
-  company(id: $id) {
-    id
-    name
-    changeRequests {
-      id
-      reference
-      title
-      type
-      status
-      priority
-      impactCost
-      impactTimelineDays
-      createdAt
-      updatedAt
-      project {
-        id
-        name
-      }
-      requestedByContact {
-        id
-        fullName
-      }
-      assignedPm {
-        id
-        name
-      }
-    }
-  }
 }`;
 
 export const CompanyContactsDocument = gql`
@@ -1105,64 +508,24 @@ query CompanyContacts($id: ID!) {
     name
     contacts {
       ...ContactFields
-      activity {
-        ...ActivityFields
-      }
-      touchpoints {
-        ...TouchpointFields
-      }
     }
   }
 }
-fragment ActivityFields on ActivityEntry {
+fragment ContactFields on ContactType {
   id
-  action
-  entityType
-  entityId
-  summary
-  actorName
-  actorAvatarUrl
-  createdAt
-}
-fragment ContactFields on Contact {
-  id
+  companyId
   firstName
   lastName
-  fullName
   email
   phone
   title
   department
   isPrimary
   preferredChannel
-  bestTimeToContact
-  doNotContact
   timezone
   portalAccessEnabled
   linkedinUrl
   status
-  updatedAt
-}
-fragment TouchpointFields on Touchpoint {
-  id
-  type
-  status
-  outcome
-  notes
-  scheduledAt
-  completedAt
-  contact {
-    id
-    fullName
-  }
-  project {
-    id
-    name
-  }
-  createdBy {
-    id
-    name
-  }
 }`;
 
 export const CompanyDetailHeaderDocument = gql`
@@ -1171,7 +534,7 @@ query CompanyDetailHeader($id: ID!) {
     ...CompanyHeader
   }
 }
-fragment CompanyHeader on Company {
+fragment CompanyHeader on CompanyType {
   id
   name
   industry
@@ -1180,35 +543,24 @@ fragment CompanyHeader on Company {
   status
   healthScore
   accountOwner {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
+    ...UserSummaryFields
   }
 }
-fragment TagFields on Tag {
+fragment UserSummaryFields on UserSummaryType {
   id
   name
-  color
+  email
+  role
+  avatarUrl
 }`;
 
 export const CompanyDocumentsDocument = gql`
-query CompanyDocuments($id: ID!) {
-  company(id: $id) {
+query CompanyDocuments($companyId: ID!) {
+  companyDocuments(companyId: $companyId) {
     id
-    name
-    documents {
-      id
-      name
-      fileUrl
-      mimeType
-      sizeBytes
-      version
-      uploadedByName
-      createdAt
-    }
+    fileUrl
+    version
+    uploadedBy
   }
 }`;
 
@@ -1220,22 +572,9 @@ query CompanyForEdit($id: ID!) {
     industry
     website
     logoUrl
-    size
-    timezone
     status
     accountOwner {
       id
-    }
-    tags {
-      id
-    }
-    address {
-      line1
-      line2
-      city
-      region
-      postalCode
-      country
     }
   }
 }`;
@@ -1243,89 +582,56 @@ query CompanyForEdit($id: ID!) {
 export const CompanyFormOptionsDocument = gql`
 query CompanyFormOptions {
   users {
-    id
-    name
-    email
-    role
-    avatarUrl
+    ...UserSummaryFields
   }
   tags {
     ...TagFields
   }
 }
-fragment TagFields on Tag {
+fragment TagFields on TagType {
   id
   name
-  color
+}
+fragment UserSummaryFields on UserSummaryType {
+  id
+  name
+  email
+  role
+  avatarUrl
 }`;
 
 export const CompanyListDocument = gql`
-query CompanyList($filter: CompanyFilter, $page: PageInput) {
-  companies(filter: $filter, page: $page) {
-    totalCount
-    pageInfo {
-      page
-      pageSize
-      totalPages
-      hasNextPage
-      hasPreviousPage
-    }
-    nodes {
-      ...CompanyRow
-    }
+query CompanyList {
+  companies {
+    ...CompanyRow
   }
 }
-fragment CompanyRow on Company {
+fragment CompanyRow on CompanyType {
   id
   name
   industry
   status
   healthScore
-  healthScoreTrend {
-    id
-    score
-  }
+  logoUrl
   contactCount
   projectCount
-  openChangeRequestCount
-  updatedAt
   accountOwner {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
+    ...UserSummaryFields
   }
   primaryContact {
     id
-    fullName
+    firstName
+    lastName
     email
+    isPrimary
   }
 }
-fragment TagFields on Tag {
+fragment UserSummaryFields on UserSummaryType {
   id
   name
-  color
-}`;
-
-export const CompanyOpenTouchpointsDocument = gql`
-query CompanyOpenTouchpoints($id: ID!) {
-  company(id: $id) {
-    id
-    name
-    touchpoints {
-      id
-      type
-      status
-      scheduledAt
-      notes
-      contact {
-        id
-        fullName
-      }
-    }
-  }
+  email
+  role
+  avatarUrl
 }`;
 
 export const CompanyOverviewDocument = gql`
@@ -1335,75 +641,46 @@ query CompanyOverview($id: ID!) {
     name
     industry
     website
-    size
-    timezone
     status
     healthScore
-    createdAt
-    updatedAt
-    address {
-      line1
-      line2
-      city
-      region
-      postalCode
-      country
-    }
     accountOwner {
-      id
-      name
-      email
-      avatarUrl
-    }
-    healthScoreTrend {
-      id
-      score
-      calculatedAt
-    }
-    contracts {
-      id
-      startDate
-      endDate
-      value
-      autoRenew
-      status
+      ...UserSummaryFields
     }
     primaryContact {
       ...ContactFields
     }
-    activity {
-      ...ActivityFields
-    }
+  }
+  contracts(companyId: $id) {
+    id
+    startDate
+    endDate
+    value
+    autoRenew
+    status
   }
 }
-fragment ActivityFields on ActivityEntry {
+fragment ContactFields on ContactType {
   id
-  action
-  entityType
-  entityId
-  summary
-  actorName
-  actorAvatarUrl
-  createdAt
-}
-fragment ContactFields on Contact {
-  id
+  companyId
   firstName
   lastName
-  fullName
   email
   phone
   title
   department
   isPrimary
   preferredChannel
-  bestTimeToContact
-  doNotContact
   timezone
   portalAccessEnabled
   linkedinUrl
   status
-  updatedAt
+}
+fragment UserSummaryFields on UserSummaryType {
+  id
+  name
+  email
+  role
+  avatarUrl
 }`;
 
 export const CompanyProjectsDocument = gql`
@@ -1411,23 +688,16 @@ query CompanyProjects($id: ID!) {
   company(id: $id) {
     id
     name
-    projects {
-      id
-      name
-      status
-      health
-      priority
-      startDate
-      endDate
-      budget
-      actualCost
-      completionPercent
-      projectManager {
-        id
-        name
-        avatarUrl
-      }
-    }
+  }
+  projects(companyId: $id) {
+    id
+    name
+    status
+    health
+    priority
+    budget
+    actualCost
+    projectManagerId
   }
 }`;
 
@@ -1438,559 +708,370 @@ query CompanyTouchpointContext($id: ID!) {
     name
     contacts {
       id
-      fullName
+      firstName
+      lastName
+      email
       isPrimary
-    }
-    projects {
-      id
-      name
     }
   }
 }`;
 
 export const CompanyTouchpointsDocument = gql`
-query CompanyTouchpoints($id: ID!) {
-  company(id: $id) {
+query CompanyTouchpoints {
+  upcomingTouchpoints {
     id
-    name
-    touchpoints {
-      ...TouchpointFields
-    }
-  }
-}
-fragment TouchpointFields on Touchpoint {
-  id
-  type
-  status
-  outcome
-  notes
-  scheduledAt
-  completedAt
-  contact {
-    id
-    fullName
-  }
-  project {
-    id
-    name
-  }
-  createdBy {
-    id
-    name
+    type
+    status
+    outcome
+    notes
+    scheduledAt
+    completedAt
+    companyId
+    contactId
   }
 }`;
 
 export const CompleteTouchpointDocument = gql`
-mutation CompleteTouchpoint($id: ID!, $input: CompleteTouchpointInput!) {
-  completeTouchpoint(id: $id, input: $input) {
+mutation CompleteTouchpoint($id: ID!, $outcome: String, $notes: String) {
+  completeTouchpoint(id: $id, outcome: $outcome, notes: $notes) {
     id
     status
     outcome
     notes
     completedAt
-    enrollment {
-      id
-      status
-      currentStep
-    }
   }
 }`;
 
 export const ConfirmUploadDocument = gql`
-mutation ConfirmUpload($input: ConfirmUploadInput!) {
-  confirmUpload(input: $input) {
-    ...PortalDocumentFields
+mutation ConfirmUpload($entityType: String!, $entityId: ID!, $fileUrl: String!) {
+  confirmUpload(entityType: $entityType, entityId: $entityId, fileUrl: $fileUrl) {
+    id
+    fileUrl
+    version
   }
-}
-fragment PortalDocumentFields on Document {
-  id
-  name
-  fileUrl
-  mimeType
-  sizeBytes
-  version
-  uploadedByName
-  createdAt
 }`;
 
 export const CreateChangeRequestDocument = gql`
-mutation CreateChangeRequest($input: ChangeRequestInput!) {
-  createChangeRequest(input: $input) {
-    ...ChangeRequestDetail
+mutation CreateChangeRequest($projectId: ID!, $title: String!, $type: String!, $description: String, $priority: String!) {
+  createChangeRequest(
+    projectId: $projectId
+    title: $title
+    type: $type
+    description: $description
+    priority: $priority
+  ) {
+    ...ChangeRequestDetailFields
   }
 }
-fragment ChangeRequestDetail on ChangeRequest {
-  ...ChangeRequestRow
+fragment ChangeRequestDetailFields on ChangeRequestType {
+  id
+  projectId
+  companyId
+  title
+  type
   description
-  desiredDueDate
+  status
+  priority
   impactHours
+  impactCost
+  impactTimelineDays
   assessmentNotes
+  assignedPmId
+  requestedByContactId
   requiresClientApproval
   requiresInternalApproval
   revisionCount
-  decidedAt
-  decisionReason
-  approvals {
-    id
-    approverType
-    approverName
-    status
-    comment
-    decidedAt
-    createdAt
-  }
-  comments {
-    id
-    body
-    authorType
-    authorName
-    authorAvatarUrl
-    isClientVisible
-    createdAt
-  }
-  attachments {
-    id
-    name
-    fileUrl
-    mimeType
-    sizeBytes
-    version
-    uploadedByName
-    createdAt
-  }
-}
-fragment ChangeRequestRow on ChangeRequest {
-  id
-  reference
-  title
-  type
-  status
-  priority
-  impactCost
-  impactTimelineDays
-  awaitingParty
-  responseDueAt
-  isOverdue
+  desiredDueDate
+  submittedAt
   createdAt
-  updatedAt
-  company {
-    id
-    name
-  }
-  project {
-    id
-    name
-  }
-  requestedByContact {
-    id
-    fullName
-  }
-  assignedPm {
-    id
-    name
-    avatarUrl
-  }
 }`;
 
 export const CreateCompanyDocument = gql`
-mutation CreateCompany($input: CompanyInput!) {
-  createCompany(input: $input) {
+mutation CreateCompany($name: String!, $industry: String, $website: String, $logoUrl: String, $status: String!, $accountOwnerId: ID, $healthScore: Float) {
+  createCompany(
+    name: $name
+    industry: $industry
+    website: $website
+    logoUrl: $logoUrl
+    status: $status
+    accountOwnerId: $accountOwnerId
+    healthScore: $healthScore
+  ) {
     ...CompanyRow
   }
 }
-fragment CompanyRow on Company {
+fragment CompanyRow on CompanyType {
   id
   name
   industry
   status
   healthScore
-  healthScoreTrend {
-    id
-    score
-  }
+  logoUrl
   contactCount
   projectCount
-  openChangeRequestCount
-  updatedAt
   accountOwner {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
+    ...UserSummaryFields
   }
   primaryContact {
     id
-    fullName
+    firstName
+    lastName
     email
+    isPrimary
   }
 }
-fragment TagFields on Tag {
+fragment UserSummaryFields on UserSummaryType {
   id
   name
-  color
+  email
+  role
+  avatarUrl
 }`;
 
 export const CreateContactDocument = gql`
-mutation CreateContact($input: ContactInput!) {
-  createContact(input: $input) {
+mutation CreateContact($companyId: ID!, $firstName: String!, $lastName: String!, $email: String, $phone: String, $title: String, $department: String, $isPrimary: Boolean!, $preferredChannel: String, $timezone: String, $portalAccessEnabled: Boolean!, $portalPassword: String, $linkedinUrl: String, $status: String!) {
+  createContact(
+    companyId: $companyId
+    firstName: $firstName
+    lastName: $lastName
+    email: $email
+    phone: $phone
+    title: $title
+    department: $department
+    isPrimary: $isPrimary
+    preferredChannel: $preferredChannel
+    timezone: $timezone
+    portalAccessEnabled: $portalAccessEnabled
+    portalPassword: $portalPassword
+    linkedinUrl: $linkedinUrl
+    status: $status
+  ) {
     ...ContactFields
-    company {
-      id
-      contactCount
-    }
   }
 }
-fragment ContactFields on Contact {
+fragment ContactFields on ContactType {
   id
+  companyId
   firstName
   lastName
-  fullName
   email
   phone
   title
   department
   isPrimary
   preferredChannel
-  bestTimeToContact
-  doNotContact
   timezone
   portalAccessEnabled
   linkedinUrl
   status
-  updatedAt
 }`;
 
 export const CreateMilestoneDocument = gql`
-mutation CreateMilestone($input: MilestoneInput!) {
-  createMilestone(input: $input) {
+mutation CreateMilestone($phaseId: ID!, $title: String!, $orderIndex: Int!, $status: String!) {
+  createMilestone(
+    phaseId: $phaseId
+    title: $title
+    orderIndex: $orderIndex
+    status: $status
+  ) {
     ...MilestoneFields
   }
 }
-fragment MilestoneFields on Milestone {
+fragment MilestoneFields on MilestoneType {
   id
+  phaseId
   title
-  description
-  dueDate
   status
-  requiresClientApproval
-  approvedAt
   orderIndex
-  tasks {
-    id
-    title
-    status
-  }
-  approvals {
-    id
-    status
-    approverName
-    decidedAt
-  }
 }`;
 
 export const CreatePhaseDocument = gql`
-mutation CreatePhase($input: PhaseInput!) {
-  createPhase(input: $input) {
-    id
-    name
-    orderIndex
-    startDate
-    dueDate
-    status
+mutation CreatePhase($projectId: ID!, $name: String!, $orderIndex: Int!, $status: String!) {
+  createPhase(
+    projectId: $projectId
+    name: $name
+    orderIndex: $orderIndex
+    status: $status
+  ) {
+    ...PhaseFields
   }
+}
+fragment PhaseFields on PhaseType {
+  id
+  projectId
+  name
+  orderIndex
+  status
 }`;
 
 export const CreateProjectDocument = gql`
-mutation CreateProject($input: ProjectInput!) {
-  createProject(input: $input) {
+mutation CreateProject($companyId: ID!, $name: String!, $description: String, $status: String!, $priority: String, $projectManagerId: ID, $budget: Float, $health: String) {
+  createProject(
+    companyId: $companyId
+    name: $name
+    description: $description
+    status: $status
+    priority: $priority
+    projectManagerId: $projectManagerId
+    budget: $budget
+    health: $health
+  ) {
     ...ProjectRow
   }
 }
-fragment ProjectRow on Project {
+fragment ProjectRow on ProjectType {
   id
   name
   status
   health
   priority
-  startDate
-  endDate
   budget
   actualCost
-  completionPercent
-  updatedAt
-  company {
-    id
-    name
-  }
-  projectManager {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
-  }
-}
-fragment TagFields on Tag {
-  id
-  name
-  color
+  companyId
+  projectManagerId
 }`;
 
 export const CreateRetentionSequenceDocument = gql`
-mutation CreateRetentionSequence($input: RetentionSequenceInput!) {
-  createRetentionSequence(input: $input) {
-    ...SequenceSummary
+mutation CreateRetentionSequence($name: String!, $triggerType: String!, $isTemplate: Boolean!) {
+  createRetentionSequence(
+    name: $name
+    triggerType: $triggerType
+    isTemplate: $isTemplate
+  ) {
+    ...RetentionSequenceRow
   }
 }
-fragment SequenceStepFields on RetentionSequenceStep {
-  id
-  stepOrder
-  name
-  channel
-  offsetDays
-  assigneeRole
-  templateId
-}
-fragment SequenceSummary on RetentionSequence {
+fragment RetentionSequenceRow on RetentionSequenceType {
   id
   name
-  description
   triggerType
   isActive
   isTemplate
-  activeEnrollmentCount
-  steps {
-    ...SequenceStepFields
-  }
 }`;
 
 export const CreateTaskDocument = gql`
-mutation CreateTask($input: TaskInput!) {
-  createTask(input: $input) {
-    ...TaskDetail
+mutation CreateTask($projectId: ID!, $phaseId: ID!, $title: String!, $milestoneId: ID, $parentTaskId: ID, $assigneeId: ID, $status: String!, $priority: String!, $estimatedHours: Float) {
+  createTask(
+    projectId: $projectId
+    phaseId: $phaseId
+    title: $title
+    milestoneId: $milestoneId
+    parentTaskId: $parentTaskId
+    assigneeId: $assigneeId
+    status: $status
+    priority: $priority
+    estimatedHours: $estimatedHours
+  ) {
+    ...TaskFields
   }
 }
-fragment TaskCard on Task {
+fragment TaskFields on TaskType {
   id
+  projectId
+  phaseId
+  milestoneId
+  parentTaskId
   title
+  description
+  assigneeId
   status
   priority
-  startDate
-  dueDate
   estimatedHours
   actualHours
-  orderIndex
-  assignee {
-    id
-    name
-    avatarUrl
-  }
-  phase {
-    id
-    name
-  }
-  milestone {
-    id
-    title
-  }
   subtasks {
     id
     title
     status
-    orderIndex
-    assignee {
-      id
-      name
-    }
+    assigneeId
+    parentTaskId
   }
   dependencies {
     id
     type
-    dependsOnTask {
-      id
-      title
-      status
-      dueDate
-    }
+    dependsOnTaskId
   }
-}
-fragment TaskDetail on Task {
-  ...TaskCard
-  description
-  parentTask {
+}`;
+
+export const CreateUserDocument = gql`
+mutation CreateUser($name: String!, $email: String!, $password: String!, $role: String!) {
+  createUser(name: $name, email: $email, password: $password, role: $role) {
     id
-    title
+    name
+    email
+    role
+    status
   }
 }`;
 
 export const DecideChangeRequestDocument = gql`
-mutation DecideChangeRequest($id: ID!, $decision: ChangeRequestDecision!) {
-  decideChangeRequest(id: $id, decision: $decision) {
-    ...ChangeRequestDetail
+mutation DecideChangeRequest($id: ID!, $approvalId: ID!, $decision: String!, $comment: String) {
+  decideChangeRequest(
+    id: $id
+    approvalId: $approvalId
+    decision: $decision
+    comment: $comment
+  ) {
+    ...ChangeRequestDetailFields
   }
 }
-fragment ChangeRequestDetail on ChangeRequest {
-  ...ChangeRequestRow
+fragment ChangeRequestDetailFields on ChangeRequestType {
+  id
+  projectId
+  companyId
+  title
+  type
   description
-  desiredDueDate
+  status
+  priority
   impactHours
+  impactCost
+  impactTimelineDays
   assessmentNotes
+  assignedPmId
+  requestedByContactId
   requiresClientApproval
   requiresInternalApproval
   revisionCount
-  decidedAt
-  decisionReason
-  approvals {
-    id
-    approverType
-    approverName
-    status
-    comment
-    decidedAt
-    createdAt
-  }
-  comments {
-    id
-    body
-    authorType
-    authorName
-    authorAvatarUrl
-    isClientVisible
-    createdAt
-  }
-  attachments {
-    id
-    name
-    fileUrl
-    mimeType
-    sizeBytes
-    version
-    uploadedByName
-    createdAt
-  }
-}
-fragment ChangeRequestRow on ChangeRequest {
-  id
-  reference
-  title
-  type
-  status
-  priority
-  impactCost
-  impactTimelineDays
-  awaitingParty
-  responseDueAt
-  isOverdue
+  desiredDueDate
+  submittedAt
   createdAt
-  updatedAt
-  company {
-    id
-    name
-  }
-  project {
-    id
-    name
-  }
-  requestedByContact {
-    id
-    fullName
-  }
-  assignedPm {
-    id
-    name
-    avatarUrl
-  }
-}`;
-
-export const DecideMilestoneApprovalDocument = gql`
-mutation DecideMilestoneApproval($id: ID!, $decision: ApprovalDecision!) {
-  decideMilestoneApproval(id: $id, decision: $decision) {
-    ...PortalMilestoneFields
-  }
-}
-fragment PortalApprovalFields on Approval {
-  id
-  approverType
-  approverName
-  status
-  comment
-  decidedAt
-  createdAt
-}
-fragment PortalDocumentFields on Document {
-  id
-  name
-  fileUrl
-  mimeType
-  sizeBytes
-  version
-  uploadedByName
-  createdAt
-}
-fragment PortalMilestoneFields on Milestone {
-  id
-  title
-  description
-  dueDate
-  status
-  requiresClientApproval
-  approvedAt
-  approvals {
-    ...PortalApprovalFields
-  }
-  documents {
-    ...PortalDocumentFields
-  }
 }`;
 
 export const EnrollInSequenceDocument = gql`
-mutation EnrollInSequence($sequenceId: ID!, $companyId: ID!) {
-  enrollInSequence(sequenceId: $sequenceId, companyId: $companyId) {
-    ...SequenceEnrollmentFields
-  }
-}
-fragment SequenceEnrollmentFields on SequenceEnrollment {
-  id
-  status
-  currentStep
-  enrolledAt
-  company {
+mutation EnrollInSequence($sequenceId: ID!, $companyId: ID!, $contactId: ID!, $projectId: ID) {
+  enrollInSequence(
+    sequenceId: $sequenceId
+    companyId: $companyId
+    contactId: $contactId
+    projectId: $projectId
+  ) {
     id
-    name
-    healthScore
-  }
-  contact {
-    id
-    fullName
+    sequenceId
+    companyId
+    contactId
+    status
+    currentStep
   }
 }`;
 
 export const FoundationSummaryDocument = gql`
 query FoundationSummary {
-  companies(page: {pageSize: 100}) {
-    totalCount
-    nodes {
-      id
-      name
-      status
-      healthScore
-    }
-  }
-  projects(page: {pageSize: 100}) {
-    totalCount
-    nodes {
-      id
-      name
-      status
-      health
-    }
-  }
-  changeRequests {
+  companies {
     id
+    name
     status
+    healthScore
+  }
+  projects {
+    id
+    name
+    status
+    health
+  }
+  changeRequestDashboard {
+    openCount
+    pendingApprovalCount
+    overdueCount
   }
 }`;
 
@@ -1998,39 +1079,8 @@ export const LoginDocument = gql`
 mutation Login($email: String!, $password: String!) {
   login(email: $email, password: $password) {
     accessToken
-    expiresAt
-    scope
-    user {
-      ...ViewerFields
-    }
-  }
-}
-fragment ViewerFields on User {
-  id
-  name
-  email
-  role
-  status
-  avatarUrl
-  scope
-  organization {
-    id
-    name
-    plan
-    logoUrl
-  }
-  company {
-    id
-    name
-    logoUrl
-    status
-  }
-  contact {
-    id
-    firstName
-    lastName
-    title
-    isPrimary
+    requires2fa
+    challengeToken
   }
 }`;
 
@@ -2039,34 +1089,13 @@ mutation Logout {
   logout
 }`;
 
-export const LogTouchpointDocument = gql`
-mutation LogTouchpoint($input: TouchpointInput!) {
-  logTouchpoint(input: $input) {
-    id
-    type
-    status
-    outcome
-    notes
-    scheduledAt
-    completedAt
-    company {
-      id
-      name
-    }
-    contact {
-      id
-      fullName
-    }
-  }
-}`;
-
 export const MeDocument = gql`
 query Me {
   me {
     ...ViewerFields
   }
 }
-fragment ViewerFields on User {
+fragment ViewerFields on ViewerType {
   id
   name
   email
@@ -2097,228 +1126,111 @@ fragment ViewerFields on User {
 
 export const PortalApprovalsDocument = gql`
 query PortalApprovals {
-  me {
+  portalPendingApprovals {
     id
-    contact {
-      id
-      fullName
-    }
+    entityType
+    entityId
+    approverType
+    status
+    comment
+    decidedAt
   }
-  projects(page: {pageSize: 50}) {
-    nodes {
-      id
-      name
-      milestones {
-        ...PortalMilestoneFields
-        phase {
-          id
-          name
-        }
-      }
-    }
-  }
-}
-fragment PortalApprovalFields on Approval {
-  id
-  approverType
-  approverName
-  status
-  comment
-  decidedAt
-  createdAt
-}
-fragment PortalDocumentFields on Document {
-  id
-  name
-  fileUrl
-  mimeType
-  sizeBytes
-  version
-  uploadedByName
-  createdAt
-}
-fragment PortalMilestoneFields on Milestone {
-  id
-  title
-  description
-  dueDate
-  status
-  requiresClientApproval
-  approvedAt
-  approvals {
-    ...PortalApprovalFields
-  }
-  documents {
-    ...PortalDocumentFields
+  portalProjects {
+    id
+    name
   }
 }`;
 
-export const PortalChangeRequestsDocument = gql`
-query PortalChangeRequests {
-  me {
+export const PortalChangeRequestDetailDocument = gql`
+query PortalChangeRequestDetail($id: ID!) {
+  portalChangeRequest(id: $id) {
+    ...PortalChangeRequestFields
+  }
+  portalProjects {
     id
-    contact {
-      id
-      fullName
-    }
-  }
-  changeRequestQueue(page: {pageSize: 50, sortBy: "age", sortDirection: DESC}) {
-    totalCount
-    nodes {
-      ...ChangeRequestRow
-    }
-  }
-  projects(page: {pageSize: 50}) {
-    nodes {
-      id
-      name
-    }
+    name
   }
 }
-fragment ChangeRequestRow on ChangeRequest {
+fragment PortalChangeRequestFields on ChangeRequestType {
   id
-  reference
+  projectId
+  companyId
   title
   type
+  description
   status
   priority
   impactCost
   impactTimelineDays
-  awaitingParty
-  responseDueAt
-  isOverdue
+  impactHours
+  assessmentNotes
+  requiresClientApproval
+  requiresInternalApproval
+  revisionCount
+  desiredDueDate
+  submittedAt
   createdAt
   updatedAt
-  company {
-    id
-    name
-  }
-  project {
-    id
-    name
-  }
-  requestedByContact {
-    id
-    fullName
-  }
-  assignedPm {
-    id
-    name
-    avatarUrl
-  }
-}`;
-
-export const PortalDocumentsDocument = gql`
-query PortalDocuments {
-  me {
-    id
-    company {
-      id
-      name
-      documents {
-        ...PortalDocumentFields
-      }
-    }
-  }
-  projects(page: {pageSize: 50}) {
-    nodes {
-      id
-      name
-      documents {
-        ...PortalDocumentFields
-      }
-      milestones {
-        id
-        title
-        documents {
-          ...PortalDocumentFields
-        }
-      }
-    }
-  }
-}
-fragment PortalDocumentFields on Document {
-  id
-  name
-  fileUrl
-  mimeType
-  sizeBytes
-  version
-  uploadedByName
-  createdAt
-}`;
-
-export const PortalOverviewDocument = gql`
-query PortalOverview {
-  me {
-    id
-    name
-    company {
-      id
-      name
-    }
-    contact {
-      id
-      fullName
-    }
-  }
-  projects(page: {pageSize: 50, sortBy: "endDate"}) {
-    totalCount
-    nodes {
-      ...PortalProjectSummary
-      milestones {
-        ...PortalMilestoneFields
-      }
-    }
-  }
-  changeRequests {
-    id
-    reference
-    title
-    status
-    updatedAt
-  }
-}
-fragment PortalApprovalFields on Approval {
-  id
-  approverType
-  approverName
-  status
-  comment
-  decidedAt
-  createdAt
-}
-fragment PortalDocumentFields on Document {
-  id
-  name
-  fileUrl
-  mimeType
-  sizeBytes
-  version
-  uploadedByName
-  createdAt
-}
-fragment PortalMilestoneFields on Milestone {
-  id
-  title
-  description
-  dueDate
-  status
-  requiresClientApproval
-  approvedAt
   approvals {
-    ...PortalApprovalFields
+    id
+    approverType
+    status
+    comment
+    decidedAt
+    approverName
   }
-  documents {
-    ...PortalDocumentFields
+}`;
+
+export const PortalChangeRequestListDocument = gql`
+query PortalChangeRequestList {
+  portalChangeRequests {
+    ...PortalChangeRequestFields
+  }
+  portalProjects {
+    ...PortalProjectRow
+  }
+  me {
+    contact {
+      firstName
+      lastName
+    }
   }
 }
-fragment PortalProjectSummary on Project {
+fragment PortalChangeRequestFields on ChangeRequestType {
+  id
+  projectId
+  companyId
+  title
+  type
+  description
+  status
+  priority
+  impactCost
+  impactTimelineDays
+  impactHours
+  assessmentNotes
+  requiresClientApproval
+  requiresInternalApproval
+  revisionCount
+  desiredDueDate
+  submittedAt
+  createdAt
+  updatedAt
+  approvals {
+    id
+    approverType
+    status
+    comment
+    decidedAt
+    approverName
+  }
+}
+fragment PortalProjectRow on PortalProjectType {
   id
   name
-  description
   status
   health
+  description
   startDate
   endDate
   completionPercent
@@ -2326,95 +1238,139 @@ fragment PortalProjectSummary on Project {
     id
     name
     email
-    avatarUrl
+  }
+}`;
+
+export const PortalDocumentsDocument = gql`
+query PortalDocuments {
+  portalDocuments {
+    id
+    entityType
+    entityId
+    fileUrl
+    version
+    uploadedBy
+  }
+  portalProjects {
+    id
+    name
+  }
+}`;
+
+export const PortalLoginDocument = gql`
+mutation PortalLogin($email: String!, $password: String!) {
+  portalLogin(email: $email, password: $password) {
+    accessToken
+  }
+}`;
+
+export const PortalLogoutDocument = gql`
+mutation PortalLogout {
+  portalLogout
+}`;
+
+export const PortalOverviewDocument = gql`
+query PortalOverview {
+  portalCompany {
+    id
+    name
+    status
+  }
+  portalProjects {
+    ...PortalProjectRow
+  }
+  portalPendingApprovals {
+    id
+    entityType
+    entityId
+    approverType
+    status
+    comment
+    decidedAt
+  }
+  portalChangeRequests {
+    id
+    title
+    status
+    projectId
+    updatedAt
+  }
+}
+fragment PortalProjectRow on PortalProjectType {
+  id
+  name
+  status
+  health
+  description
+  startDate
+  endDate
+  completionPercent
+  projectManager {
+    id
+    name
+    email
   }
 }`;
 
 export const PortalProjectDocument = gql`
 query PortalProject($id: ID!) {
-  me {
-    id
-    contact {
-      id
-      fullName
-    }
-  }
-  project(id: $id) {
-    ...PortalProjectSummary
-    company {
-      id
-      name
-    }
+  project: portalProject(id: $id) {
+    ...PortalProjectRow
     phases {
       id
       name
-      orderIndex
-      startDate
-      dueDate
-      status
       milestones {
         ...PortalMilestoneFields
       }
     }
     milestones {
       ...PortalMilestoneFields
-      phase {
-        id
-        name
-      }
     }
     documents {
-      ...PortalDocumentFields
+      id
+      fileUrl
+      version
+      entityType
+      entityId
     }
     changeRequests {
       id
-      reference
       title
       status
+      createdAt
       updatedAt
     }
   }
+  me {
+    contact {
+      firstName
+      lastName
+    }
+  }
 }
-fragment PortalApprovalFields on Approval {
-  id
-  approverType
-  approverName
-  status
-  comment
-  decidedAt
-  createdAt
-}
-fragment PortalDocumentFields on Document {
-  id
-  name
-  fileUrl
-  mimeType
-  sizeBytes
-  version
-  uploadedByName
-  createdAt
-}
-fragment PortalMilestoneFields on Milestone {
+fragment PortalMilestoneFields on MilestoneType {
   id
   title
   description
-  dueDate
   status
-  requiresClientApproval
+  dueDate
   approvedAt
+  requiresClientApproval
   approvals {
-    ...PortalApprovalFields
-  }
-  documents {
-    ...PortalDocumentFields
+    id
+    approverType
+    status
+    comment
+    decidedAt
+    approverName
   }
 }
-fragment PortalProjectSummary on Project {
+fragment PortalProjectRow on PortalProjectType {
   id
   name
-  description
   status
   health
+  description
   startDate
   endDate
   completionPercent
@@ -2422,45 +1378,21 @@ fragment PortalProjectSummary on Project {
     id
     name
     email
-    avatarUrl
   }
 }`;
 
 export const PortalProjectsDocument = gql`
 query PortalProjects {
-  projects(page: {pageSize: 50, sortBy: "endDate"}) {
-    totalCount
-    nodes {
-      ...PortalProjectSummary
-      milestones {
-        id
-        title
-        dueDate
-        status
-        requiresClientApproval
-        approvedAt
-        approvals {
-          ...PortalApprovalFields
-        }
-      }
-    }
+  portalProjects {
+    ...PortalProjectRow
   }
 }
-fragment PortalApprovalFields on Approval {
-  id
-  approverType
-  approverName
-  status
-  comment
-  decidedAt
-  createdAt
-}
-fragment PortalProjectSummary on Project {
+fragment PortalProjectRow on PortalProjectType {
   id
   name
-  description
   status
   health
+  description
   startDate
   endDate
   completionPercent
@@ -2468,7 +1400,6 @@ fragment PortalProjectSummary on Project {
     id
     name
     email
-    avatarUrl
   }
 }`;
 
@@ -2478,83 +1409,92 @@ query ProjectBoard($id: ID!) {
     id
     name
     tasks {
-      ...TaskCard
-      parentTask {
-        id
-      }
+      ...TaskFields
     }
   }
+  users {
+    ...UserSummaryFields
+  }
 }
-fragment TaskCard on Task {
+fragment TaskFields on TaskType {
   id
+  projectId
+  phaseId
+  milestoneId
+  parentTaskId
   title
+  description
+  assigneeId
   status
   priority
-  startDate
-  dueDate
   estimatedHours
   actualHours
-  orderIndex
-  assignee {
-    id
-    name
-    avatarUrl
-  }
-  phase {
-    id
-    name
-  }
-  milestone {
-    id
-    title
-  }
   subtasks {
     id
     title
     status
-    orderIndex
-    assignee {
-      id
-      name
-    }
+    assigneeId
+    parentTaskId
   }
   dependencies {
     id
     type
-    dependsOnTask {
-      id
-      title
-      status
-      dueDate
+    dependsOnTaskId
+  }
+}
+fragment UserSummaryFields on UserSummaryType {
+  id
+  name
+  email
+  role
+  avatarUrl
+}`;
+
+export const ProjectCalendarDocument = gql`
+query ProjectCalendar($id: ID!) {
+  project(id: $id) {
+    id
+    tasks {
+      ...TaskFields
     }
+  }
+}
+fragment TaskFields on TaskType {
+  id
+  projectId
+  phaseId
+  milestoneId
+  parentTaskId
+  title
+  description
+  assigneeId
+  status
+  priority
+  estimatedHours
+  actualHours
+  subtasks {
+    id
+    title
+    status
+    assigneeId
+    parentTaskId
+  }
+  dependencies {
+    id
+    type
+    dependsOnTaskId
   }
 }`;
 
 export const ProjectChangeRequestsDocument = gql`
-query ProjectChangeRequests($id: ID!) {
-  project(id: $id) {
+query ProjectChangeRequests($projectId: ID!) {
+  changeRequests(projectId: $projectId) {
     id
-    name
-    changeRequests {
-      id
-      reference
-      title
-      type
-      status
-      priority
-      impactCost
-      impactTimelineDays
-      createdAt
-      updatedAt
-      requestedByContact {
-        id
-        fullName
-      }
-      assignedPm {
-        id
-        name
-      }
-    }
+    title
+    status
+    priority
+    type
+    createdAt
   }
 }`;
 
@@ -2563,136 +1503,167 @@ query ProjectDetailHeader($id: ID!) {
   project(id: $id) {
     ...ProjectHeader
   }
+  companies {
+    id
+    name
+  }
+  users {
+    ...UserSummaryFields
+  }
 }
-fragment ProjectHeader on Project {
+fragment ProjectHeader on ProjectType {
   id
   name
   description
   status
   health
   priority
-  startDate
-  endDate
   budget
   actualCost
-  completionPercent
-  company {
-    id
-    name
-  }
-  projectManager {
-    id
-    name
-    avatarUrl
-  }
-  team {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
-  }
+  companyId
+  projectManagerId
 }
-fragment TagFields on Tag {
+fragment UserSummaryFields on UserSummaryType {
   id
   name
-  color
+  email
+  role
+  avatarUrl
 }`;
 
 export const ProjectForEditDocument = gql`
 query ProjectForEdit($id: ID!) {
   project(id: $id) {
-    id
-    name
-    description
-    status
-    priority
-    startDate
-    endDate
-    budget
-    company {
-      id
-      name
-    }
-    projectManager {
-      id
-    }
-    tags {
-      id
-    }
+    ...ProjectHeader
   }
+}
+fragment ProjectHeader on ProjectType {
+  id
+  name
+  description
+  status
+  health
+  priority
+  budget
+  actualCost
+  companyId
+  projectManagerId
 }`;
 
 export const ProjectFormOptionsDocument = gql`
 query ProjectFormOptions {
-  users {
+  companies {
     id
     name
-    email
-    avatarUrl
   }
-  tags {
-    ...TagFields
-  }
-  companies(page: {page: 1, pageSize: 100, sortBy: "name"}) {
-    nodes {
-      id
-      name
-    }
+  users {
+    ...UserSummaryFields
   }
 }
-fragment TagFields on Tag {
+fragment UserSummaryFields on UserSummaryType {
   id
   name
-  color
+  email
+  role
+  avatarUrl
+}`;
+
+export const ProjectGanttDocument = gql`
+query ProjectGantt($id: ID!) {
+  project(id: $id) {
+    id
+    phases {
+      ...PhaseFields
+      milestones {
+        ...MilestoneFields
+      }
+      tasks {
+        ...TaskFields
+      }
+    }
+  }
+  users {
+    ...UserSummaryFields
+  }
+}
+fragment MilestoneFields on MilestoneType {
+  id
+  phaseId
+  title
+  status
+  orderIndex
+}
+fragment PhaseFields on PhaseType {
+  id
+  projectId
+  name
+  orderIndex
+  status
+}
+fragment TaskFields on TaskType {
+  id
+  projectId
+  phaseId
+  milestoneId
+  parentTaskId
+  title
+  description
+  assigneeId
+  status
+  priority
+  estimatedHours
+  actualHours
+  subtasks {
+    id
+    title
+    status
+    assigneeId
+    parentTaskId
+  }
+  dependencies {
+    id
+    type
+    dependsOnTaskId
+  }
+}
+fragment UserSummaryFields on UserSummaryType {
+  id
+  name
+  email
+  role
+  avatarUrl
 }`;
 
 export const ProjectListDocument = gql`
-query ProjectList($filter: ProjectFilter, $page: PageInput) {
-  projects(filter: $filter, page: $page) {
-    totalCount
-    pageInfo {
-      page
-      pageSize
-      totalPages
-      hasNextPage
-      hasPreviousPage
-    }
-    nodes {
-      ...ProjectRow
-    }
+query ProjectList($companyId: ID) {
+  projects(companyId: $companyId) {
+    ...ProjectRow
+  }
+  companies {
+    id
+    name
+  }
+  users {
+    ...UserSummaryFields
   }
 }
-fragment ProjectRow on Project {
+fragment ProjectRow on ProjectType {
   id
   name
   status
   health
   priority
-  startDate
-  endDate
   budget
   actualCost
-  completionPercent
-  updatedAt
-  company {
-    id
-    name
-  }
-  projectManager {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
-  }
+  companyId
+  projectManagerId
 }
-fragment TagFields on Tag {
+fragment UserSummaryFields on UserSummaryType {
   id
   name
-  color
+  email
+  role
+  avatarUrl
 }`;
 
 export const ProjectPlanDocument = gql`
@@ -2700,396 +1671,271 @@ query ProjectPlan($id: ID!) {
   project(id: $id) {
     id
     name
-    startDate
-    endDate
     phases {
-      id
-      name
-      orderIndex
-      startDate
-      dueDate
-      status
+      ...PhaseFields
       milestones {
         ...MilestoneFields
       }
       tasks {
-        ...TaskCard
-        parentTask {
-          id
-        }
+        ...TaskFields
       }
     }
     tasks {
-      ...TaskCard
-      parentTask {
-        id
-      }
-    }
-    milestones {
-      ...MilestoneFields
-      phase {
-        id
-        name
-      }
+      ...TaskFields
     }
   }
+  users {
+    ...UserSummaryFields
+  }
 }
-fragment MilestoneFields on Milestone {
+fragment MilestoneFields on MilestoneType {
   id
+  phaseId
+  title
+  status
+  orderIndex
+}
+fragment PhaseFields on PhaseType {
+  id
+  projectId
+  name
+  orderIndex
+  status
+}
+fragment TaskFields on TaskType {
+  id
+  projectId
+  phaseId
+  milestoneId
+  parentTaskId
   title
   description
-  dueDate
-  status
-  requiresClientApproval
-  approvedAt
-  orderIndex
-  tasks {
-    id
-    title
-    status
-  }
-  approvals {
-    id
-    status
-    approverName
-    decidedAt
-  }
-}
-fragment TaskCard on Task {
-  id
-  title
+  assigneeId
   status
   priority
-  startDate
-  dueDate
   estimatedHours
   actualHours
-  orderIndex
-  assignee {
-    id
-    name
-    avatarUrl
-  }
-  phase {
-    id
-    name
-  }
-  milestone {
-    id
-    title
-  }
   subtasks {
     id
     title
     status
-    orderIndex
-    assignee {
-      id
-      name
-    }
+    assigneeId
+    parentTaskId
   }
   dependencies {
     id
     type
-    dependsOnTask {
-      id
-      title
-      status
-      dueDate
-    }
+    dependsOnTaskId
   }
+}
+fragment UserSummaryFields on UserSummaryType {
+  id
+  name
+  email
+  role
+  avatarUrl
 }`;
 
 export const RefreshTokenDocument = gql`
 mutation RefreshToken {
   refreshToken {
     accessToken
-    expiresAt
-    scope
-    user {
-      ...ViewerFields
-    }
-  }
-}
-fragment ViewerFields on User {
-  id
-  name
-  email
-  role
-  status
-  avatarUrl
-  scope
-  organization {
-    id
-    name
-    plan
-    logoUrl
-  }
-  company {
-    id
-    name
-    logoUrl
-    status
-  }
-  contact {
-    id
-    firstName
-    lastName
-    title
-    isPrimary
+    requires2fa
+    challengeToken
   }
 }`;
 
 export const RemoveTaskDependencyDocument = gql`
 mutation RemoveTaskDependency($id: ID!) {
-  removeTaskDependency(id: $id) {
-    ...TaskDetail
-  }
-}
-fragment TaskCard on Task {
-  id
-  title
-  status
-  priority
-  startDate
-  dueDate
-  estimatedHours
-  actualHours
-  orderIndex
-  assignee {
+  removeTaskDependency(id: $id)
+}`;
+
+export const RequestMilestoneChangesDocument = gql`
+mutation RequestMilestoneChanges($approvalId: ID!, $comment: String!) {
+  requestMilestoneChanges(approvalId: $approvalId, comment: $comment) {
     id
-    name
-    avatarUrl
-  }
-  phase {
-    id
-    name
-  }
-  milestone {
-    id
-    title
-  }
-  subtasks {
-    id
-    title
     status
-    orderIndex
-    assignee {
-      id
-      name
-    }
-  }
-  dependencies {
-    id
-    type
-    dependsOnTask {
-      id
-      title
-      status
-      dueDate
-    }
-  }
-}
-fragment TaskDetail on Task {
-  ...TaskCard
-  description
-  parentTask {
-    id
-    title
+    comment
   }
 }`;
 
 export const RequestUploadUrlDocument = gql`
-mutation RequestUploadUrl($input: UploadRequestInput!) {
-  requestUploadUrl(input: $input) {
-    uploadId
+mutation RequestUploadUrl($entityType: String!, $entityId: ID!, $filename: String!, $contentType: String!) {
+  requestUploadUrl(
+    entityType: $entityType
+    entityId: $entityId
+    filename: $filename
+    contentType: $contentType
+  ) {
     uploadUrl
+    uploadToken
     fileUrl
-    expiresAt
+  }
+}`;
+
+export const ResubmitChangeRequestDocument = gql`
+mutation ResubmitChangeRequest($id: ID!) {
+  resubmitChangeRequest(id: $id) {
+    id
+    status
+    revisionCount
   }
 }`;
 
 export const RetentionFormOptionsDocument = gql`
-"""
-Lightweight id/name lists for pickers — the enrollment dialog (from either
-direction) and the touchpoint form all just need something to put in a
-Select, not the full company or sequence record.
-"""
 query RetentionFormOptions {
-  companies(page: {page: 1, pageSize: 200, sortBy: "name"}) {
-    nodes {
-      id
-      name
-    }
-  }
-  retentionSequences {
+  retentionSequences(activeOnly: false) {
     id
     name
-    isActive
+  }
+  companies {
+    id
+    name
+    contacts {
+      id
+      firstName
+      lastName
+      isPrimary
+    }
   }
 }`;
 
 export const RetentionSequenceDetailDocument = gql`
 query RetentionSequenceDetail($id: ID!) {
   retentionSequence(id: $id) {
-    ...SequenceSummary
-    enrollments {
-      ...SequenceEnrollmentFields
+    ...RetentionSequenceRow
+    steps {
+      id
+      stepOrder
+      channel
+      offsetDays
+      templateId
+      assigneeRole
     }
   }
 }
-fragment SequenceEnrollmentFields on SequenceEnrollment {
-  id
-  status
-  currentStep
-  enrolledAt
-  company {
-    id
-    name
-    healthScore
-  }
-  contact {
-    id
-    fullName
-  }
-}
-fragment SequenceStepFields on RetentionSequenceStep {
-  id
-  stepOrder
-  name
-  channel
-  offsetDays
-  assigneeRole
-  templateId
-}
-fragment SequenceSummary on RetentionSequence {
+fragment RetentionSequenceRow on RetentionSequenceType {
   id
   name
-  description
   triggerType
   isActive
   isTemplate
-  activeEnrollmentCount
-  steps {
-    ...SequenceStepFields
-  }
 }`;
 
 export const RetentionSequencesDocument = gql`
-query RetentionSequences {
-  retentionSequences {
-    ...SequenceSummary
+query RetentionSequences($activeOnly: Boolean!) {
+  retentionSequences(activeOnly: $activeOnly) {
+    ...RetentionSequenceRow
+    steps {
+      id
+      stepOrder
+      channel
+      offsetDays
+    }
   }
 }
-fragment SequenceStepFields on RetentionSequenceStep {
-  id
-  stepOrder
-  name
-  channel
-  offsetDays
-  assigneeRole
-  templateId
-}
-fragment SequenceSummary on RetentionSequence {
+fragment RetentionSequenceRow on RetentionSequenceType {
   id
   name
-  description
   triggerType
   isActive
   isTemplate
-  activeEnrollmentCount
-  steps {
-    ...SequenceStepFields
+}`;
+
+export const SetContactPortalPasswordDocument = gql`
+mutation SetContactPortalPassword($id: ID!, $password: String!) {
+  setContactPortalPassword(id: $id, password: $password) {
+    id
+    portalAccessEnabled
+  }
+}`;
+
+export const SignupDocument = gql`
+mutation Signup($organizationName: String!, $fullName: String!, $email: String!, $password: String!) {
+  signup(
+    organizationName: $organizationName
+    fullName: $fullName
+    email: $email
+    password: $password
+  ) {
+    accessToken
+    requires2fa
+    challengeToken
+  }
+}`;
+
+export const TeamListDocument = gql`
+query TeamList {
+  users {
+    id
+    name
+    email
+    role
+    status
+  }
+}`;
+
+export const UpcomingTouchpointsDocument = gql`
+query UpcomingTouchpoints {
+  upcomingTouchpoints {
+    id
+    type
+    status
+    outcome
+    notes
+    scheduledAt
+    completedAt
+    companyId
+    contactId
   }
 }`;
 
 export const UpdateChangeRequestStatusDocument = gql`
-mutation UpdateChangeRequestStatus($id: ID!, $status: ChangeRequestStatus!, $note: String) {
-  updateChangeRequestStatus(id: $id, status: $status, note: $note) {
-    ...ChangeRequestDetail
+mutation UpdateChangeRequestStatus($id: ID!, $toStatus: String!, $reason: String) {
+  transitionChangeRequest(id: $id, toStatus: $toStatus, reason: $reason) {
+    ...ChangeRequestDetailFields
   }
 }
-fragment ChangeRequestDetail on ChangeRequest {
-  ...ChangeRequestRow
+fragment ChangeRequestDetailFields on ChangeRequestType {
+  id
+  projectId
+  companyId
+  title
+  type
   description
-  desiredDueDate
+  status
+  priority
   impactHours
+  impactCost
+  impactTimelineDays
   assessmentNotes
+  assignedPmId
+  requestedByContactId
   requiresClientApproval
   requiresInternalApproval
   revisionCount
-  decidedAt
-  decisionReason
-  approvals {
-    id
-    approverType
-    approverName
-    status
-    comment
-    decidedAt
-    createdAt
-  }
-  comments {
-    id
-    body
-    authorType
-    authorName
-    authorAvatarUrl
-    isClientVisible
-    createdAt
-  }
-  attachments {
-    id
-    name
-    fileUrl
-    mimeType
-    sizeBytes
-    version
-    uploadedByName
-    createdAt
-  }
-}
-fragment ChangeRequestRow on ChangeRequest {
-  id
-  reference
-  title
-  type
-  status
-  priority
-  impactCost
-  impactTimelineDays
-  awaitingParty
-  responseDueAt
-  isOverdue
+  desiredDueDate
+  submittedAt
   createdAt
-  updatedAt
-  company {
-    id
-    name
-  }
-  project {
-    id
-    name
-  }
-  requestedByContact {
-    id
-    fullName
-  }
-  assignedPm {
-    id
-    name
-    avatarUrl
-  }
 }`;
 
 export const UpdateCompanyDocument = gql`
-mutation UpdateCompany($id: ID!, $input: CompanyInput!) {
-  updateCompany(id: $id, input: $input) {
+mutation UpdateCompany($id: ID!, $name: String, $industry: String, $website: String, $logoUrl: String, $status: String, $accountOwnerId: ID, $healthScore: Float) {
+  updateCompany(
+    id: $id
+    name: $name
+    industry: $industry
+    website: $website
+    logoUrl: $logoUrl
+    status: $status
+    accountOwnerId: $accountOwnerId
+    healthScore: $healthScore
+  ) {
     ...CompanyRow
     ...CompanyHeader
   }
 }
-fragment CompanyHeader on Company {
+fragment CompanyHeader on CompanyType {
   id
   name
   industry
@@ -3098,379 +1944,215 @@ fragment CompanyHeader on Company {
   status
   healthScore
   accountOwner {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
+    ...UserSummaryFields
   }
 }
-fragment CompanyRow on Company {
+fragment CompanyRow on CompanyType {
   id
   name
   industry
   status
   healthScore
-  healthScoreTrend {
-    id
-    score
-  }
+  logoUrl
   contactCount
   projectCount
-  openChangeRequestCount
-  updatedAt
   accountOwner {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
+    ...UserSummaryFields
   }
   primaryContact {
     id
-    fullName
+    firstName
+    lastName
     email
+    isPrimary
   }
 }
-fragment TagFields on Tag {
+fragment UserSummaryFields on UserSummaryType {
   id
   name
-  color
+  email
+  role
+  avatarUrl
 }`;
 
 export const UpdateContactDocument = gql`
-mutation UpdateContact($id: ID!, $input: ContactInput!) {
-  updateContact(id: $id, input: $input) {
+mutation UpdateContact($id: ID!, $firstName: String, $lastName: String, $email: String, $phone: String, $title: String, $department: String, $isPrimary: Boolean, $preferredChannel: String, $timezone: String, $portalAccessEnabled: Boolean, $portalPassword: String, $linkedinUrl: String, $status: String) {
+  updateContact(
+    id: $id
+    firstName: $firstName
+    lastName: $lastName
+    email: $email
+    phone: $phone
+    title: $title
+    department: $department
+    isPrimary: $isPrimary
+    preferredChannel: $preferredChannel
+    timezone: $timezone
+    portalAccessEnabled: $portalAccessEnabled
+    portalPassword: $portalPassword
+    linkedinUrl: $linkedinUrl
+    status: $status
+  ) {
     ...ContactFields
-    company {
-      id
-      contactCount
-    }
   }
 }
-fragment ContactFields on Contact {
+fragment ContactFields on ContactType {
   id
+  companyId
   firstName
   lastName
-  fullName
   email
   phone
   title
   department
   isPrimary
   preferredChannel
-  bestTimeToContact
-  doNotContact
   timezone
   portalAccessEnabled
   linkedinUrl
   status
-  updatedAt
-}`;
-
-export const UpdateEnrollmentStatusDocument = gql`
-mutation UpdateEnrollmentStatus($id: ID!, $status: EnrollmentStatus!) {
-  updateEnrollmentStatus(id: $id, status: $status) {
-    ...SequenceEnrollmentFields
-  }
-}
-fragment SequenceEnrollmentFields on SequenceEnrollment {
-  id
-  status
-  currentStep
-  enrolledAt
-  company {
-    id
-    name
-    healthScore
-  }
-  contact {
-    id
-    fullName
-  }
 }`;
 
 export const UpdateMilestoneDocument = gql`
-mutation UpdateMilestone($id: ID!, $input: MilestoneInput!) {
-  updateMilestone(id: $id, input: $input) {
+mutation UpdateMilestone($id: ID!, $title: String, $orderIndex: Int, $status: String) {
+  updateMilestone(
+    id: $id
+    title: $title
+    orderIndex: $orderIndex
+    status: $status
+  ) {
     ...MilestoneFields
   }
 }
-fragment MilestoneFields on Milestone {
+fragment MilestoneFields on MilestoneType {
   id
+  phaseId
   title
-  description
-  dueDate
   status
-  requiresClientApproval
-  approvedAt
   orderIndex
-  tasks {
-    id
-    title
-    status
-  }
-  approvals {
-    id
-    status
-    approverName
-    decidedAt
-  }
 }`;
 
 export const UpdatePhaseDocument = gql`
-mutation UpdatePhase($id: ID!, $input: PhaseInput!) {
-  updatePhase(id: $id, input: $input) {
-    id
-    name
-    orderIndex
-    startDate
-    dueDate
-    status
+mutation UpdatePhase($id: ID!, $name: String, $orderIndex: Int, $status: String) {
+  updatePhase(id: $id, name: $name, orderIndex: $orderIndex, status: $status) {
+    ...PhaseFields
   }
+}
+fragment PhaseFields on PhaseType {
+  id
+  projectId
+  name
+  orderIndex
+  status
 }`;
 
 export const UpdateProjectDocument = gql`
-mutation UpdateProject($id: ID!, $input: ProjectInput!) {
-  updateProject(id: $id, input: $input) {
-    ...ProjectRow
+mutation UpdateProject($id: ID!, $name: String, $description: String, $status: String, $priority: String, $budget: Float, $health: String) {
+  updateProject(
+    id: $id
+    name: $name
+    description: $description
+    status: $status
+    priority: $priority
+    budget: $budget
+    health: $health
+  ) {
     ...ProjectHeader
   }
 }
-fragment ProjectHeader on Project {
+fragment ProjectHeader on ProjectType {
   id
   name
   description
   status
   health
   priority
-  startDate
-  endDate
   budget
   actualCost
-  completionPercent
-  company {
-    id
-    name
-  }
-  projectManager {
-    id
-    name
-    avatarUrl
-  }
-  team {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
-  }
-}
-fragment ProjectRow on Project {
-  id
-  name
-  status
-  health
-  priority
-  startDate
-  endDate
-  budget
-  actualCost
-  completionPercent
-  updatedAt
-  company {
-    id
-    name
-  }
-  projectManager {
-    id
-    name
-    avatarUrl
-  }
-  tags {
-    ...TagFields
-  }
-}
-fragment TagFields on Tag {
-  id
-  name
-  color
-}`;
-
-export const UpdateRetentionSequenceDocument = gql`
-mutation UpdateRetentionSequence($id: ID!, $input: RetentionSequenceInput!) {
-  updateRetentionSequence(id: $id, input: $input) {
-    ...SequenceSummary
-  }
-}
-fragment SequenceStepFields on RetentionSequenceStep {
-  id
-  stepOrder
-  name
-  channel
-  offsetDays
-  assigneeRole
-  templateId
-}
-fragment SequenceSummary on RetentionSequence {
-  id
-  name
-  description
-  triggerType
-  isActive
-  isTemplate
-  activeEnrollmentCount
-  steps {
-    ...SequenceStepFields
-  }
+  companyId
+  projectManagerId
 }`;
 
 export const UpdateTaskDocument = gql`
-mutation UpdateTask($id: ID!, $input: TaskInput!) {
-  updateTask(id: $id, input: $input) {
-    ...TaskDetail
+mutation UpdateTask($id: ID!, $title: String, $status: String, $priority: String, $estimatedHours: Float, $actualHours: Float) {
+  updateTask(
+    id: $id
+    title: $title
+    status: $status
+    priority: $priority
+    estimatedHours: $estimatedHours
+    actualHours: $actualHours
+  ) {
+    ...TaskFields
   }
 }
-fragment TaskCard on Task {
+fragment TaskFields on TaskType {
   id
+  projectId
+  phaseId
+  milestoneId
+  parentTaskId
   title
+  description
+  assigneeId
   status
   priority
-  startDate
-  dueDate
   estimatedHours
   actualHours
-  orderIndex
-  assignee {
-    id
-    name
-    avatarUrl
-  }
-  phase {
-    id
-    name
-  }
-  milestone {
-    id
-    title
-  }
   subtasks {
     id
     title
     status
-    orderIndex
-    assignee {
-      id
-      name
-    }
+    assigneeId
+    parentTaskId
   }
   dependencies {
     id
     type
-    dependsOnTask {
-      id
-      title
-      status
-      dueDate
-    }
-  }
-}
-fragment TaskDetail on Task {
-  ...TaskCard
-  description
-  parentTask {
-    id
-    title
+    dependsOnTaskId
   }
 }`;
 
 export const UpdateTaskStatusDocument = gql`
-mutation UpdateTaskStatus($id: ID!, $status: TaskStatus!, $orderIndex: Int!) {
-  updateTaskStatus(id: $id, status: $status, orderIndex: $orderIndex) {
+mutation UpdateTaskStatus($id: ID!, $status: String!) {
+  updateTask(id: $id, status: $status) {
+    ...TaskFields
+  }
+}
+fragment TaskFields on TaskType {
+  id
+  projectId
+  phaseId
+  milestoneId
+  parentTaskId
+  title
+  description
+  assigneeId
+  status
+  priority
+  estimatedHours
+  actualHours
+  subtasks {
     id
+    title
     status
-    orderIndex
+    assigneeId
+    parentTaskId
+  }
+  dependencies {
+    id
+    type
+    dependsOnTaskId
   }
 }`;
 
-export const WithdrawChangeRequestDocument = gql`
-mutation WithdrawChangeRequest($id: ID!, $reason: String) {
-  withdrawChangeRequest(id: $id, reason: $reason) {
-    ...ChangeRequestDetail
-  }
-}
-fragment ChangeRequestDetail on ChangeRequest {
-  ...ChangeRequestRow
-  description
-  desiredDueDate
-  impactHours
-  assessmentNotes
-  requiresClientApproval
-  requiresInternalApproval
-  revisionCount
-  decidedAt
-  decisionReason
-  approvals {
+export const UpdateUserDocument = gql`
+mutation UpdateUser($id: ID!, $name: String, $role: String, $status: String) {
+  updateUser(id: $id, name: $name, role: $role, status: $status) {
     id
-    approverType
-    approverName
+    name
+    email
+    role
     status
-    comment
-    decidedAt
-    createdAt
-  }
-  comments {
-    id
-    body
-    authorType
-    authorName
-    authorAvatarUrl
-    isClientVisible
-    createdAt
-  }
-  attachments {
-    id
-    name
-    fileUrl
-    mimeType
-    sizeBytes
-    version
-    uploadedByName
-    createdAt
-  }
-}
-fragment ChangeRequestRow on ChangeRequest {
-  id
-  reference
-  title
-  type
-  status
-  priority
-  impactCost
-  impactTimelineDays
-  awaitingParty
-  responseDueAt
-  isOverdue
-  createdAt
-  updatedAt
-  company {
-    id
-    name
-  }
-  project {
-    id
-    name
-  }
-  requestedByContact {
-    id
-    fullName
-  }
-  assignedPm {
-    id
-    name
-    avatarUrl
   }
 }`;

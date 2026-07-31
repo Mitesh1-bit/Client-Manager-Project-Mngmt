@@ -66,7 +66,7 @@ function entryMeta(action) {
  *
  * @param {{ entries: Array<{ id: string, action: string, summary: string, actorName?: string | null, createdAt: string }>, limit?: number, className?: string }} props
  */
-export function ActivityTimeline({ entries, limit, className }) {
+export function ActivityTimeline({ entries = [], limit, className }) {
   const visible = limit ? entries.slice(0, limit) : entries;
 
   return (

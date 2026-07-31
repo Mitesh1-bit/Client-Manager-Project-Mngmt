@@ -1,0 +1,29 @@
+query TeamList {
+  users {
+    id
+    name
+    email
+    role
+    status
+  }
+}
+
+mutation CreateUser($name: String!, $email: String!, $password: String!, $role: String!) {
+  createUser(name: $name, email: $email, password: $password, role: $role) {
+    id
+    name
+    email
+    role
+    status
+  }
+}
+
+mutation UpdateUser($id: ID!, $name: String, $role: String, $status: String) {
+  updateUser(id: $id, name: $name, role: $role, status: $status) {
+    id
+    name
+    email
+    role
+    status
+  }
+}

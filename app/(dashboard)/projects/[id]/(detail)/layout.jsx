@@ -9,6 +9,8 @@ import { Button } from "@/app/components/ui/button";
 import { Progress } from "@/app/components/ui/progress";
 import { formatCurrency, formatDate, initials } from "@/app/lib/format";
 import { getClient } from "@/app/lib/graphql/apollo-client";
+import { normalizeProject } from "@/app/lib/api/normalize";
+import { pickList } from "@/app/lib/api/safe-list";
 import { ProjectDetailHeaderDocument } from "@/app/lib/graphql/generated/documents";
 import { parseDay, startOfDay } from "@/app/lib/project";
 import { cn } from "@/app/lib/utils";
@@ -29,7 +31,9 @@ export default async function ProjectDetailLayout({ children, params }) {
     variables: { id },
   });
 
-  const project = data.project;
+  const companiesById = new Map(pickList(data, "companies").map((company) => [company.id, company]));
+  const usersById = new Map(pickList(data, "users").map((user) => [user.id, user]));
+  const project = normalizeProject(data.project, usersById, companiesById);
   if (!project) notFound();
 
   const tabs = [
@@ -57,13 +61,17 @@ export default async function ProjectDetailLayout({ children, params }) {
             <ChevronLeft aria-hidden="true" className="size-4" />
             Projects
           </Link>
-          <span aria-hidden="true">/</span>
-          <Link
-            href={`/companies/${project.company.id}`}
-            className="rounded-sm hover:text-foreground hover:underline focus-ring"
-          >
-            {project.company.name}
-          </Link>
+            {project.company ? (
+              <>
+                <span aria-hidden="true">/</span>
+                <Link
+                  href={`/companies/${project.company.id}`}
+                  className="rounded-sm hover:text-foreground hover:underline focus-ring"
+                >
+                  {project.company.name}
+                </Link>
+              </>
+            ) : null}
         </div>
 
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -79,7 +87,7 @@ export default async function ProjectDetailLayout({ children, params }) {
                 {project.description}
               </p>
             ) : null}
-            {project.tags.length ? <TagList tags={project.tags} className="mt-2.5" /> : null}
+            {(project.tags?.length ?? 0) > 0 ? <TagList tags={project.tags} className="mt-2.5" /> : null}
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
@@ -138,7 +146,7 @@ export default async function ProjectDetailLayout({ children, params }) {
             <dt className="text-caption text-muted-foreground">Team</dt>
             <dd className="mt-1.5 flex items-center gap-2">
               <ul className="flex -space-x-1.5">
-                {project.team.map((member) => (
+                {(project.team ?? []).map((member) => (
                   <li key={member.id}>
                     <span
                       title={member.name}

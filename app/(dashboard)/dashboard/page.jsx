@@ -4,6 +4,7 @@ import { PageHeader } from "@/app/components/domain/page-header";
 import { StatusBadge } from "@/app/components/domain/status-badge";
 import { ErrorState } from "@/app/components/domain/states";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
+import { normalizeCompany, normalizeProject } from "@/app/lib/api/normalize";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { FoundationSummaryDocument } from "@/app/lib/graphql/generated/documents";
 import { requireViewer } from "@/app/lib/graphql/viewer";
@@ -16,7 +17,17 @@ export default async function DashboardPage() {
   let summary = null;
   try {
     const { data } = await getClient().query({ query: FoundationSummaryDocument });
-    summary = data;
+    summary = {
+      companies: {
+        totalCount: data.companies?.length ?? 0,
+        nodes: (data.companies ?? []).map(normalizeCompany),
+      },
+      projects: {
+        totalCount: data.projects?.length ?? 0,
+        nodes: (data.projects ?? []).map((project) => normalizeProject(project)),
+      },
+      changeRequestDashboard: data.changeRequestDashboard,
+    };
   } catch {
     summary = null;
   }
@@ -26,7 +37,7 @@ export default async function DashboardPage() {
       <PageHeader
         eyebrow={viewer.organization.name}
         title={`Good to see you, ${viewer.name.split(" ")[0]}`}
-        description="The KPI dashboard lands with the reporting work. For now this page confirms the foundation is wired end to end: Server Components querying GraphQL through Apollo, against the local mock schema."
+        description="Your workspace overview — companies, projects, and change requests at a glance."
       />
 
       {summary ? <SummaryGrid summary={summary} /> : <ErrorState />}
@@ -37,9 +48,7 @@ export default async function DashboardPage() {
 function SummaryGrid({ summary }) {
   const activeProjects = summary.projects.nodes.filter((project) => project.status === "ACTIVE");
   const atRiskProjects = activeProjects.filter((project) => project.health !== "ON_TRACK");
-  const openChangeRequests = summary.changeRequests.filter(
-    (request) => !["APPROVED", "REJECTED", "CLOSED", "IMPLEMENTED"].includes(request.status),
-  );
+  const openCount = summary.changeRequestDashboard?.openCount ?? 0;
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -58,13 +67,13 @@ function SummaryGrid({ summary }) {
       <SummaryCard
         icon={GitPullRequestArrow}
         label="Open change requests"
-        value={openChangeRequests.length}
-        detail={`${summary.changeRequests.length} total on record`}
+        value={openCount}
+        detail={`${summary.changeRequestDashboard?.pendingApprovalCount ?? 0} pending approval`}
       />
 
       <Card className="sm:col-span-2 xl:col-span-3">
         <CardHeader>
-          <CardTitle className="text-subheading">Project health, straight from the mock API</CardTitle>
+          <CardTitle className="text-subheading">Project health snapshot</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
           {activeProjects.map((project) => (

@@ -6,20 +6,35 @@ import { useApolloClient, useMutation } from "@apollo/client/react";
 import { LogOut } from "lucide-react";
 
 import { DropdownMenuItem } from "@/app/components/ui/dropdown-menu";
-import { LogoutDocument } from "@/app/lib/graphql/generated/documents";
+import { CLIENT_LOGIN_PATH, LOGIN_PATH } from "@/app/lib/auth/routes";
+import {
+  LogoutDocument,
+  PortalLogoutDocument,
+} from "@/app/lib/graphql/generated/documents";
 
-export function SignOutMenuItem() {
+/**
+ * @param {{ scope?: 'INTERNAL' | 'PORTAL' }} props
+ */
+export function SignOutMenuItem({ scope = "INTERNAL" }) {
   const router = useRouter();
   const apollo = useApolloClient();
   const [logout] = useMutation(LogoutDocument);
+  const [portalLogout] = useMutation(PortalLogoutDocument);
   const [pending, setPending] = useState(false);
 
   async function signOut() {
     setPending(true);
-    await logout().catch(() => null);
+    const isPortal = scope === "PORTAL";
+
+    if (isPortal) {
+      await portalLogout().catch(() => null);
+    } else {
+      await logout().catch(() => null);
+    }
+
     await fetch("/api/auth/session", { method: "DELETE" });
     await apollo.clearStore();
-    router.replace("/login");
+    router.replace(isPortal ? CLIENT_LOGIN_PATH : LOGIN_PATH);
     router.refresh();
   }
 

@@ -568,10 +568,9 @@ type ProjectConnection {
 }
 
 type AuthPayload {
-  accessToken: String!
-  expiresAt: DateTime!
-  scope: AuthScope!
-  user: User!
+  accessToken: String
+  requires2fa: Boolean!
+  challengeToken: String
 }
 
 input PageInput {

@@ -88,16 +88,16 @@ export function sequenceToFormValues(sequence) {
           .map((step) => ({
             clientId: nextClientId(),
             name: step.name,
-            channel: step.channel,
+            channel: step.channel === "EMAIL" ? "CALL" : step.channel,
             offsetDays: step.offsetDays,
             assigneeRole: step.assigneeRole ?? "",
-            templateId: step.templateId ?? "",
+            templateId: step.channel === "EMAIL" ? "" : (step.templateId ?? ""),
           }))
       : [
           {
             clientId: nextClientId(),
             name: "",
-            channel: "EMAIL",
+            channel: "CALL",
             offsetDays: 0,
             assigneeRole: "",
             templateId: "",

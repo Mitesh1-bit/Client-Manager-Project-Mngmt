@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
 import { PageHeader } from "@/app/components/domain/page-header";
+import { normalizePortalProjects } from "@/app/lib/api/portal";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { PortalProjectsDocument } from "@/app/lib/graphql/generated/documents";
 
@@ -27,7 +28,7 @@ export default async function NewChangeRequestPage() {
         description="Ask for something outside the agreed scope — a new feature, a different date, more budget. We'll come back with what it involves before anything is booked in."
       />
 
-      <ChangeRequestForm projects={data.projects.nodes} />
+      <ChangeRequestForm projects={normalizePortalProjects(data.portalProjects)} />
     </div>
   );
 }

@@ -34,7 +34,7 @@ import { cn } from "@/app/lib/utils";
  *
  * @param {{ touchpoints: unknown[], className?: string }} props
  */
-export function TouchpointTimeline({ touchpoints, className }) {
+export function TouchpointTimeline({ touchpoints = [], className }) {
   const sorted = [...touchpoints].sort((a, b) => {
     const upcoming = (tp) => (tp.status === "SCHEDULED" || tp.status === "OVERDUE" ? 0 : 1);
     if (upcoming(a) !== upcoming(b)) return upcoming(a) - upcoming(b);

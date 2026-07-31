@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useApolloClient, useMutation } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,12 +13,14 @@ import { FormField } from "@/app/components/domain/form-field";
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
-import { safeNextPath } from "@/app/lib/auth/routes";
-import { GRAPHQL_URL } from "@/app/lib/graphql/endpoint";
-import { LoginDocument } from "@/app/lib/graphql/generated/documents";
+import { establishSession } from "@/app/lib/auth/establish-session";
+import { PORTAL_HOME } from "@/app/lib/auth/routes";
+import { isMockGraphqlEndpoint } from "@/app/lib/graphql/endpoint";
+import { LoginDocument, PortalLoginDocument } from "@/app/lib/graphql/generated/documents";
+import { formatGraphqlError } from "@/app/lib/graphql/format-error";
 import { DEMO_PASSWORD, demoAccounts } from "@/app/lib/mocks/demo-accounts";
 
-const USING_MOCK_BACKEND = GRAPHQL_URL === "/api/graphql";
+const USING_MOCK_BACKEND = isMockGraphqlEndpoint;
 
 const schema = z.object({
   email: z.string().min(1, "Enter your work email.").email("That doesn't look like an email."),
@@ -26,11 +28,11 @@ const schema = z.object({
 });
 
 export function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const apollo = useApolloClient();
   const [submitError, setSubmitError] = useState(null);
   const [login] = useMutation(LoginDocument);
+  const [portalLogin] = useMutation(PortalLoginDocument);
 
   const {
     register,
@@ -44,27 +46,59 @@ export function LoginForm() {
 
   async function onSubmit(values) {
     setSubmitError(null);
+    const credentials = {
+      email: values.email.trim().toLowerCase(),
+      password: values.password,
+    };
+
     try {
-      const { data } = await login({ variables: values });
-      const payload = data.login;
+      const { data } = await login({ variables: credentials });
+      const payload = data?.login;
+      if (!payload) throw new Error("Unexpected response from the server.");
 
-      const response = await fetch("/api/auth/session", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ accessToken: payload.accessToken }),
-      });
-      if (!response.ok) throw new Error("We couldn't start your session. Try again.");
+      if (payload.requires2fa) {
+        throw new Error("Two-factor authentication is required for this account. Use the API TOTP flow.");
+      }
+      if (!payload.accessToken) {
+        throw new Error("We couldn't verify your credentials. Check your email and password.");
+      }
 
-      await apollo.clearStore();
-      router.replace(safeNextPath(searchParams.get("next"), payload.scope));
-      router.refresh();
+      await establishSession(apollo, payload.accessToken, searchParams.get("next"));
     } catch (error) {
-      setSubmitError(error?.message ?? "Something went wrong. Try again.");
+      const message = formatGraphqlError(error, "");
+      if (message !== "Invalid credentials") {
+        setSubmitError(message || "Something went wrong. Try again.");
+        return;
+      }
+
+      // Staff login failed — try client portal credentials on the same form.
+      try {
+        const { data } = await portalLogin({ variables: credentials });
+        const token = data?.portalLogin?.accessToken;
+        if (!token) {
+          throw new Error("Invalid credentials");
+        }
+        const next = searchParams.get("next") ?? PORTAL_HOME;
+        await establishSession(apollo, token, next);
+      } catch (portalError) {
+        setSubmitError(
+          formatGraphqlError(portalError, "Invalid credentials") +
+            " Check your email and password. Client contacts must use the portal password set under Companies → Contacts (not a staff password).",
+        );
+      }
     }
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+    <form
+      method="post"
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault();
+        void handleSubmit(onSubmit)(event);
+      }}
+      className="space-y-5"
+    >
       {submitError ? (
         <Alert variant="destructive">
           <AlertTitle>Couldn&apos;t sign you in</AlertTitle>
@@ -98,10 +132,10 @@ export function LoginForm() {
       </FormField>
 
       <div className="flex items-center justify-between">
-        <Link href="/sso" className="text-caption text-primary hover:underline">
+        <Link href="/sso" className="text-caption font-medium text-mkt-cta hover:underline">
           Use single sign-on
         </Link>
-        <Link href="/sso" className="text-caption text-muted-foreground hover:underline">
+        <Link href="/sso" className="text-caption text-mkt-navy/60 hover:underline">
           Forgot password?
         </Link>
       </div>
@@ -116,6 +150,13 @@ export function LoginForm() {
           "Sign in"
         )}
       </Button>
+
+      <p className="text-center text-caption text-mkt-navy/70">
+        Client contact?{" "}
+        <Link href="/client-login" className="font-medium text-mkt-cta hover:underline">
+          Client portal sign in
+        </Link>
+      </p>
 
       {USING_MOCK_BACKEND ? (
         <DemoAccountPicker

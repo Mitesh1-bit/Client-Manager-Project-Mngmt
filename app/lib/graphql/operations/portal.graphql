@@ -1,46 +1,9 @@
-fragment PortalApprovalFields on Approval {
-  id
-  approverType
-  approverName
-  status
-  comment
-  decidedAt
-  createdAt
-}
-
-fragment PortalDocumentFields on Document {
+fragment PortalProjectRow on PortalProjectType {
   id
   name
-  fileUrl
-  mimeType
-  sizeBytes
-  version
-  uploadedByName
-  createdAt
-}
-
-fragment PortalMilestoneFields on Milestone {
-  id
-  title
-  description
-  dueDate
-  status
-  requiresClientApproval
-  approvedAt
-  approvals {
-    ...PortalApprovalFields
-  }
-  documents {
-    ...PortalDocumentFields
-  }
-}
-
-fragment PortalProjectSummary on Project {
-  id
-  name
-  description
   status
   health
+  description
   startDate
   endDate
   completionPercent
@@ -48,175 +11,238 @@ fragment PortalProjectSummary on Project {
     id
     name
     email
-    avatarUrl
   }
 }
 
-query PortalOverview {
+fragment PortalMilestoneFields on MilestoneType {
+  id
+  title
+  description
+  status
+  dueDate
+  approvedAt
+  requiresClientApproval
+  approvals {
+    id
+    approverType
+    status
+    comment
+    decidedAt
+    approverName
+  }
+}
+
+fragment PortalChangeRequestFields on ChangeRequestType {
+  id
+  projectId
+  companyId
+  title
+  type
+  description
+  status
+  priority
+  impactCost
+  impactTimelineDays
+  impactHours
+  assessmentNotes
+  requiresClientApproval
+  requiresInternalApproval
+  revisionCount
+  desiredDueDate
+  submittedAt
+  createdAt
+  updatedAt
+  approvals {
+    id
+    approverType
+    status
+    comment
+    decidedAt
+    approverName
+  }
+}
+
+query PortalChangeRequestList {
+  portalChangeRequests {
+    ...PortalChangeRequestFields
+  }
+  portalProjects {
+    ...PortalProjectRow
+  }
   me {
+    contact {
+      firstName
+      lastName
+    }
+  }
+}
+
+query PortalChangeRequestDetail($id: ID!) {
+  portalChangeRequest(id: $id) {
+    ...PortalChangeRequestFields
+  }
+  portalProjects {
     id
     name
-    company {
-      id
-      name
-    }
-    contact {
-      id
-      fullName
-    }
-  }
-  projects(page: { pageSize: 50, sortBy: "endDate" }) {
-    totalCount
-    nodes {
-      ...PortalProjectSummary
-      milestones {
-        ...PortalMilestoneFields
-      }
-    }
-  }
-  changeRequests {
-    id
-    reference
-    title
-    status
-    updatedAt
   }
 }
 
-query PortalProjects {
-  projects(page: { pageSize: 50, sortBy: "endDate" }) {
-    totalCount
-    nodes {
-      ...PortalProjectSummary
-      milestones {
-        id
-        title
-        dueDate
-        status
-        requiresClientApproval
-        approvedAt
-        approvals {
-          ...PortalApprovalFields
-        }
-      }
-    }
+query PortalApprovals {
+  portalPendingApprovals {
+    id
+    entityType
+    entityId
+    approverType
+    status
+    comment
+    decidedAt
+  }
+  portalProjects {
+    id
+    name
   }
 }
 
 query PortalProject($id: ID!) {
-  me {
-    id
-    contact {
-      id
-      fullName
-    }
-  }
-  project(id: $id) {
-    ...PortalProjectSummary
-    company {
-      id
-      name
-    }
+  project: portalProject(id: $id) {
+    ...PortalProjectRow
     phases {
       id
       name
-      orderIndex
-      startDate
-      dueDate
-      status
       milestones {
         ...PortalMilestoneFields
       }
     }
     milestones {
       ...PortalMilestoneFields
-      phase {
-        id
-        name
-      }
     }
     documents {
-      ...PortalDocumentFields
+      id
+      fileUrl
+      version
+      entityType
+      entityId
     }
     changeRequests {
       id
-      reference
       title
       status
+      createdAt
       updatedAt
+    }
+  }
+  me {
+    contact {
+      firstName
+      lastName
     }
   }
 }
 
-query PortalApprovals {
-  me {
+query PortalOverview {
+  portalCompany {
     id
-    contact {
-      id
-      fullName
-    }
+    name
+    status
   }
-  projects(page: { pageSize: 50 }) {
-    nodes {
-      id
-      name
-      milestones {
-        ...PortalMilestoneFields
-        phase {
-          id
-          name
-        }
-      }
-    }
+  portalProjects {
+    ...PortalProjectRow
+  }
+  portalPendingApprovals {
+    id
+    entityType
+    entityId
+    approverType
+    status
+    comment
+    decidedAt
+  }
+  portalChangeRequests {
+    id
+    title
+    status
+    projectId
+    updatedAt
+  }
+}
+
+query PortalProjects {
+  portalProjects {
+    ...PortalProjectRow
   }
 }
 
 query PortalDocuments {
-  me {
+  portalDocuments {
     id
-    company {
-      id
-      name
-      documents {
-        ...PortalDocumentFields
-      }
-    }
-  }
-  projects(page: { pageSize: 50 }) {
-    nodes {
-      id
-      name
-      documents {
-        ...PortalDocumentFields
-      }
-      milestones {
-        id
-        title
-        documents {
-          ...PortalDocumentFields
-        }
-      }
-    }
-  }
-}
-
-mutation DecideMilestoneApproval($id: ID!, $decision: ApprovalDecision!) {
-  decideMilestoneApproval(id: $id, decision: $decision) {
-    ...PortalMilestoneFields
-  }
-}
-
-mutation RequestUploadUrl($input: UploadRequestInput!) {
-  requestUploadUrl(input: $input) {
-    uploadId
-    uploadUrl
+    entityType
+    entityId
     fileUrl
-    expiresAt
+    version
+    uploadedBy
+  }
+  portalProjects {
+    id
+    name
   }
 }
 
-mutation ConfirmUpload($input: ConfirmUploadInput!) {
-  confirmUpload(input: $input) {
-    ...PortalDocumentFields
+mutation PortalLogin($email: String!, $password: String!) {
+  portalLogin(email: $email, password: $password) {
+    accessToken
+  }
+}
+
+mutation PortalLogout {
+  portalLogout
+}
+
+mutation ApproveMilestone($approvalId: ID!) {
+  approveMilestone(approvalId: $approvalId) {
+    id
+    status
+    decidedAt
+  }
+}
+
+mutation RequestMilestoneChanges($approvalId: ID!, $comment: String!) {
+  requestMilestoneChanges(approvalId: $approvalId, comment: $comment) {
+    id
+    status
+    comment
+  }
+}
+
+mutation ResubmitChangeRequest($id: ID!) {
+  resubmitChangeRequest(id: $id) {
+    id
+    status
+    revisionCount
+  }
+}
+
+mutation RequestUploadUrl(
+  $entityType: String!
+  $entityId: ID!
+  $filename: String!
+  $contentType: String!
+) {
+  requestUploadUrl(
+    entityType: $entityType
+    entityId: $entityId
+    filename: $filename
+    contentType: $contentType
+  ) {
+    uploadUrl
+    uploadToken
+    fileUrl
+  }
+}
+
+mutation ConfirmUpload($entityType: String!, $entityId: ID!, $fileUrl: String!) {
+  confirmUpload(entityType: $entityType, entityId: $entityId, fileUrl: $fileUrl) {
+    id
+    fileUrl
+    version
   }
 }

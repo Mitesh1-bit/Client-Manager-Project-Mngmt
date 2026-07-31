@@ -45,12 +45,13 @@ export function DataTable({
   caption,
 }) {
   const router = useRouter();
+  const rows = Array.isArray(data) ? data : [];
 
   // React Compiler skips memoizing this component: `useReactTable` returns
   // functions it can't safely memoize. That's fine — rows are re-rendered on
   // navigation anyway, and the page sizes here are small.
   const table = useReactTable({
-    data,
+    data: rows,
     columns,
     getCoreRowModel: getCoreRowModel(),
     manualSorting: true,
@@ -59,7 +60,7 @@ export function DataTable({
     state: { sorting: sort ? [sort] : [] },
   });
 
-  if (data.length === 0 && emptyState) return emptyState;
+  if (rows.length === 0 && emptyState) return emptyState;
 
   function toggleSort(column) {
     if (!onSortChange) return;

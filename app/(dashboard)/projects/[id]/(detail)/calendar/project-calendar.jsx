@@ -36,10 +36,10 @@ const TASK_TONE = {
 export function ProjectCalendar({
   projectId,
   project,
-  tasks,
-  phases,
-  milestones,
-  users,
+  tasks = [],
+  phases = [],
+  milestones = [],
+  users = [],
 }) {
   const [panel, setPanel] = useState(null);
   const [expandedDay, setExpandedDay] = useState(null);

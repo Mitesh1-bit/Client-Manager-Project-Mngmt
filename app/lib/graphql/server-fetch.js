@@ -38,9 +38,21 @@ export async function serverFetch(input, init) {
   const accessToken = cookieStore.get(SESSION_COOKIE)?.value;
   if (accessToken) requestHeaders.set("authorization", `Bearer ${accessToken}`);
 
-  return fetch(await toAbsolute(String(input)), {
+  const response = await fetch(await toAbsolute(String(input)), {
     ...init,
     headers: requestHeaders,
     cache: "no-store",
   });
+
+  if (!response.ok) {
+    const body = await response.clone().text().catch(() => "");
+    console.error("[GraphQL HTTP]", {
+      status: response.status,
+      statusText: response.statusText,
+      url: String(input),
+      body: body.slice(0, 500),
+    });
+  }
+
+  return response;
 }

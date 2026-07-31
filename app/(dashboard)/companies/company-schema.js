@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { toApiStatus, toUiStatus } from "@/app/lib/api/normalize";
+
 /**
  * Client-side validation for the company form. The GraphQL schema (and the
  * service layer behind it) remains the source of truth — this exists to give
@@ -80,7 +82,7 @@ export function companyToFormValues(company) {
     website: company?.website ?? "",
     size: company?.size ?? "",
     timezone: company?.timezone ?? "",
-    status: company?.status ?? "LEAD",
+    status: toUiStatus("companyStatus", company?.status) ?? "LEAD",
     accountOwnerId: company?.accountOwner?.id ?? "",
     tagIds: company?.tags?.map((tag) => tag.id) ?? [],
     address: {
@@ -98,4 +100,33 @@ export function companyToFormValues(company) {
 export function toCompanyInput(values) {
   const address = Object.values(values.address).some(Boolean) ? values.address : null;
   return { ...values, address };
+}
+
+/** Maps form values to backend createCompany variables. */
+export function toCreateCompanyVariables(values) {
+  const input = toCompanyInput(values);
+  return {
+    name: input.name,
+    industry: input.industry,
+    website: input.website,
+    logoUrl: null,
+    status: toApiStatus("companyStatus", input.status),
+    accountOwnerId: input.accountOwnerId || null,
+    healthScore: null,
+  };
+}
+
+/** Maps form values to backend updateCompany variables. */
+export function toUpdateCompanyVariables(id, values) {
+  const input = toCompanyInput(values);
+  return {
+    id,
+    name: input.name,
+    industry: input.industry,
+    website: input.website,
+    logoUrl: null,
+    status: toApiStatus("companyStatus", input.status),
+    accountOwnerId: input.accountOwnerId || null,
+    healthScore: null,
+  };
 }

@@ -1,0 +1,21 @@
+# Meridian — Client & project management for agencies
+# https://meridian.example.com
+
+> Meridian unifies companies, projects, change requests, client portal access, retention sequences, and health scores for modern agencies.
+
+## Product
+- [Home](https://meridian.example.com/)
+- [Product overview](https://meridian.example.com/product)
+- [Solutions by role](https://meridian.example.com/solutions)
+
+## Resources
+- [Guides](https://meridian.example.com/blog)
+- [Sign in](https://meridian.example.com/login)
+- [Full LLM context](https://meridian.example.com/llms-full.txt)
+
+## Direct answer
+Meridian is client and project management software for agencies that need structured change approvals, a client portal, retention automation, and client health scoring in one platform.
+
+## Legal
+- [Privacy](https://meridian.example.com/privacy)
+- [Terms](https://meridian.example.com/terms)

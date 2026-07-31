@@ -5,6 +5,7 @@ import { ChevronLeft, Pencil, UserPlus, Users } from "lucide-react";
 import { EnrollInSequenceDialog } from "@/app/components/domain/enroll-in-sequence-dialog";
 import { SectionCard, EmptyState } from "@/app/components/domain/states";
 import { Button } from "@/app/components/ui/button";
+import { pickList } from "@/app/lib/api/safe-list";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   RetentionFormOptionsDocument,
@@ -46,7 +47,7 @@ export default async function SequenceDetailPage({ params }) {
   const enrolledCompanyIds = new Set(
     sequence.enrollments.filter((e) => e.status === "ACTIVE").map((e) => e.company.id),
   );
-  const enrollableCompanies = options.companies.nodes.filter(
+  const enrollableCompanies = pickList(options, "companies").filter(
     (company) => !enrolledCompanyIds.has(company.id),
   );
 

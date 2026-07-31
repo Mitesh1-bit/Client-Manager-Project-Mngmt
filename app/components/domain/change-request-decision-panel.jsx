@@ -51,13 +51,25 @@ export function ChangeRequestDecisionPanel({ request, approverType }) {
       return;
     }
 
+    const mine = (request.approvals ?? []).find(
+      (approval) =>
+        approval.approverType === approverType && approval.status === "PENDING",
+    );
+
+    if (!mine?.id) {
+      toast.error("No pending approval found for you on this request.");
+      return;
+    }
+
     setError(null);
     setPending(outcome);
     try {
       await decide({
         variables: {
           id: request.id,
-          decision: { outcome, approverType, comment: comment.trim() || null },
+          approvalId: mine.id,
+          decision: outcome === "APPROVED" ? "approved" : "rejected",
+          comment: comment.trim() || null,
         },
       });
       toast.success(

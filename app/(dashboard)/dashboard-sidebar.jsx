@@ -20,9 +20,15 @@ import {
 } from "@/app/components/ui/sidebar";
 
 import { FOOTER_NAV, NAV_GROUPS, isNavItemActive } from "./nav-config";
+import { filterNavItems } from "@/app/lib/rbac";
 
 export function DashboardSidebar({ viewer, organizationName }) {
   const pathname = usePathname();
+  const navGroups = NAV_GROUPS.map((group) => ({
+    ...group,
+    items: filterNavItems(viewer.role, group.items),
+  })).filter((group) => group.items.length > 0);
+  const footerNav = filterNavItems(viewer.role, FOOTER_NAV);
 
   return (
     <Sidebar collapsible="icon">
@@ -30,7 +36,7 @@ export function DashboardSidebar({ viewer, organizationName }) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/">
+              <Link href="/dashboard">
                 <BrandMark className="bg-sidebar-primary text-sidebar-primary-foreground" />
                 <span className="flex min-w-0 flex-col leading-tight">
                   <span className="truncate font-semibold tracking-tight">Meridian</span>
@@ -43,7 +49,7 @@ export function DashboardSidebar({ viewer, organizationName }) {
       </SidebarHeader>
 
       <SidebarContent>
-        {NAV_GROUPS.map((group) => (
+        {navGroups.map((group) => (
           <SidebarGroup key={group.label}>
             <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
             <SidebarGroupContent>
@@ -74,7 +80,7 @@ export function DashboardSidebar({ viewer, organizationName }) {
 
       <SidebarFooter>
         <SidebarMenu>
-          {FOOTER_NAV.map((item) => {
+          {footerNav.map((item) => {
             const active = isNavItemActive(pathname, item);
             return (
               <SidebarMenuItem key={item.href}>

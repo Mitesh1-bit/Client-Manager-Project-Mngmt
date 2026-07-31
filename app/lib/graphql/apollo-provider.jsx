@@ -1,6 +1,6 @@
 "use client";
 
-import { HttpLink } from "@apollo/client";
+import { from, HttpLink } from "@apollo/client";
 import {
   ApolloClient,
   ApolloNextAppProvider,
@@ -8,16 +8,20 @@ import {
 } from "@apollo/client-integration-nextjs";
 
 import { cacheConfig } from "./cache-config";
+import { createGraphqlErrorLink } from "./error-link";
 import { GRAPHQL_URL } from "./endpoint";
 
 function makeClient() {
   return new ApolloClient({
     cache: new InMemoryCache(cacheConfig),
-    link: new HttpLink({
-      uri: GRAPHQL_URL,
-      credentials: "include",
-      fetchOptions: { cache: "no-store" },
-    }),
+    link: from([
+      createGraphqlErrorLink("client"),
+      new HttpLink({
+        uri: GRAPHQL_URL,
+        credentials: "include",
+        fetchOptions: { cache: "no-store" },
+      }),
+    ]),
   });
 }
 

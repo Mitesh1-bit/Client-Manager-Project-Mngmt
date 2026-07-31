@@ -11,21 +11,48 @@ export const NAV_GROUPS = [
   {
     label: "Workspace",
     items: [
-      { href: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
-      { href: "/companies", label: "Companies", icon: Building2 },
-      { href: "/projects", label: "Projects", icon: FolderKanban },
+      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
+      {
+        href: "/companies",
+        label: "Companies",
+        icon: Building2,
+        roles: ["admin", "account_manager", "project_manager", "team_member", "finance_admin", "executive_viewer"],
+      },
+      {
+        href: "/projects",
+        label: "Projects",
+        icon: FolderKanban,
+        roles: ["admin", "account_manager", "project_manager", "team_member", "finance_admin", "executive_viewer"],
+      },
     ],
   },
   {
     label: "Operations",
     items: [
-      { href: "/change-requests", label: "Change requests", icon: GitPullRequestArrow },
-      { href: "/retention", label: "Retention", icon: HeartHandshake },
+      {
+        href: "/change-requests",
+        label: "Change requests",
+        icon: GitPullRequestArrow,
+        roles: ["admin", "account_manager", "project_manager"],
+      },
+      {
+        href: "/retention",
+        label: "Retention",
+        icon: HeartHandshake,
+        roles: ["admin", "account_manager", "project_manager"],
+      },
     ],
   },
 ];
 
-export const FOOTER_NAV = [{ href: "/settings", label: "Settings", icon: Settings }];
+export const FOOTER_NAV = [
+  {
+    href: "/settings",
+    label: "Settings",
+    icon: Settings,
+    roles: ["admin", "account_manager", "project_manager", "team_member", "finance_admin", "executive_viewer"],
+  },
+];
 
 /**
  * @param {string} pathname

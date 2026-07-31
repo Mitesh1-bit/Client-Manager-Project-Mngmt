@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -28,10 +28,13 @@ import {
 
 import { TIMEZONES } from "../../../company-schema";
 import {
-  PREFERRED_CHANNELS,
+  contactEditFormSchema,
   contactFormSchema,
   contactToFormValues,
-  toContactInput,
+  PREFERRED_CHANNELS,
+  toCreateContactVariables,
+  toUpdateContactVariables,
+  contactFullName,
 } from "./contact-schema";
 
 export function ContactForm({ companyId, contact, onDone, onCancel }) {
@@ -48,24 +51,27 @@ export function ContactForm({ companyId, contact, onDone, onCancel }) {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(contactFormSchema),
+    resolver: zodResolver(mode === "create" ? contactFormSchema : contactEditFormSchema),
     defaultValues: contactToFormValues(contact),
   });
 
+  const portalEnabled = useWatch({ control, name: "portalAccessEnabled" });
+
   async function onSubmit(values) {
     setServerError(null);
-    const input = toContactInput(values, companyId);
 
     try {
       if (mode === "create") {
         const { data } = await createContact({
-          variables: { input },
-          update: (cache) => cache.evict({ id: cache.identify({ __typename: "Company", id: companyId }) }),
+          variables: toCreateContactVariables(values, companyId),
+          update: (cache) => cache.evict({ id: cache.identify({ __typename: "CompanyType", id: companyId }) }),
         });
-        toast.success(`${data.createContact.fullName} added`);
+        toast.success(`${contactFullName(data.createContact)} added`);
       } else {
-        const { data } = await updateContact({ variables: { id: contact.id, input } });
-        toast.success(`${data.updateContact.fullName} updated`);
+        const { data } = await updateContact({
+          variables: toUpdateContactVariables(contact.id, values),
+        });
+        toast.success(`${contactFullName(data.updateContact)} updated`);
       }
       router.refresh();
       onDone?.();
@@ -75,8 +81,12 @@ export function ContactForm({ companyId, contact, onDone, onCancel }) {
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)} className="flex h-full flex-col">
-      <div className="flex-1 space-y-5 overflow-y-auto px-5 py-4">
+    <form
+      noValidate
+      onSubmit={handleSubmit(onSubmit)}
+      className="flex min-h-0 flex-1 flex-col overflow-hidden"
+    >
+      <div className="min-h-0 flex-1 space-y-5 overflow-x-hidden overflow-y-auto overscroll-contain px-5 py-4 pb-6">
         {serverError ? (
           <Alert variant="destructive">
             <AlertTitle>Couldn&apos;t save</AlertTitle>
@@ -191,20 +201,39 @@ export function ContactForm({ companyId, contact, onDone, onCancel }) {
             control={control}
             name="portalAccessEnabled"
             label="Client portal access"
-            description="Lets them sign in to see project status and raise change requests."
+            description="Lets them sign in at /client-login to see project status and raise change requests."
             error={errors.portalAccessEnabled?.message}
           />
+          {portalEnabled ? (
+            <FormField
+              label="Portal password"
+              hint="Share this with the client so they can sign in. Minimum 12 characters."
+              error={errors.portalPassword?.message}
+              required={mode === "create"}
+            >
+              {(field) => (
+                <Input
+                  {...field}
+                  {...register("portalPassword")}
+                  type="password"
+                  className="h-10"
+                  autoComplete="new-password"
+                  placeholder={mode === "edit" ? "Leave blank to keep current password" : ""}
+                />
+              )}
+            </FormField>
+          ) : null}
           <ToggleRow
             control={control}
             name="doNotContact"
             label="Do not contact"
-            description="Excluded from retention sequences and bulk emails."
+            description="Excluded from automated retention sequences."
             error={errors.doNotContact?.message}
           />
         </fieldset>
       </div>
 
-      <div className="flex items-center justify-end gap-2 border-t px-5 py-3">
+      <div className="flex shrink-0 items-center justify-end gap-2 border-t bg-popover px-5 py-3">
         <Button type="button" variant="ghost" onClick={onCancel}>
           Cancel
         </Button>

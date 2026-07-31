@@ -1,0 +1,495 @@
+type ActivityLogType {
+  id: ID!
+  actorId: ID!
+  action: String!
+  entityType: String!
+  entityId: ID!
+  diff: JSON
+  createdAt: DateTime!
+}
+
+type ApprovalType {
+  id: ID!
+  entityType: String!
+  entityId: ID!
+  approverType: String!
+  status: String!
+  comment: String
+  decidedAt: DateTime
+}
+
+type AuthPayload {
+  accessToken: String
+  requires2fa: Boolean!
+  challengeToken: String
+}
+
+type ChangeRequestApprovalType {
+  id: ID!
+  approverType: String!
+  status: String!
+  comment: String
+  decidedAt: DateTime
+  approverName: String
+}
+
+type ChangeRequestDashboardType {
+  openCount: Int!
+  pendingApprovalCount: Int!
+  overdueCount: Int!
+  slaDays: Int!
+  agingByStatus: JSON!
+}
+
+type ChangeRequestType {
+  id: ID!
+  projectId: ID!
+  companyId: ID!
+  requestedByContactId: ID
+  type: String!
+  title: String!
+  description: String
+  priority: String!
+  status: String!
+  impactHours: Float
+  impactCost: Float
+  impactTimelineDays: Int
+  assessmentNotes: String
+  assignedPmId: ID
+  requiresClientApproval: Boolean!
+  requiresInternalApproval: Boolean!
+  revisionCount: Int!
+  managerEscalationFlagged: Boolean!
+  decidedAt: DateTime
+  desiredDueDate: Date
+  submittedAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  approvals: [ChangeRequestApprovalType!]!
+}
+
+type CompanyType {
+  id: ID!
+  name: String!
+  industry: String
+  website: String
+  logoUrl: String
+  status: String!
+  accountOwnerId: ID
+  healthScore: Float
+  contacts: [ContactType!]!
+  accountOwner: UserSummaryType
+  primaryContact: ContactType
+  contactCount: Int!
+  projectCount: Int!
+}
+
+type CompanyViewerType {
+  id: ID!
+  name: String!
+  logoUrl: String
+  status: String!
+}
+
+type ContactType {
+  id: ID!
+  companyId: ID!
+  firstName: String!
+  lastName: String!
+  email: String
+  phone: String
+  title: String
+  department: String
+  isPrimary: Boolean!
+  preferredChannel: String
+  timezone: String
+  portalAccessEnabled: Boolean!
+  linkedinUrl: String
+  status: String!
+}
+
+type ContactViewerType {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  title: String
+  isPrimary: Boolean!
+}
+
+type ContractType {
+  id: ID!
+  companyId: ID!
+  name: String!
+  startDate: Date!
+  endDate: Date!
+  value: Float
+  autoRenew: Boolean!
+  status: String!
+}
+
+"""Date (isoformat)"""
+scalar Date
+
+"""Date with time (isoformat)"""
+scalar DateTime
+
+type DocumentType {
+  id: ID!
+  entityType: String!
+  entityId: ID!
+  fileUrl: String!
+  version: Int!
+  uploadedBy: ID!
+}
+
+type HealthScoreType {
+  id: ID!
+  companyId: ID!
+  score: Float!
+  factors: JSON!
+  aiSummary: String
+  calculatedAt: DateTime!
+}
+
+type ImpactAssessmentDraftType {
+  impactHours: Float
+  impactCost: Float
+  impactTimelineDays: Int
+  assessmentNotes: String
+  advisory: Boolean!
+}
+
+type InvoiceType {
+  id: ID!
+  companyId: ID!
+  projectId: ID
+  invoiceNumber: String
+  amount: Float!
+  status: String!
+  dueDate: Date!
+  issuedAt: Date
+  paidAt: Date
+  notes: String
+  createdAt: DateTime!
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf).
+"""
+scalar JSON @specifiedBy(url: "https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf")
+
+type MilestoneApprovalType {
+  id: ID!
+  approverType: String!
+  status: String!
+  comment: String
+  decidedAt: DateTime
+  approverName: String
+}
+
+type MilestoneType {
+  id: ID!
+  phaseId: ID!
+  title: String!
+  description: String
+  status: String!
+  orderIndex: Int!
+  requiresClientApproval: Boolean!
+  dueDate: Date
+  approvedAt: DateTime
+  tasks: [TaskType!]!
+  approvals: [MilestoneApprovalType!]!
+}
+
+type Mutation {
+  login(email: String!, password: String!): AuthPayload!
+  signup(organizationName: String!, fullName: String!, email: String!, password: String!): AuthPayload!
+  verifyTotp(challengeToken: String!, code: String!): AuthPayload!
+  refreshToken: AuthPayload!
+  logout: Boolean!
+  enableTotp: TotpSetupPayload!
+  confirmTotp(code: String!): Boolean!
+  disableTotp: Boolean!
+  portalLogin(email: String!, password: String!): PortalAuthPayload!
+  portalRefreshToken: PortalAuthPayload!
+  portalLogout: Boolean!
+  createCompany(name: String!, industry: String = null, website: String = null, logoUrl: String = null, status: String! = "lead", accountOwnerId: ID = null, healthScore: Float = null): CompanyType!
+  updateCompany(id: ID!, name: String = null, industry: String = null, website: String = null, logoUrl: String = null, status: String = null, accountOwnerId: ID = null, healthScore: Float = null): CompanyType!
+  deleteCompany(id: ID!): Boolean!
+  createContact(companyId: ID!, firstName: String!, lastName: String!, email: String = null, phone: String = null, title: String = null, department: String = null, isPrimary: Boolean! = false, preferredChannel: String = null, timezone: String = null, portalAccessEnabled: Boolean! = false, portalPassword: String = null, linkedinUrl: String = null, status: String! = "active"): ContactType!
+  updateContact(id: ID!, firstName: String = null, lastName: String = null, email: String = null, phone: String = null, title: String = null, department: String = null, isPrimary: Boolean = null, preferredChannel: String = null, timezone: String = null, portalAccessEnabled: Boolean = null, portalPassword: String = null, linkedinUrl: String = null, status: String = null): ContactType!
+
+  """Set or reset a contact's portal login password."""
+  setContactPortalPassword(id: ID!, password: String!): ContactType!
+  deleteContact(id: ID!): Boolean!
+  createTag(name: String!): TagType!
+  addTag(entityType: String!, entityId: ID!, tagId: ID!): Boolean!
+  removeTag(entityType: String!, entityId: ID!, tagId: ID!): Boolean!
+  createProject(companyId: ID!, name: String!, description: String = null, status: String! = "planning", priority: String = null, projectManagerId: ID = null, budget: Float = null, health: String = "on_track"): ProjectType!
+  updateProject(id: ID!, name: String = null, description: String = null, status: String = null, priority: String = null, budget: Float = null, health: String = null): ProjectType!
+  deleteProject(id: ID!): Boolean!
+  createPhase(projectId: ID!, name: String!, orderIndex: Int!, status: String! = "not_started"): PhaseType!
+  updatePhase(id: ID!, name: String = null, orderIndex: Int = null, status: String = null): PhaseType!
+  deletePhase(id: ID!): Boolean!
+  reorderPhases(projectId: ID!, orderedPhaseIds: [ID!]!): [PhaseType!]!
+  createMilestone(phaseId: ID!, title: String!, orderIndex: Int!, status: String! = "not_started", requiresClientApproval: Boolean! = false): MilestoneType!
+  updateMilestone(id: ID!, title: String = null, orderIndex: Int = null, status: String = null): MilestoneType!
+  deleteMilestone(id: ID!): Boolean!
+  reorderMilestones(phaseId: ID!, orderedMilestoneIds: [ID!]!): [MilestoneType!]!
+  createTask(projectId: ID!, phaseId: ID!, title: String!, milestoneId: ID = null, parentTaskId: ID = null, assigneeId: ID = null, status: String! = "todo", priority: String! = "medium", estimatedHours: Float = null): TaskType!
+  updateTask(id: ID!, title: String = null, status: String = null, priority: String = null, estimatedHours: Float = null, actualHours: Float = null): TaskType!
+  deleteTask(id: ID!): Boolean!
+  addTaskDependency(projectId: ID!, taskId: ID!, dependsOnTaskId: ID!, type: String! = "finish_to_start"): TaskDependencyType!
+  removeTaskDependency(id: ID!): Boolean!
+  markMilestoneReadyForReview(milestoneId: ID!): ApprovalType!
+  approveMilestone(approvalId: ID!): ApprovalType!
+  requestMilestoneChanges(approvalId: ID!, comment: String!): ApprovalType!
+  requestUploadUrl(entityType: String!, entityId: ID!, filename: String!, contentType: String!): UploadUrlPayload!
+  confirmUpload(entityType: String!, entityId: ID!, fileUrl: String!): DocumentType!
+  transitionChangeRequest(id: ID!, toStatus: String!, reason: String = null): ChangeRequestType!
+  submitImpactAssessment(id: ID!, impactHours: Float = null, impactCost: Float = null, impactTimelineDays: Int = null, assessmentNotes: String = null): ChangeRequestType!
+  decideChangeRequest(id: ID!, approvalId: ID!, decision: String!, comment: String = null, applyFinancialImpact: Boolean! = false): ChangeRequestType!
+  createChangeRequest(projectId: ID!, title: String!, type: String!, description: String = null, priority: String! = "medium", desiredDueDate: Date = null): ChangeRequestType!
+  draftImpactAssessment(id: ID!): ImpactAssessmentDraftType
+  resubmitChangeRequest(id: ID!): ChangeRequestType!
+  createRetentionSequence(name: String!, triggerType: String! = "manual", isTemplate: Boolean! = false): RetentionSequenceType!
+  duplicateRetentionSequence(sequenceId: ID!): RetentionSequenceType!
+  addSequenceStep(sequenceId: ID!, channel: String!, offsetDays: Int!, templateId: ID = null, assigneeRole: String = null): SequenceStepType!
+  enrollInSequence(sequenceId: ID!, companyId: ID!, contactId: ID!, projectId: ID = null): RetentionEnrollmentType!
+  cancelEnrollment(enrollmentId: ID!): RetentionEnrollmentType!
+  completeTouchpoint(id: ID!, outcome: String = null, notes: String = null): TouchpointType!
+  skipTouchpoint(id: ID!, notes: String = null): TouchpointType!
+  createContract(companyId: ID!, name: String!, startDate: Date!, endDate: Date!, value: Float = null, autoRenew: Boolean! = false, status: String! = "draft"): ContractType!
+  updateContract(id: ID!, name: String = null, startDate: Date = null, endDate: Date = null, value: Float = null, autoRenew: Boolean = null, status: String = null): ContractType!
+  deleteContract(id: ID!): Boolean!
+  createInvoice(companyId: ID!, amount: Float!, dueDate: Date!, projectId: ID = null, invoiceNumber: String = null, status: String! = "draft", issuedAt: Date = null, notes: String = null): InvoiceType!
+  updateInvoice(id: ID!, amount: Float = null, dueDate: Date = null, status: String = null, invoiceNumber: String = null, issuedAt: Date = null, paidAt: Date = null, notes: String = null): InvoiceType!
+  deleteInvoice(id: ID!): Boolean!
+
+  """Invite a team member (admin only)."""
+  createUser(name: String!, email: String!, password: String!, role: String!): UserSummaryType!
+
+  """Update a team member role or status (admin only)."""
+  updateUser(id: ID!, name: String = null, role: String = null, status: String = null): UserSummaryType!
+}
+
+type OrganizationViewerType {
+  id: ID!
+  name: String!
+  plan: String
+  logoUrl: String
+}
+
+type PhaseType {
+  id: ID!
+  projectId: ID!
+  name: String!
+  orderIndex: Int!
+  status: String!
+  milestones: [MilestoneType!]!
+  tasks: [TaskType!]!
+}
+
+type PortalAuthPayload {
+  accessToken: String!
+}
+
+type PortalCompanyType {
+  id: ID!
+  name: String!
+  industry: String
+  website: String
+  status: String!
+}
+
+type PortalManagerType {
+  id: ID!
+  name: String!
+  email: String!
+}
+
+type PortalProjectType {
+  id: ID!
+  name: String!
+  description: String
+  status: String!
+  priority: String
+  health: String
+  startDate: Date
+  endDate: Date
+  phases: [PhaseType!]!
+  tasks: [TaskType!]!
+  milestones: [MilestoneType!]!
+  completionPercent: Int!
+  projectManager: PortalManagerType
+  documents: [DocumentType!]!
+  changeRequests: [ChangeRequestType!]!
+}
+
+type ProjectType {
+  id: ID!
+  companyId: ID!
+  name: String!
+  description: String
+  status: String!
+  priority: String
+  projectManagerId: ID
+  budget: Float
+  actualCost: Float
+  health: String
+  phases: [PhaseType!]!
+  tasks: [TaskType!]!
+}
+
+type Query {
+  """API health probe for GraphQL."""
+  status: String!
+  companies: [CompanyType!]!
+  company(id: ID!): CompanyType
+  contacts: [ContactType!]!
+  contact(id: ID!): ContactType
+  tags: [TagType!]!
+  users: [UserSummaryType!]!
+  user(id: ID!): UserSummaryType
+  projects(companyId: ID = null): [ProjectType!]!
+  project(id: ID!): ProjectType
+  phases(projectId: ID!): [PhaseType!]!
+  milestones(phaseId: ID!): [MilestoneType!]!
+  workload(projectId: ID = null): [WorkloadType!]!
+  portalCompany(companyId: ID = null): PortalCompanyType
+  portalProjects(companyId: ID = null): [PortalProjectType!]!
+  portalProject(id: ID!): PortalProjectType
+  portalPendingApprovals: [ApprovalType!]!
+  portalChangeRequests: [ChangeRequestType!]!
+  portalChangeRequest(id: ID!): ChangeRequestType
+  portalDocuments: [DocumentType!]!
+  documents(entityType: String!, entityId: ID!): [DocumentType!]!
+  companyDocuments(companyId: ID!): [DocumentType!]!
+  changeRequests(projectId: ID!, status: String = null): [ChangeRequestType!]!
+  changeRequest(id: ID!): ChangeRequestType
+  changeRequestDashboard: ChangeRequestDashboardType!
+  retentionSequences(activeOnly: Boolean! = false): [RetentionSequenceType!]!
+  retentionSequence(id: ID!): RetentionSequenceType
+  upcomingTouchpoints: [TouchpointType!]!
+  atRiskCompanies(threshold: Float = null): [CompanyType!]!
+  healthScoreHistory(companyId: ID!, limit: Int! = 30): [HealthScoreType!]!
+  contracts(companyId: ID = null, status: String = null): [ContractType!]!
+  contract(id: ID!): ContractType
+  invoices(companyId: ID = null, projectId: ID = null, status: String = null): [InvoiceType!]!
+  invoice(id: ID!): InvoiceType
+  activityLogs(entityType: String = null, actorId: ID = null, startAt: DateTime = null, endAt: DateTime = null, limit: Int! = 100, offset: Int! = 0): [ActivityLogType!]!
+
+  """Signed-in internal user or portal contact."""
+  me: ViewerType
+}
+
+type RetentionEnrollmentType {
+  id: ID!
+  sequenceId: ID!
+  companyId: ID!
+  contactId: ID!
+  projectId: ID
+  status: String!
+  currentStep: Int!
+  enrolledAt: DateTime!
+}
+
+type RetentionSequenceType {
+  id: ID!
+  name: String!
+  triggerType: String!
+  isActive: Boolean!
+  isTemplate: Boolean!
+  steps: [SequenceStepType!]!
+}
+
+type SequenceStepType {
+  id: ID!
+  stepOrder: Int!
+  channel: String!
+  offsetDays: Int!
+  templateId: ID
+  assigneeRole: String
+}
+
+type TagType {
+  id: ID!
+  name: String!
+}
+
+type TaskDependencyType {
+  id: ID!
+  taskId: ID!
+  dependsOnTaskId: ID!
+  type: String!
+}
+
+type TaskType {
+  id: ID!
+  projectId: ID!
+  phaseId: ID!
+  milestoneId: ID
+  parentTaskId: ID
+  title: String!
+  description: String
+  assigneeId: ID
+  status: String!
+  priority: String!
+  estimatedHours: Float
+  actualHours: Float
+  subtasks: [TaskType!]!
+  dependencies: [TaskDependencyType!]!
+}
+
+type TotpSetupPayload {
+  secret: String!
+  provisioningUri: String!
+}
+
+type TouchpointType {
+  id: ID!
+  enrollmentId: ID
+  companyId: ID!
+  contactId: ID!
+  type: String!
+  scheduledAt: DateTime!
+  completedAt: DateTime
+  status: String!
+  outcome: String
+  notes: String
+}
+
+type UploadUrlPayload {
+  uploadUrl: String!
+  fileUrl: String!
+  uploadToken: String!
+}
+
+type UserSummaryType {
+  id: ID!
+  name: String!
+  email: String!
+  role: String!
+  avatarUrl: String
+  status: String
+}
+
+type ViewerType {
+  id: ID!
+  name: String!
+  email: String!
+  role: String
+  status: String!
+  avatarUrl: String
+  scope: String!
+  organization: OrganizationViewerType
+  company: CompanyViewerType
+  contact: ContactViewerType
+}
+
+type WorkloadType {
+  assigneeId: ID!
+  totalEstimatedHours: Float!
+  totalActualHours: Float!
+  openTaskCount: Int!
+}
