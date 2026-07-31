@@ -46,6 +46,20 @@ function matchesText(haystack, needle) {
 
 const contactName = (contact) => `${contact.firstName} ${contact.lastName}`;
 
+const SEARCH_RESULT_LIMIT = 8;
+
+/** 0 for a match at the start of the string, 1 otherwise — used to rank hits before capping. */
+function searchRank(haystack, needle) {
+  return String(haystack ?? "").toLowerCase().startsWith(needle.toLowerCase()) ? 0 : 1;
+}
+
+/** Filters, ranks (prefix matches first) and caps one entity's search matches. */
+function searchGroup(rows, needle, matchFields, rankField) {
+  const matched = rows.filter((row) => matchFields.some((field) => matchesText(field(row), needle)));
+  const ranked = [...matched].sort((a, b) => searchRank(rankField(a), needle) - searchRank(rankField(b), needle));
+  return { nodes: ranked.slice(0, SEARCH_RESULT_LIMIT), count: matched.length };
+}
+
 /**
  * Would adding `task depends on dependsOn` close a loop? Walks the existing
  * edges forward from `dependsOn` looking for the way back to `task`.
@@ -517,6 +531,63 @@ export const resolvers = {
       // about themselves.
       if (ctx.claims?.scope === "PORTAL") return [];
       return buildAtRiskCompanies();
+    },
+
+    search: (_parent, { query }, ctx) => {
+      const empty = {
+        companies: [],
+        companiesCount: 0,
+        contacts: [],
+        contactsCount: 0,
+        projects: [],
+        projectsCount: 0,
+        tasks: [],
+        tasksCount: 0,
+      };
+
+      const needle = query.trim();
+      if (!needle) return empty;
+
+      // A portal caller only ever sees their own company's data — same rule
+      // every other list query enforces.
+      const scopedCompanyId = ctx.claims?.scope === "PORTAL" ? ctx.claims.companyId : null;
+      let companies = db.companies;
+      let contacts = db.contacts;
+      let projects = db.projects;
+      let tasks = db.tasks;
+      if (scopedCompanyId) {
+        companies = companies.filter((c) => c.id === scopedCompanyId);
+        contacts = contacts.filter((c) => c.companyId === scopedCompanyId);
+        projects = projects.filter((p) => p.companyId === scopedCompanyId);
+        const projectIds = new Set(projects.map((p) => p.id));
+        tasks = tasks.filter((t) => projectIds.has(t.projectId));
+      }
+
+      const companyMatches = searchGroup(
+        companies,
+        needle,
+        [(c) => c.name, (c) => c.industry],
+        (c) => c.name,
+      );
+      const contactMatches = searchGroup(
+        contacts,
+        needle,
+        [(c) => contactName(c), (c) => c.email, (c) => c.title],
+        (c) => contactName(c),
+      );
+      const projectMatches = searchGroup(projects, needle, [(p) => p.name], (p) => p.name);
+      const taskMatches = searchGroup(tasks, needle, [(t) => t.title], (t) => t.title);
+
+      return {
+        companies: companyMatches.nodes,
+        companiesCount: companyMatches.count,
+        contacts: contactMatches.nodes,
+        contactsCount: contactMatches.count,
+        projects: projectMatches.nodes,
+        projectsCount: projectMatches.count,
+        tasks: taskMatches.nodes,
+        tasksCount: taskMatches.count,
+      };
     },
 
     tags: () => db.tags,
@@ -1641,6 +1712,7 @@ export const resolvers = {
     subtasks: (task) =>
       where(db.tasks, "parentTaskId", task.id).sort((a, b) => a.orderIndex - b.orderIndex),
     dependencies: (task) => where(db.taskDependencies, "taskId", task.id),
+    project: (task) => byId(db.projects, task.projectId),
   },
 
   TaskDependency: {

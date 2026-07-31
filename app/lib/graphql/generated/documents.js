@@ -1994,6 +1994,53 @@ query FoundationSummary {
   }
 }`;
 
+export const GlobalSearchDocument = gql`
+query GlobalSearch($query: String!) {
+  search(query: $query) {
+    companies {
+      id
+      name
+      industry
+      logoUrl
+      status
+    }
+    companiesCount
+    contacts {
+      id
+      fullName
+      email
+      title
+      company {
+        id
+        name
+      }
+    }
+    contactsCount
+    projects {
+      id
+      name
+      status
+      health
+      company {
+        id
+        name
+      }
+    }
+    projectsCount
+    tasks {
+      id
+      title
+      status
+      priority
+      project {
+        id
+        name
+      }
+    }
+    tasksCount
+  }
+}`;
+
 export const LoginDocument = gql`
 mutation Login($email: String!, $password: String!) {
   login(email: $email, password: $password) {

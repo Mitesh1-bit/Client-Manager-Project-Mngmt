@@ -371,6 +371,8 @@ type Task {
   parentTask: Task
   subtasks: [Task!]!
   dependencies: [TaskDependency!]!
+  "Back-reference the contract otherwise has no way to resolve. See NEEDED_SCHEMA_CHANGES.md §3."
+  project: Project!
 }
 
 type TaskDependency {
@@ -505,6 +507,23 @@ type SequenceEnrollment {
   sequence: RetentionSequence!
   company: Company!
   contact: Contact
+}
+
+"""
+Grouped, capped results for the global search bar. Each group is capped
+server-side; the matching `*Count` gives the true total so the UI can offer
+a "view all" link into the entity's own filtered list. See
+NEEDED_SCHEMA_CHANGES.md §2.4.
+"""
+type SearchResults {
+  companies: [Company!]!
+  companiesCount: Int!
+  contacts: [Contact!]!
+  contactsCount: Int!
+  projects: [Project!]!
+  projectsCount: Int!
+  tasks: [Task!]!
+  tasksCount: Int!
 }
 
 type Touchpoint {
@@ -842,6 +861,12 @@ type Query {
   same shape gap 2.3 (dashboardMetrics) asks for elsewhere. See §9.3.
   """
   atRiskCompanies: [AtRiskCompany!]!
+
+  """
+  One search across companies, contacts, projects and tasks. Closes gap 2.4 —
+  see NEEDED_SCHEMA_CHANGES.md.
+  """
+  search(query: String!): SearchResults!
 }
 
 type Mutation {

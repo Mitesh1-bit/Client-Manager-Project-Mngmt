@@ -210,7 +210,7 @@ function Sidebar({
         <div
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
-          className="flex size-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1 group-data-[variant=floating]:ring-sidebar-border">
+          className="relative flex size-full flex-col overflow-hidden bg-sidebar before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-56 before:bg-[radial-gradient(ellipse_at_top,_var(--sidebar-primary)_0%,_transparent_65%)] before:opacity-[0.07] before:content-[''] group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1 group-data-[variant=floating]:ring-sidebar-border">
           {children}
         </div>
       </div>
