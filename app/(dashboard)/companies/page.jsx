@@ -43,7 +43,7 @@ export default async function CompaniesPage({ searchParams }) {
         title="Companies"
         description="Every account you work with, their contacts, health score and open work."
         actions={
-          <Button asChild>
+          <Button asChild data-tour="companies-new-btn">
             <Link href="/companies/new">
               <Plus aria-hidden="true" />
               New company
@@ -52,7 +52,7 @@ export default async function CompaniesPage({ searchParams }) {
         }
       />
 
-      <div className="space-y-4">
+      <div className="space-y-4" data-tour="companies-list">
         <CompaniesToolbar owners={owners} tags={tags} />
 
         {/* Keyed on the query so changing a filter re-suspends and shows the

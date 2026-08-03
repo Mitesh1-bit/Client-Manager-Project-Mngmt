@@ -7,11 +7,11 @@ import { FileText, GitPullRequestArrow, House, LayoutList, ShieldCheck } from "l
 import { cn } from "@/app/lib/utils";
 
 const ITEMS = [
-  { href: "/portal", label: "Overview", icon: House, exact: true },
-  { href: "/portal/projects", label: "Projects", icon: LayoutList },
-  { href: "/portal/approvals", label: "Approvals", icon: ShieldCheck, badgeKey: "approvals" },
-  { href: "/portal/change-requests", label: "Requests", icon: GitPullRequestArrow },
-  { href: "/portal/documents", label: "Documents", icon: FileText },
+  { href: "/portal", label: "Overview", icon: House, exact: true, tourId: "portal-nav-overview" },
+  { href: "/portal/projects", label: "Projects", icon: LayoutList, tourId: "portal-nav-projects" },
+  { href: "/portal/approvals", label: "Approvals", icon: ShieldCheck, badgeKey: "approvals", tourId: "portal-nav-approvals" },
+  { href: "/portal/change-requests", label: "Requests", icon: GitPullRequestArrow, tourId: "portal-nav-requests" },
+  { href: "/portal/documents", label: "Documents", icon: FileText, tourId: "portal-nav-documents" },
 ];
 
 function useActiveHref() {
@@ -38,6 +38,7 @@ export function PortalNavBar({ badges = {} }) {
             <li key={item.href}>
               <Link
                 href={item.href}
+                data-tour={item.tourId}
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex items-center gap-2 rounded-full px-3.5 py-2 text-caption font-medium transition-colors focus-ring",
@@ -80,6 +81,7 @@ export function PortalTabBar({ badges = {} }) {
             <li key={item.href}>
               <Link
                 href={item.href}
+                data-tour={item.tourId}
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex flex-col items-center gap-1 px-1 py-2.5 text-[0.6875rem] font-medium transition-colors focus-ring",

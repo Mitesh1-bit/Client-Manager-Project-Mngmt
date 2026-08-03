@@ -105,7 +105,7 @@ export default async function CompanyDetailLayout({ children, params }) {
         </div>
       </div>
 
-      <DetailTabs tabs={tabs} />
+      <DetailTabs tabs={tabs} tourId="company-tabs" />
 
       <div className="min-w-0">{children}</div>
     </div>

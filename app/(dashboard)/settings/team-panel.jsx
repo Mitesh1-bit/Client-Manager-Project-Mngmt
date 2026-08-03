@@ -133,6 +133,7 @@ export function TeamPanel({ users, currentUserId, isAdmin }) {
       </SectionCard>
 
       {isAdmin ? (
+        <div data-tour="team-invite">
         <SectionCard
           title="Add team member"
           description="Create a dashboard account with a temporary password. Share login credentials securely — email invites are not enabled yet."
@@ -206,6 +207,7 @@ export function TeamPanel({ users, currentUserId, isAdmin }) {
             </Button>
           </form>
         </SectionCard>
+        </div>
       ) : (
         <SectionCard title="Team management" description="Only admins can invite or change roles.">
           <p className="text-caption text-muted-foreground">

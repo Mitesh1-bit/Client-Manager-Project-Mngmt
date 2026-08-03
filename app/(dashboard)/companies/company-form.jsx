@@ -92,21 +92,26 @@ export function CompanyForm({ mode, company, owners = [], tags = [] }) {
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+    <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-5" data-tour="company-form">
       <SectionCard title="Identity" description="How this company appears everywhere in the app.">
         <div className="grid gap-5 sm:grid-cols-2">
+          <div data-tour="company-field-name" className="sm:col-span-2">
           <FormField label="Company name" error={errors.name?.message} required className="sm:col-span-2">
             {(field) => (
               <Input {...field} {...register("name")} className="h-10" placeholder="Northwind Health" autoFocus />
             )}
           </FormField>
+          </div>
 
+          <div data-tour="company-field-industry">
           <FormField label="Industry" error={errors.industry?.message}>
             {(field) => (
               <Input {...field} {...register("industry")} className="h-10" placeholder="Healthcare" />
             )}
           </FormField>
+          </div>
 
+          <div data-tour="company-field-website">
           <FormField
             label="Website"
             hint="We'll add https:// if you leave it off."
@@ -116,6 +121,7 @@ export function CompanyForm({ mode, company, owners = [], tags = [] }) {
               <Input {...field} {...register("website")} className="h-10" placeholder="northwind.health" />
             )}
           </FormField>
+          </div>
 
           <FormField label="Company size" error={errors.size?.message}>
             {(field) => (
@@ -169,7 +175,7 @@ export function CompanyForm({ mode, company, owners = [], tags = [] }) {
         title="Relationship"
         description="Who owns this account, where it sits in the lifecycle, and how it's tagged."
       >
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2" data-tour="company-field-status">
           <FormField label="Status" error={errors.status?.message} required>
             {(field) => (
               <Controller
@@ -276,7 +282,7 @@ export function CompanyForm({ mode, company, owners = [], tags = [] }) {
         </Alert>
       ) : null}
 
-      <div className="sticky bottom-0 z-20 -mx-(--content-gutter) border-t bg-background/90 px-(--content-gutter) backdrop-blur">
+      <div className="sticky bottom-0 z-20 -mx-(--content-gutter) border-t bg-background/90 px-(--content-gutter) backdrop-blur" data-tour="company-field-save">
         <div className="flex items-center justify-end gap-2 py-3">
           {isDirty ? (
             <p className="mr-auto text-caption text-muted-foreground">Unsaved changes</p>

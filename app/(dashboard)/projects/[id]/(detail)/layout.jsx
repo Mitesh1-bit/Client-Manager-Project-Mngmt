@@ -170,7 +170,7 @@ export default async function ProjectDetailLayout({ children, params }) {
         </dl>
       </div>
 
-      <DetailTabs tabs={tabs} />
+      <DetailTabs tabs={tabs} tourId="project-tabs" />
 
       {children}
     </div>

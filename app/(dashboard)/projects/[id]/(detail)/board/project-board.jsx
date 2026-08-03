@@ -167,7 +167,7 @@ export function ProjectBoard({ projectId, tasks = [], phases = [], milestones = 
         <p className="text-caption text-muted-foreground">
           Drag a card, or use its menu, to move it between columns.
         </p>
-        <Button size="sm" onClick={() => setPanel({ mode: "create" })}>
+        <Button size="sm" onClick={() => setPanel({ mode: "create" })} data-tour="board-add-task">
           <Plus aria-hidden="true" />
           Add task
         </Button>
@@ -189,7 +189,7 @@ export function ProjectBoard({ projectId, tasks = [], phases = [], milestones = 
           rollbackRef.current = null;
         }}
       >
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" data-tour="board-columns">
           {TASK_COLUMNS.map((column) => (
             <BoardColumn
               key={column.status}

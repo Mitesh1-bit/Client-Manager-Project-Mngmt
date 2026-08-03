@@ -40,7 +40,13 @@ export default async function DashboardPage() {
         description="Your workspace overview — companies, projects, and change requests at a glance."
       />
 
-      {summary ? <SummaryGrid summary={summary} /> : <ErrorState />}
+      {summary ? (
+        <div data-tour="dashboard-overview">
+          <SummaryGrid summary={summary} />
+        </div>
+      ) : (
+        <ErrorState />
+      )}
     </>
   );
 }

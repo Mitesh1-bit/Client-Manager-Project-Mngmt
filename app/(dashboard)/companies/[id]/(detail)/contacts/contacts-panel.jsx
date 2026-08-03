@@ -244,7 +244,7 @@ export function ContactsPanel({ companyId, companyName, contacts = [] }) {
   );
 
   return (
-    <>
+    <div data-tour="contacts-panel">
       <div className="mb-4 flex items-center justify-between gap-3">
         <p className="text-caption text-muted-foreground" aria-live="polite">
           {rows.length} {rows.length === 1 ? "contact" : "contacts"} at {companyName}
@@ -334,7 +334,7 @@ export function ContactsPanel({ companyId, companyName, contacts = [] }) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }
 

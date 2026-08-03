@@ -53,10 +53,13 @@ export function UserMenu({
   const isSidebar = variant === "sidebar";
   const profileHref = scope === "PORTAL" ? "/portal/profile" : "/settings/profile";
   const notificationsHref = scope === "PORTAL" ? "/portal/notifications" : "/settings/notifications";
+  const guideHref = scope === "PORTAL" ? "/portal/guide" : "/guide";
+  const accountTourId = scope === "PORTAL" ? undefined : "account-menu";
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
+        data-tour={accountTourId}
         className={cn(
           isSidebar
             ? "app-sidebar-user-trigger flex h-9 w-full min-w-0 items-center gap-2.5 rounded-lg px-2.5 text-left text-sm text-sidebar-foreground outline-none transition-[background-color,color,box-shadow] duration-150 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
@@ -101,6 +104,9 @@ export function UserMenu({
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href={notificationsHref}>Notification settings</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={guideHref}>Full guide reference</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <SignOutMenuItem scope={scope} />

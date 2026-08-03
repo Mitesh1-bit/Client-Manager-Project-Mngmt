@@ -68,7 +68,7 @@ export default async function ProjectsPage({ searchParams }) {
         title="Projects"
         description="Every engagement in flight, with health, progress and budget at a glance."
         actions={
-          <Button asChild>
+          <Button asChild data-tour="projects-new-btn">
             <Link href="/projects/new">
               <Plus aria-hidden="true" />
               New project
@@ -77,7 +77,7 @@ export default async function ProjectsPage({ searchParams }) {
         }
       />
 
-      <div className="space-y-4">
+      <div className="space-y-4" data-tour="projects-list">
         <ListToolbar
           searchPlaceholder="Search projects…"
           searchLabel="Search projects by name"

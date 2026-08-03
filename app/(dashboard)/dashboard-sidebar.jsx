@@ -148,7 +148,7 @@ export function DashboardSidebar({ viewer, organizationName }) {
 
                       >
 
-                        <Link href={item.href}>
+                        <Link href={item.href} data-tour={item.tourId}>
 
                           <item.icon aria-hidden="true" className="size-[1.05rem] shrink-0 opacity-90" />
 
@@ -202,7 +202,7 @@ export function DashboardSidebar({ viewer, organizationName }) {
 
                 >
 
-                  <Link href={item.href}>
+                  <Link href={item.href} data-tour={item.tourId}>
 
                     <item.icon aria-hidden="true" className="size-[1.05rem] shrink-0 opacity-90" />
 

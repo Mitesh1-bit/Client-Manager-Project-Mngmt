@@ -30,7 +30,7 @@ export default async function PortalChangeRequestsPage() {
         description="Anything you've asked us for outside the original plan, and where it's got to."
         actions={
           projects.length > 0 ? (
-            <Button asChild>
+            <Button asChild data-tour="portal-new-request-btn">
               <Link href="/portal/change-requests/new">
                 <Plus aria-hidden="true" />
                 Request a change

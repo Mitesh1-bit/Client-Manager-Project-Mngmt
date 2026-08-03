@@ -45,6 +45,7 @@ export default async function PortalOverviewPage() {
         description={`Everything we're building for ${companyName}, and anything waiting on your input.`}
       />
 
+      <div data-tour="portal-overview">
       {projectsError ? (
         <ErrorState
           title="We couldn't load your projects"
@@ -99,6 +100,7 @@ export default async function PortalOverviewPage() {
           </section>
         </div>
       )}
+      </div>
     </>
   );
 }

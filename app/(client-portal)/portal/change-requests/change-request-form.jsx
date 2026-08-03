@@ -72,7 +72,7 @@ export function ChangeRequestForm({ projects }) {
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+    <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-5" data-tour="portal-change-form">
       {serverError ? (
         <Alert variant="destructive">
           <AlertTitle>Couldn&apos;t send that</AlertTitle>

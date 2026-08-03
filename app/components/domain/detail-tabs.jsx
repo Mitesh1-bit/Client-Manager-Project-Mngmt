@@ -9,14 +9,14 @@ import { cn } from "@/app/lib/utils";
  * Link-based tabs for entity detail pages. Real routes rather than local state,
  * so each tab is deep-linkable, server-rendered and independently cacheable.
  *
- * @param {{ tabs: Array<{ href: string, label: string, count?: number | null }>, className?: string }} props
+ * @param {{ tabs: Array<{ href: string, label: string, count?: number | null }>, className?: string, tourId?: string }} props
  */
-export function DetailTabs({ tabs, className }) {
+export function DetailTabs({ tabs, className, tourId }) {
   const pathname = usePathname();
 
   return (
     <div className={cn("min-w-0 overflow-x-auto overscroll-x-contain scroll-px-1", className)}>
-      <nav aria-label="Sections">
+      <nav aria-label="Sections" data-tour={tourId}>
         <ul className="flex min-w-max items-center gap-1 border-b">
           {tabs.map((tab) => {
             const active = pathname === tab.href;

@@ -88,9 +88,10 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+    <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-5" data-tour="project-form">
       <SectionCard title="Basics" description="What this project is and who it's for.">
         <div className="grid gap-5 sm:grid-cols-2">
+          <div data-tour="project-field-name" className="sm:col-span-2">
           <FormField label="Project name" error={errors.name?.message} required className="sm:col-span-2">
             {(field) => (
               <Input
@@ -102,7 +103,9 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
               />
             )}
           </FormField>
+          </div>
 
+          <div data-tour="project-field-client">
           <FormField label="Client" error={errors.companyId?.message} required>
             {(field) => (
               <Controller
@@ -131,7 +134,9 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
               />
             )}
           </FormField>
+          </div>
 
+          <div data-tour="project-field-pm">
           <FormField label="Project manager" error={errors.projectManagerId?.message}>
             {(field) => (
               <Controller
@@ -154,7 +159,9 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
               />
             )}
           </FormField>
+          </div>
 
+          <div data-tour="project-field-description" className="sm:col-span-2">
           <FormField
             label="Description"
             error={errors.description?.message}
@@ -169,11 +176,12 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
               />
             )}
           </FormField>
+          </div>
         </div>
       </SectionCard>
 
       <SectionCard title="Schedule and budget">
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2" data-tour="project-field-schedule">
           <FormField label="Status" error={errors.status?.message} required>
             {(field) => (
               <Controller
@@ -228,6 +236,7 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
             {(field) => <Input {...field} {...register("endDate")} type="date" className="h-10" />}
           </FormField>
 
+          <div data-tour="project-field-budget">
           <FormField label="Budget" hint="In pounds, excluding VAT." error={errors.budget?.message}>
             {(field) => (
               <Input
@@ -241,6 +250,7 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
               />
             )}
           </FormField>
+          </div>
 
           <FormField label="Tags" error={errors.tagIds?.message}>
             {(field) => (
@@ -279,7 +289,7 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
         </Alert>
       ) : null}
 
-      <div className="sticky bottom-0 z-20 -mx-(--content-gutter) border-t bg-background/90 px-(--content-gutter) backdrop-blur">
+      <div className="sticky bottom-0 z-20 -mx-(--content-gutter) border-t bg-background/90 px-(--content-gutter) backdrop-blur" data-tour="project-field-save">
         <div className="flex items-center justify-end gap-2 py-3">
           {isDirty ? (
             <p className="mr-auto text-caption text-muted-foreground">Unsaved changes</p>
