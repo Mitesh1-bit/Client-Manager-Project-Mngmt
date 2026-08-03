@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import { GitPullRequestArrow } from "lucide-react";
 
 import { EmptyState } from "@/app/components/domain/states";
@@ -6,7 +5,7 @@ import { StatusBadge } from "@/app/components/domain/status-badge";
 import { formatCurrency, formatRelativeDays, humanizeType } from "@/app/lib/format";
 import { normalizeChangeRequest } from "@/app/lib/api/normalize";
 import { getClient } from "@/app/lib/graphql/apollo-client";
-import { ProjectChangeRequestsDocument } from "@/app/lib/graphql/generated/documents";
+import { ChangeRequestsByProjectDocument } from "@/app/lib/graphql/generated/documents";
 import { cn } from "@/app/lib/utils";
 
 export const metadata = { title: "Change requests" };
@@ -14,13 +13,11 @@ export const metadata = { title: "Change requests" };
 export default async function ProjectChangeRequestsPage({ params }) {
   const { id } = await params;
   const { data } = await getClient().query({
-    query: ProjectChangeRequestsDocument,
-    variables: { id },
+    query: ChangeRequestsByProjectDocument,
+    variables: { projectId: id },
   });
 
-  if (!data.project) notFound();
-
-  const requests = [...(data.project.changeRequests ?? [])]
+  const requests = [...(data.changeRequests ?? [])]
     .map(normalizeChangeRequest)
     .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
