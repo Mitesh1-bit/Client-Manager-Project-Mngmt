@@ -8,6 +8,7 @@ import {
 } from "@apollo/client-integration-nextjs";
 
 import { cacheConfig } from "./cache-config";
+import { clientFetch } from "./client-fetch";
 import { createGraphqlErrorLink } from "./error-link";
 import { GRAPHQL_URL } from "./endpoint";
 
@@ -18,8 +19,7 @@ function makeClient() {
       createGraphqlErrorLink("client"),
       new HttpLink({
         uri: GRAPHQL_URL,
-        credentials: "include",
-        fetchOptions: { cache: "no-store" },
+        fetch: clientFetch,
       }),
     ]),
   });
