@@ -62,3 +62,51 @@ export function milestoneToFormValues(milestone, defaults = {}) {
     requiresClientApproval: milestone?.requiresClientApproval ?? false,
   };
 }
+
+function planStatusToApi(value) {
+  return String(value ?? "NOT_STARTED").toLowerCase();
+}
+
+/** @param {ReturnType<typeof phaseToFormValues>} values */
+export function toCreatePhaseVariables(values, projectId, orderIndex) {
+  return {
+    projectId,
+    name: values.name,
+    orderIndex,
+    status: planStatusToApi(values.status),
+  };
+}
+
+/** @param {ReturnType<typeof phaseToFormValues>} values */
+export function toUpdatePhaseVariables(id, values, orderIndex) {
+  return {
+    id,
+    name: values.name,
+    orderIndex,
+    status: planStatusToApi(values.status),
+  };
+}
+
+/** @param {ReturnType<typeof milestoneToFormValues>} values */
+export function toCreateMilestoneVariables(values, orderIndex) {
+  return {
+    phaseId: values.phaseId,
+    title: values.title,
+    orderIndex,
+    status: "not_started",
+  };
+}
+
+/** @param {ReturnType<typeof milestoneToFormValues>} values */
+export function toUpdateMilestoneVariables(id, values) {
+  return {
+    id,
+    title: values.title,
+  };
+}
+
+/** @param {Array<{ id: string, milestones?: Array<unknown> }>} phases @param {string} phaseId */
+export function milestoneOrderIndex(phases, phaseId) {
+  const phase = phases.find((row) => row.id === phaseId);
+  return phase?.milestones?.length ?? 0;
+}

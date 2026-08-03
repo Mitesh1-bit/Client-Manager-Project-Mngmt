@@ -44,10 +44,15 @@ import { listStatuses } from "@/app/lib/status";
 import { cn } from "@/app/lib/utils";
 
 import {
+  milestoneOrderIndex,
   milestoneSchema,
   milestoneToFormValues,
   phaseSchema,
   phaseToFormValues,
+  toCreateMilestoneVariables,
+  toCreatePhaseVariables,
+  toUpdateMilestoneVariables,
+  toUpdatePhaseVariables,
 } from "./plan-schema";
 
 const PHASE_STATUS_OPTIONS = listStatuses("phaseStatus");
@@ -337,6 +342,7 @@ function PlanSheet({ projectId, panel, phases, milestones, onClose }) {
               <PhaseForm
                 projectId={projectId}
                 phase={panel.mode === "phase-edit" ? phase : null}
+                orderIndex={phase?.orderIndex ?? phases.length}
                 onDone={onClose}
                 onCancel={onClose}
               />
@@ -356,7 +362,7 @@ function PlanSheet({ projectId, panel, phases, milestones, onClose }) {
   );
 }
 
-function PhaseForm({ projectId, phase, onDone, onCancel }) {
+function PhaseForm({ projectId, phase, orderIndex, onDone, onCancel }) {
   const router = useRouter();
   const [serverError, setServerError] = useState(null);
   const [createPhase] = useMutation(CreatePhaseDocument);
@@ -374,10 +380,16 @@ function PhaseForm({ projectId, phase, onDone, onCancel }) {
 
   async function onSubmit(values) {
     setServerError(null);
-    const input = { ...values, projectId };
     try {
-      if (phase) await updatePhase({ variables: { id: phase.id, input } });
-      else await createPhase({ variables: { input } });
+      if (phase) {
+        await updatePhase({
+          variables: toUpdatePhaseVariables(phase.id, values, orderIndex),
+        });
+      } else {
+        await createPhase({
+          variables: toCreatePhaseVariables(values, projectId, orderIndex),
+        });
+      }
       toast.success(phase ? "Phase updated" : "Phase added");
       router.refresh();
       onDone();
@@ -449,11 +461,21 @@ function MilestoneForm({ milestone, defaults, phases, onDone, onCancel }) {
     defaultValues: milestoneToFormValues(milestone, defaults),
   });
 
-  async function onSubmit(input) {
+  async function onSubmit(values) {
     setServerError(null);
     try {
-      if (milestone) await updateMilestone({ variables: { id: milestone.id, input } });
-      else await createMilestone({ variables: { input } });
+      if (milestone) {
+        await updateMilestone({
+          variables: toUpdateMilestoneVariables(milestone.id, values),
+        });
+      } else {
+        await createMilestone({
+          variables: toCreateMilestoneVariables(
+            values,
+            milestoneOrderIndex(phases, values.phaseId),
+          ),
+        });
+      }
       toast.success(milestone ? "Milestone updated" : "Milestone added");
       router.refresh();
       onDone();
