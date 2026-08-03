@@ -1,0 +1,39 @@
+fragment NotificationPreferenceFields on NotificationPreferenceType {
+  key
+  email
+  inApp
+}
+
+query MyNotificationPreferences {
+  myNotificationPreferences {
+    ...NotificationPreferenceFields
+  }
+}
+
+mutation UpdateMyProfile(
+  $name: String
+  $avatarUrl: String
+  $firstName: String
+  $lastName: String
+  $title: String
+) {
+  updateMyProfile(
+    name: $name
+    avatarUrl: $avatarUrl
+    firstName: $firstName
+    lastName: $lastName
+    title: $title
+  ) {
+    ...ViewerFields
+  }
+}
+
+mutation ChangeMyPassword($currentPassword: String!, $newPassword: String!) {
+  changeMyPassword(currentPassword: $currentPassword, newPassword: $newPassword)
+}
+
+mutation UpdateMyNotificationPreferences($preferences: NotificationPreferencesInput!) {
+  updateMyNotificationPreferences(preferences: $preferences) {
+    ...NotificationPreferenceFields
+  }
+}

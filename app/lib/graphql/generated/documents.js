@@ -120,6 +120,13 @@ fragment MilestoneFields on MilestoneType {
   orderIndex
 }`;
 
+export const NotificationPreferenceFieldsFragmentDoc = gql`
+fragment NotificationPreferenceFields on NotificationPreferenceType {
+  key
+  email
+  inApp
+}`;
+
 export const PhaseFieldsFragmentDoc = gql`
 fragment PhaseFields on PhaseType {
   id
@@ -393,6 +400,11 @@ mutation CancelEnrollment($enrollmentId: ID!) {
     id
     status
   }
+}`;
+
+export const ChangeMyPasswordDocument = gql`
+mutation ChangeMyPassword($currentPassword: String!, $newPassword: String!) {
+  changeMyPassword(currentPassword: $currentPassword, newPassword: $newPassword)
 }`;
 
 export const ChangeRequestDetailDocument = gql`
@@ -1122,6 +1134,18 @@ fragment ViewerFields on ViewerType {
     title
     isPrimary
   }
+}`;
+
+export const MyNotificationPreferencesDocument = gql`
+query MyNotificationPreferences {
+  myNotificationPreferences {
+    ...NotificationPreferenceFields
+  }
+}
+fragment NotificationPreferenceFields on NotificationPreferenceType {
+  key
+  email
+  inApp
 }`;
 
 export const PortalApprovalsDocument = gql`
@@ -2030,6 +2054,59 @@ fragment MilestoneFields on MilestoneType {
   title
   status
   orderIndex
+}`;
+
+export const UpdateMyNotificationPreferencesDocument = gql`
+mutation UpdateMyNotificationPreferences($preferences: NotificationPreferencesInput!) {
+  updateMyNotificationPreferences(preferences: $preferences) {
+    ...NotificationPreferenceFields
+  }
+}
+fragment NotificationPreferenceFields on NotificationPreferenceType {
+  key
+  email
+  inApp
+}`;
+
+export const UpdateMyProfileDocument = gql`
+mutation UpdateMyProfile($name: String, $avatarUrl: String, $firstName: String, $lastName: String, $title: String) {
+  updateMyProfile(
+    name: $name
+    avatarUrl: $avatarUrl
+    firstName: $firstName
+    lastName: $lastName
+    title: $title
+  ) {
+    ...ViewerFields
+  }
+}
+fragment ViewerFields on ViewerType {
+  id
+  name
+  email
+  role
+  status
+  avatarUrl
+  scope
+  organization {
+    id
+    name
+    plan
+    logoUrl
+  }
+  company {
+    id
+    name
+    logoUrl
+    status
+  }
+  contact {
+    id
+    firstName
+    lastName
+    title
+    isPrimary
+  }
 }`;
 
 export const UpdatePhaseDocument = gql`

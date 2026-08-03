@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ChevronsUpDown, UserRound } from "lucide-react";
 
 import { SignOutMenuItem } from "@/app/components/domain/sign-out-button";
@@ -50,6 +51,8 @@ export function UserMenu({
   scope = "INTERNAL",
 }) {
   const isSidebar = variant === "sidebar";
+  const profileHref = scope === "PORTAL" ? "/portal/profile" : "/settings/profile";
+  const notificationsHref = scope === "PORTAL" ? "/portal/notifications" : "/settings/notifications";
 
   return (
     <DropdownMenu>
@@ -93,8 +96,12 @@ export function UserMenu({
           <span className="block truncate text-caption text-muted-foreground">{email}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem disabled>Profile &amp; preferences</DropdownMenuItem>
-        <DropdownMenuItem disabled>Notification settings</DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={profileHref}>Profile &amp; preferences</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={notificationsHref}>Notification settings</Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <SignOutMenuItem scope={scope} />
       </DropdownMenuContent>
