@@ -16,6 +16,15 @@ import {
 } from "@/app/lib/graphql/generated/documents";
 import { notificationMeta } from "@/app/lib/profile/notification-catalog";
 
+/** GraphQL input field names (camelCase) keyed by preference id (snake_case). */
+const PREFERENCE_INPUT_FIELDS = {
+  change_requests: "changeRequests",
+  task_assignments: "taskAssignments",
+  milestone_approvals: "milestoneApprovals",
+  retention_touchpoints: "retentionTouchpoints",
+  project_updates: "projectUpdates",
+};
+
 /** @param {Array<{ key: string; email: boolean; inApp: boolean }>} preferences */
 function toState(preferences) {
   return Object.fromEntries(
@@ -27,7 +36,8 @@ function toState(preferences) {
 function toVariables(state) {
   const preferences = {};
   for (const [key, row] of Object.entries(state)) {
-    preferences[key] = { email: row.email, inApp: row.inApp };
+    const field = PREFERENCE_INPUT_FIELDS[key] ?? key;
+    preferences[field] = { email: row.email, inApp: row.inApp };
   }
   return { preferences };
 }
