@@ -1,57 +1,15 @@
-import {
-  MarketingBreadcrumb,
-  MarketingCta,
-  MarketingGuideCard,
-  MarketingPageBody,
-  MarketingPageHeader,
-  MarketingSectionIntro,
-} from "@/app/components/marketing/marketing-page-shell";
+import { BlogMarketingPage } from "@/app/components/marketing/blog-marketing-page";
 import { blogPosts } from "@/app/lib/marketing/content";
+import { createPageMetadata } from "@/app/lib/marketing/seo";
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: "Guides",
   description:
-    "Product guides for Meridian — change requests, client health scores, and agency delivery workflows.",
-  alternates: { canonical: "/blog" },
-};
+    "Meridian product guides for agencies — structured change requests, client health scores, and delivery workflows.",
+  path: "/blog",
+  keywords: ["agency guides", "change request guide", "client health score", "project delivery"],
+});
 
 export default function BlogIndexPage() {
-  return (
-    <>
-      <MarketingPageHeader
-        title="Guides"
-        description="Short guides explaining how Meridian features work — based on the shipped product."
-        breadcrumb={
-          <MarketingBreadcrumb
-            items={[
-              { href: "/", label: "Home" },
-              { href: "/blog", label: "Guides" },
-            ]}
-          />
-        }
-      />
-      <MarketingPageBody>
-        <MarketingSectionIntro
-          title="Product guides"
-          description="Learn how change requests and health scores work before you sign in."
-        />
-        <ul className="grid gap-6 md:grid-cols-2">
-          {blogPosts.map((post) => (
-            <li key={post.slug}>
-              <MarketingGuideCard
-                href={`/blog/${post.slug}`}
-                date={post.datePublished}
-                title={post.title}
-                description={post.description}
-              />
-            </li>
-          ))}
-        </ul>
-      </MarketingPageBody>
-      <MarketingCta
-        title="Try these features in the app"
-        description="Create an account to run change requests, health scoring, and retention in your organization."
-      />
-    </>
-  );
+  return <BlogMarketingPage posts={blogPosts} />;
 }

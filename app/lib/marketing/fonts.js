@@ -1,14 +1,15 @@
-import { DM_Sans, Instrument_Serif } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 
-export const mktDisplay = Instrument_Serif({
+export const mktDisplay = Plus_Jakarta_Sans({
   variable: "--font-mkt-display",
   subsets: ["latin"],
-  weight: "400",
+  weight: ["600", "700", "800"],
 });
 
-export const mktSans = DM_Sans({
+export const mktSans = Plus_Jakarta_Sans({
   variable: "--font-mkt-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 /** Class names that expose marketing font CSS variables on a wrapper element. */

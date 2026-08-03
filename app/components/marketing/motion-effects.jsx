@@ -1,14 +1,14 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 
-import { MKT_EASE } from "./motion";
+import { MKT_EASE, useMktMotion } from "./motion";
 
 /** Floating ambient shape — continuous motion via framer */
 export function FloatingOrb({ className, delay = 0, duration = 8 }) {
-  const reduce = useReducedMotion();
+  const { animate } = useMktMotion();
 
-  if (reduce) {
+  if (!animate) {
     return <div aria-hidden className={className} />;
   }
 
@@ -33,9 +33,9 @@ export function FloatingOrb({ className, delay = 0, duration = 8 }) {
 
 /** Hover lift for bento cards */
 export function HoverLift({ children, className }) {
-  const reduce = useReducedMotion();
+  const { animate } = useMktMotion();
 
-  if (reduce) {
+  if (!animate) {
     return <div className={className}>{children}</div>;
   }
 

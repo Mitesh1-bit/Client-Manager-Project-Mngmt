@@ -3,22 +3,19 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { TooltipProvider } from "@/app/components/ui/tooltip";
 import { Toaster } from "@/app/components/ui/sonner";
 import { ApolloProvider } from "@/app/lib/graphql/apollo-provider";
+import { defaultSiteMetadata } from "@/app/lib/marketing/seo";
 
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-export const metadata = {
-  title: {
-    default: "Meridian — Client & Project Management",
-    template: "%s · Meridian",
-  },
-  description:
-    "Manage companies, projects, change requests and client retention in one place.",
-};
+export const metadata = defaultSiteMetadata;
 
 export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#16181f" },

@@ -3,43 +3,43 @@ import { Suspense } from "react";
 
 import { Skeleton } from "@/app/components/ui/skeleton";
 
+import { AuthPageFooter, AuthPageHeader } from "../auth-shell";
 import { SignupForm } from "./signup-form";
 
 export const metadata = { title: "Create your workspace" };
 
 export default function SignupPage() {
   return (
-    <div>
-      <h1 className="font-mkt-display text-title text-mkt-navy">Create your workspace</h1>
-      <p className="mt-2 text-caption text-mkt-navy/70">
-        Set up your agency, invite your team, and bring your clients into the portal.
-      </p>
+    <>
+      <AuthPageHeader title="Create workspace" subtitle="Agency name, your details, and you're in." />
 
-      <div className="mt-8">
-        <Suspense fallback={<FormSkeleton />}>
-          <SignupForm />
-        </Suspense>
-      </div>
+      <Suspense fallback={<FormSkeleton />}>
+        <SignupForm />
+      </Suspense>
 
-      <p className="mt-8 text-caption text-mkt-navy/70">
+      <AuthPageFooter>
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-mkt-cta underline underline-offset-2 hover:text-mkt-cta-hover">
+        <Link href="/login" className="font-semibold text-mkt-navy hover:text-mkt-coral">
           Sign in
         </Link>
-      </p>
-    </div>
+      </AuthPageFooter>
+    </>
   );
 }
 
 function FormSkeleton() {
   return (
-    <div className="space-y-5" aria-hidden="true">
-      <Skeleton className="h-[3.9rem]" />
-      <Skeleton className="h-[3.9rem]" />
-      <Skeleton className="h-[3.9rem]" />
-      <Skeleton className="h-[3.9rem]" />
-      <Skeleton className="h-[3.9rem]" />
-      <Skeleton className="h-10" />
+    <div className="space-y-3" aria-hidden="true">
+      <Skeleton className="h-9 w-full" />
+      <div className="grid grid-cols-2 gap-3">
+        <Skeleton className="h-9" />
+        <Skeleton className="h-9" />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Skeleton className="h-9" />
+        <Skeleton className="h-9" />
+      </div>
+      <Skeleton className="h-10 w-full" />
     </div>
   );
 }

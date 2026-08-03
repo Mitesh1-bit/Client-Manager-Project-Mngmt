@@ -21,8 +21,21 @@ function initials(name) {
     .join("");
 }
 
+function SidebarAvatar({ name, avatarUrl }) {
+  return (
+    <span className="inline-flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-sidebar-primary text-xs font-semibold text-sidebar-primary-foreground">
+      {avatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={avatarUrl} alt="" className="size-full object-cover" />
+      ) : (
+        initials(name) || <UserRound aria-hidden="true" className="size-4" />
+      )}
+    </span>
+  );
+}
+
 /**
- * @param {{ name: string, email: string, secondary?: string, avatarUrl?: string | null, align?: 'start' | 'end', side?: 'top' | 'bottom' | 'right', className?: string, compact?: boolean }} props
+ * @param {{ name: string, email: string, secondary?: string, avatarUrl?: string | null, align?: 'start' | 'end', side?: 'top' | 'bottom' | 'right', className?: string, compact?: boolean, variant?: 'default' | 'sidebar', scope?: string }} props
  */
 export function UserMenu({
   name,
@@ -33,32 +46,43 @@ export function UserMenu({
   side = "bottom",
   className,
   compact = false,
+  variant = "default",
   scope = "INTERNAL",
 }) {
+  const isSidebar = variant === "sidebar";
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(
-          "flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left transition-colors hover:bg-sidebar-accent focus-ring",
-          compact && "w-auto p-1",
+          isSidebar
+            ? "app-sidebar-user-trigger flex h-9 w-full min-w-0 items-center gap-2.5 rounded-lg px-2.5 text-left text-sm text-sidebar-foreground outline-none transition-[background-color,color,box-shadow] duration-150 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            : "flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left transition-colors hover:bg-sidebar-accent focus-ring",
+          compact && (isSidebar ? "size-8 justify-center p-0 hover:bg-sidebar-accent" : "w-auto p-1"),
           className,
         )}
       >
-        <Avatar className="size-8 rounded-lg">
-          {avatarUrl ? <AvatarImage src={avatarUrl} alt="" /> : null}
-          <AvatarFallback className="rounded-lg text-[0.75rem] font-medium">
-            {initials(name) || <UserRound aria-hidden="true" className="size-4" />}
-          </AvatarFallback>
-        </Avatar>
+        {isSidebar ? (
+          <SidebarAvatar name={name} avatarUrl={avatarUrl} />
+        ) : (
+          <Avatar className="size-8 shrink-0 rounded-lg after:hidden">
+            {avatarUrl ? <AvatarImage src={avatarUrl} alt="" className="rounded-lg" /> : null}
+            <AvatarFallback className="rounded-lg bg-muted text-[0.75rem] font-medium text-muted-foreground">
+              {initials(name) || <UserRound aria-hidden="true" className="size-4" />}
+            </AvatarFallback>
+          </Avatar>
+        )}
         {compact ? (
           <span className="sr-only">Open account menu for {name}</span>
         ) : (
           <>
-            <span className="flex min-w-0 flex-1 flex-col leading-tight">
-              <span className="truncate text-caption font-medium">{name}</span>
-              <span className="truncate text-[0.6875rem] opacity-70">{secondary ?? email}</span>
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5 leading-none">
+              <span className={cn("truncate font-medium", isSidebar ? "text-[0.8125rem]" : "text-caption")}>
+                {name}
+              </span>
+              <span className="truncate text-[0.6875rem] text-sidebar-foreground/65">{secondary ?? email}</span>
             </span>
-            <ChevronsUpDown aria-hidden="true" className="size-4 shrink-0 opacity-60" />
+            <ChevronsUpDown aria-hidden="true" className="size-4 shrink-0 opacity-50" />
           </>
         )}
       </DropdownMenuTrigger>

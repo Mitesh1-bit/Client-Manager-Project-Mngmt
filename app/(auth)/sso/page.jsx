@@ -1,27 +1,22 @@
 import Link from "next/link";
 
+import { AuthPageFooter, AuthPageHeader } from "../auth-shell";
 import { SsoForm } from "./sso-form";
 
 export const metadata = { title: "Single sign-on" };
 
 export default function SsoPage() {
   return (
-    <div>
-      <h1 className="font-mkt-display text-title text-mkt-navy">Single sign-on</h1>
-      <p className="mt-2 text-caption text-mkt-navy/70">
-        Sign in with your organisation&apos;s identity provider.
-      </p>
+    <>
+      <AuthPageHeader title="Single sign-on" subtitle="Use your organisation domain to continue." />
 
-      <div className="mt-8">
-        <SsoForm />
-      </div>
+      <SsoForm />
 
-      <p className="mt-8 text-caption text-mkt-navy/70">
-        Prefer a password?{" "}
-        <Link href="/login" className="font-medium text-mkt-cta underline underline-offset-2 hover:text-mkt-cta-hover">
+      <AuthPageFooter>
+        <Link href="/login" className="font-semibold text-mkt-navy hover:text-mkt-coral">
           Sign in with email
         </Link>
-      </p>
-    </div>
+      </AuthPageFooter>
+    </>
   );
 }

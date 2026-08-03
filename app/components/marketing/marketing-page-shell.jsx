@@ -1,13 +1,16 @@
+"use client";
+
 import Link from "next/link";
 
-import { ScrollReveal } from "@/app/components/marketing/scroll-reveal";
+import { Reveal } from "@/app/components/marketing/motion";
 import { LOGIN_URL, SIGNUP_URL } from "@/app/lib/marketing/site";
 
 import { ColorBlockCard } from "./color-block-card";
+import { HoverLift } from "./motion-effects";
 
 export function MarketingPageHeader({ title, description, breadcrumb }) {
   return (
-    <ScrollReveal>
+    <Reveal>
       <div className="border-b border-mkt-navy/10 bg-gradient-to-br from-mkt-sun/20 via-white to-mkt-sky/10 px-4 py-14 md:px-6 md:py-16">
         <div className="mx-auto max-w-6xl">
           {breadcrumb ? (
@@ -23,7 +26,7 @@ export function MarketingPageHeader({ title, description, breadcrumb }) {
           ) : null}
         </div>
       </div>
-    </ScrollReveal>
+    </Reveal>
   );
 }
 
@@ -52,22 +55,22 @@ export function MarketingPageBody({ children, className = "" }) {
 
 export function MarketingSectionIntro({ title, description, action }) {
   return (
-    <ScrollReveal>
+    <Reveal>
       <div className="mb-10">
         <h2 className="font-mkt-display text-[clamp(1.5rem,3vw,2.25rem)] text-mkt-navy">{title}</h2>
         {description ? <p className="mt-3 max-w-2xl text-lg text-mkt-navy/75">{description}</p> : null}
         {action ? <div className="mt-4">{action}</div> : null}
       </div>
-    </ScrollReveal>
+    </Reveal>
   );
 }
 
 export function MarketingGuideCard({ href, date, title, description }) {
   return (
-    <ScrollReveal>
+    <HoverLift className="h-full">
       <Link
         href={href}
-        className="group block h-full rounded-2xl border border-mkt-navy/10 bg-white p-6 shadow-sm transition-all hover:border-mkt-navy/25 hover:shadow-md"
+        className="group block h-full rounded-2xl border border-mkt-navy/10 bg-white p-6 shadow-sm transition-all hover:border-mkt-navy/25 hover:shadow-lg"
       >
         <time dateTime={date} className="text-sm text-mkt-navy/60">
           {date}
@@ -78,7 +81,7 @@ export function MarketingGuideCard({ href, date, title, description }) {
         <p className="mt-2 text-sm leading-relaxed text-mkt-navy/80">{description}</p>
         <p className="mt-4 text-xs font-bold tracking-wide text-mkt-cta uppercase">Read guide →</p>
       </Link>
-    </ScrollReveal>
+    </HoverLift>
   );
 }
 
@@ -91,7 +94,7 @@ export function MarketingCta({
   secondaryLabel = "Sign in",
 }) {
   return (
-    <ScrollReveal>
+    <Reveal>
       <div className="mx-auto max-w-6xl px-4 pb-16 md:px-6 md:pb-24">
         <ColorBlockCard tone="navy" className="relative overflow-hidden text-center">
           <div className="pointer-events-none absolute -top-16 -right-16 size-48 rounded-full bg-mkt-pink/20 blur-3xl" />
@@ -112,6 +115,6 @@ export function MarketingCta({
           </div>
         </ColorBlockCard>
       </div>
-    </ScrollReveal>
+    </Reveal>
   );
 }
