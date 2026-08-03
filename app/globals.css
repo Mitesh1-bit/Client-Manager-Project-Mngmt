@@ -367,9 +367,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  [data-surface="app"] *,
+  [data-surface="app"] *::before,
+  [data-surface="app"] *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -442,14 +442,63 @@
 [data-surface="app"] .text-title,
 [data-surface="app"] .text-display,
 [data-surface="app"] .text-heading {
-  font-family: var(--font-mkt-display), Georgia, "Times New Roman", serif;
-  font-weight: 400;
+  font-family: var(--font-mkt-display), system-ui, -apple-system, sans-serif;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
 [data-surface="app"] ::selection {
   background-color: color-mix(in oklab, var(--mkt-lime) 55%, white);
   color: var(--mkt-navy);
+}
+
+/* App sidebar — spacing, hover, active indicator */
+[data-surface="app"] .app-sidebar [data-sidebar="sidebar"] {
+  border-right: 1px solid color-mix(in oklab, var(--sidebar-border) 90%, transparent);
+}
+
+[data-surface="app"] .app-sidebar [data-sidebar="menu-button"] {
+  overflow: visible;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+[data-surface="app"] .app-sidebar [data-sidebar="menu-button"]:hover {
+  background-color: color-mix(in oklab, var(--sidebar-accent) 94%, white 6%);
+}
+
+[data-surface="app"] .app-sidebar [data-sidebar="menu-button"][data-active="true"] {
+  background-color: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
+  font-weight: 500;
+}
+
+[data-surface="app"] .app-sidebar [data-sidebar="menu-button"][data-active="true"]:hover {
+  background-color: color-mix(in oklab, var(--sidebar-accent) 86%, var(--mkt-lime) 14%);
+}
+
+[data-surface="app"] .app-sidebar [data-sidebar="menu-item"]:has([data-active="true"])::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  z-index: 1;
+  width: 3px;
+  height: 1.125rem;
+  border-radius: 0 2px 2px 0;
+  background: var(--mkt-lime);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+[data-surface="app"] .app-sidebar [data-sidebar="group-label"] {
+  letter-spacing: 0.12em;
+}
+
+[data-surface="app"] .app-sidebar .app-sidebar-user-trigger:hover,
+[data-surface="app"] .app-sidebar .app-sidebar-user-trigger[data-state="open"] {
+  background-color: color-mix(in oklab, var(--sidebar-accent) 94%, white 6%);
 }
 
 /* ── Marketing surface (public site) ── */
@@ -483,7 +532,9 @@
 }
 
 [data-surface="marketing"] .font-mkt-display {
-  font-family: var(--font-mkt-display), Georgia, "Times New Roman", serif;
+  font-family: var(--font-mkt-display), system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 [data-surface="marketing"] .font-mkt-sans {
@@ -506,6 +557,14 @@
   @apply mb-4;
 }
 
+[data-surface="marketing"] .prose-marketing ul {
+  @apply text-mkt-navy/90;
+}
+
+[data-surface="marketing"] .prose-marketing li {
+  @apply leading-relaxed;
+}
+
 [data-surface="marketing"] .prose-marketing a {
   @apply text-mkt-cta underline-offset-2 hover:underline;
 }
@@ -518,19 +577,32 @@
   @apply inline-flex items-center justify-center rounded-md border-2 border-mkt-navy px-6 py-3 text-sm font-bold text-mkt-navy transition-all duration-300 hover:bg-mkt-navy hover:text-white;
 }
 
+[data-surface="marketing"] .mkt-navbar .mkt-nav-link {
+  position: relative;
+}
+
+[data-surface="marketing"] .mkt-nav-panel {
+  transform-origin: top center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-surface="marketing"] .mkt-nav-panel {
+    animation: none !important;
+  }
+}
+
 @keyframes mkt-fade-in {
   from {
-    opacity: 0;
-    transform: translateY(var(--mkt-y, 24px));
+    transform: translate(var(--mkt-x, 0), var(--mkt-y, 24px));
   }
   to {
-    opacity: 1;
-    transform: translateY(0);
+    transform: translate(0, 0);
   }
 }
 
 [data-surface="marketing"] .mkt-animate-fade-in {
-  animation: mkt-fade-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: mkt-fade-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -538,6 +610,168 @@
     animation: none;
     opacity: 1;
     transform: none;
+  }
+}
+
+/* Hero dashboard — always visible; CSS entrance when .mkt-hero-stage--ready */
+@keyframes mkt-hero-enter-right {
+  from {
+    transform: translateX(36px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes mkt-hero-enter-left {
+  from {
+    transform: translateX(-36px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes mkt-hero-enter-up {
+  from {
+    transform: translateY(32px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes mkt-hero-pop {
+  from {
+    transform: scale(0.92);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* Pop animation must not override fixed KPI square size after hydration */
+[data-surface="marketing"] .mkt-hero-kpi.mkt-hero-kpi--in {
+  transform-origin: center center;
+}
+
+@keyframes mkt-hero-progress-fill {
+  from {
+    width: 0;
+  }
+  to {
+    width: var(--mkt-pct, 100%);
+  }
+}
+
+@keyframes mkt-hero-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes mkt-hero-float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+[data-surface="marketing"] .mkt-hero-stage {
+  min-height: 440px;
+  width: 580px;
+  max-width: none;
+}
+
+[data-surface="marketing"] .mkt-hero-panel,
+[data-surface="marketing"] .mkt-hero-activity,
+[data-surface="marketing"] .mkt-hero-toast,
+[data-surface="marketing"] .mkt-hero-glow {
+  opacity: 1;
+}
+
+[data-surface="marketing"] .mkt-hero-stage--ready .mkt-hero-panel {
+  animation: mkt-hero-enter-right 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.12s forwards;
+}
+
+[data-surface="marketing"] .mkt-hero-stage--ready .mkt-hero-activity {
+  animation: mkt-hero-enter-left 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.28s forwards;
+}
+
+[data-surface="marketing"] .mkt-hero-stage--ready .mkt-hero-toast {
+  animation: mkt-hero-enter-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+}
+
+[data-surface="marketing"] .mkt-hero-stage--ready .mkt-hero-glow {
+  animation: mkt-hero-glow-pulse 6s ease-in-out infinite;
+}
+
+[data-surface="marketing"] .mkt-hero-kpi {
+  width: 4.75rem;
+  height: 4.75rem;
+  aspect-ratio: 1 / 1;
+}
+
+@media (min-width: 640px) {
+  [data-surface="marketing"] .mkt-hero-kpi {
+    width: 5.25rem;
+    height: 5.25rem;
+  }
+}
+
+[data-surface="marketing"] .mkt-hero-stage--ready .mkt-hero-kpi--in {
+  animation: mkt-hero-pop 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+[data-surface="marketing"] .mkt-hero-stage--ready .mkt-hero-row--in {
+  animation: mkt-hero-enter-up 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+[data-surface="marketing"] .mkt-hero-progress {
+  width: var(--mkt-pct, 100%);
+}
+
+[data-surface="marketing"] .mkt-hero-progress--in {
+  width: 0;
+  animation: mkt-hero-progress-fill 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+[data-surface="marketing"] .mkt-hero-float {
+  animation: mkt-hero-float-y 4.5s ease-in-out infinite;
+}
+
+[data-surface="marketing"] .mkt-hero-float-slow {
+  animation: mkt-hero-float-y 3.8s ease-in-out 1.5s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-surface="marketing"] .mkt-hero-stage--ready .mkt-hero-panel,
+  [data-surface="marketing"] .mkt-hero-stage--ready .mkt-hero-activity,
+  [data-surface="marketing"] .mkt-hero-stage--ready .mkt-hero-toast,
+  [data-surface="marketing"] .mkt-hero-stage--ready .mkt-hero-kpi--in,
+  [data-surface="marketing"] .mkt-hero-stage--ready .mkt-hero-row--in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-surface="marketing"] .mkt-hero-stage--ready .mkt-hero-progress--in {
+    animation: none;
+    width: var(--mkt-pct, 100%);
+  }
+
+  [data-surface="marketing"] .mkt-hero-kpi {
+    width: 4.75rem;
+    height: 4.75rem;
   }
 }
 
@@ -560,6 +794,1112 @@
     animation: none;
     width: 72%;
   }
+}
+
+@keyframes mkt-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+[data-surface="marketing"] .mkt-marquee-track {
+  animation: mkt-marquee 36s linear infinite;
+  will-change: transform;
+}
+
+@keyframes mkt-tool-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+[data-surface="marketing"] .mkt-tool-carousel-scroll {
+  scroll-snap-type: x mandatory;
+  scroll-behavior: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  touch-action: pan-x;
+}
+
+[data-surface="marketing"] .mkt-tool-carousel-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+[data-surface="marketing"] .mkt-tool-carousel-track {
+  animation: mkt-tool-scroll 50s linear infinite;
+}
+
+[data-surface="marketing"] .mkt-tool-carousel:hover .mkt-tool-carousel-track {
+  animation-play-state: paused;
+}
+
+@keyframes mkt-card-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes mkt-card-enter {
+  from {
+    transform: translateY(16px) scale(0.94);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes mkt-card-slide {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-8px);
+    opacity: 0.95;
+  }
+}
+
+@keyframes mkt-card-kanban {
+  0%,
+  28% {
+    transform: translate(0, 0);
+  }
+  38%,
+  58% {
+    transform: translate(calc(100% + 8px), 0);
+  }
+  68%,
+  88% {
+    transform: translate(calc(200% + 16px), 0);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes mkt-card-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 0.9;
+  }
+}
+
+@keyframes mkt-card-ring {
+  0% {
+    stroke-dashoffset: 264;
+  }
+  100% {
+    stroke-dashoffset: 52;
+  }
+}
+
+@keyframes mkt-card-badge-pop {
+  0%,
+  100% {
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.08);
+  }
+}
+
+[data-surface="marketing"] .mkt-card-float {
+  animation: mkt-card-float 3.2s ease-in-out infinite;
+}
+
+[data-surface="marketing"] .mkt-card-float-delayed {
+  animation: mkt-card-float 3.8s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+[data-surface="marketing"] .mkt-card-enter {
+  animation: mkt-card-enter 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+[data-surface="marketing"] .mkt-card-slide {
+  animation: mkt-card-slide 3s ease-in-out infinite;
+}
+
+[data-surface="marketing"] .mkt-card-kanban {
+  animation: mkt-card-kanban 5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+[data-surface="marketing"] .mkt-card-pulse {
+  animation: mkt-card-pulse 2.4s ease-in-out infinite;
+}
+
+[data-surface="marketing"] .mkt-card-ring {
+  animation: mkt-card-ring 3s ease-out infinite alternate;
+}
+
+[data-surface="marketing"] .mkt-card-badge-pop {
+  animation: mkt-card-badge-pop 2.6s ease-in-out infinite;
+}
+
+/* Why Meridian tab visuals — Tinker-style float loops */
+@keyframes mkt-why-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes mkt-why-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(232, 93, 4, 0.35);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 6px rgba(232, 93, 4, 0);
+  }
+}
+
+@keyframes mkt-why-glow {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.03);
+  }
+}
+
+[data-surface="marketing"] .mkt-why-float {
+  animation: mkt-why-float 4.2s ease-in-out infinite;
+}
+
+[data-surface="marketing"] .mkt-why-float-slow {
+  animation: mkt-why-float 5s ease-in-out 0.8s infinite;
+}
+
+[data-surface="marketing"] .mkt-why-pulse {
+  animation: mkt-why-pulse 2.5s ease-in-out infinite;
+}
+
+[data-surface="marketing"] .mkt-why-glow {
+  animation: mkt-why-glow 5.5s ease-in-out infinite;
+}
+
+/* Hero workflow graph — Asana-style blue paths */
+@keyframes mkt-workflow-draw {
+  0% {
+    stroke-dashoffset: 420;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes mkt-workflow-dot-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.75;
+  }
+}
+
+@keyframes mkt-workflow-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+[data-surface="marketing"] .mkt-workflow-path {
+  stroke-dasharray: 420;
+  stroke-dashoffset: 420;
+  animation: mkt-workflow-draw 2.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+[data-surface="marketing"] .mkt-workflow-dot {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: mkt-workflow-dot-pulse 3s ease-in-out infinite;
+}
+
+[data-surface="marketing"] .mkt-workflow-float {
+  animation: mkt-workflow-float 4.8s ease-in-out infinite;
+}
+
+@keyframes mkt-product-river-draw {
+  from {
+    stroke-dashoffset: 900;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+[data-surface="marketing"] .mkt-product-river-draw {
+  stroke-dasharray: 900;
+  stroke-dashoffset: 900;
+  animation: mkt-product-river-draw 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes mkt-product-cursor-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+[data-surface="marketing"] .mkt-product-cursor {
+  animation: mkt-product-cursor-blink 1s step-end infinite;
+}
+
+@keyframes mkt-product-bar-grow {
+  from {
+    height: 0;
+  }
+  to {
+    height: 3rem;
+  }
+}
+
+[data-surface="marketing"] .mkt-product-bar-fill {
+  height: 0;
+  animation: mkt-product-bar-grow 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes mkt-view-board-card-move {
+  0%,
+  100% {
+    left: 18%;
+    top: 28%;
+    background-color: rgba(197, 240, 66, 0.85);
+  }
+  33% {
+    left: 52%;
+    top: 52%;
+    background-color: rgba(78, 192, 232, 0.75);
+  }
+  66% {
+    left: 78%;
+    top: 22%;
+    background-color: rgba(78, 192, 232, 0.75);
+  }
+}
+
+[data-surface="marketing"] .mkt-view-board-card {
+  animation: mkt-view-board-card-move 5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes mkt-view-gantt-shimmer {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.72;
+  }
+}
+
+[data-surface="marketing"] .mkt-view-gantt-shimmer {
+  animation: mkt-view-gantt-shimmer 2.4s ease-in-out infinite;
+}
+
+@keyframes mkt-view-cal-today {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(78, 192, 232, 0.35);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(78, 192, 232, 0.15);
+    transform: scale(1.08);
+  }
+}
+
+[data-surface="marketing"] .mkt-view-cal-today {
+  animation: mkt-view-cal-today 2.2s ease-in-out infinite;
+}
+
+@keyframes mkt-sol-float-badge-drift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+[data-surface="marketing"] .mkt-sol-float-badge {
+  animation: mkt-sol-float-badge-drift 6s ease-in-out infinite;
+}
+
+[data-surface="marketing"] .mkt-sol-float-badge:nth-child(2) {
+  animation-delay: 1s;
+}
+
+[data-surface="marketing"] .mkt-sol-float-badge:nth-child(3) {
+  animation-delay: 2s;
+}
+
+[data-surface="marketing"] .mkt-sol-float-badge:nth-child(4) {
+  animation-delay: 3s;
+}
+
+/* ── Solutions role stack (CodePen-style deck) ── */
+[data-surface="marketing"] .mkt-role-stack-section {
+  background: #faf9f6;
+}
+
+[data-surface="marketing"] .mkt-role-stack-wrap {
+  position: relative;
+  padding-top: 4.5rem;
+  padding-right: 0;
+}
+
+@media (min-width: 1024px) {
+  [data-surface="marketing"] .mkt-role-stack-wrap {
+    padding-top: 5rem;
+  }
+}
+
+@media (max-width: 1023px) {
+  [data-surface="marketing"] .mkt-role-stack-wrap {
+    padding-top: 1.5rem;
+  }
+}
+
+[data-surface="marketing"] .mkt-role-stack-canvas {
+  position: relative;
+}
+
+[data-surface="marketing"] .mkt-role-stack--canvas {
+  max-width: none;
+  margin-inline: 0;
+}
+
+[data-surface="marketing"] .mkt-role-stack--canvas .mkt-role-stack-body {
+  grid-template-columns: 168px 1fr;
+}
+
+[data-surface="marketing"] .mkt-role-stack--canvas .mkt-role-stack-visual {
+  border-right: 1px solid rgba(10, 21, 80, 0.08);
+}
+
+[data-surface="marketing"] .mkt-role-stack-glow {
+  position: absolute;
+  inset: 2rem -12px -12px;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 55% 50% at 30% 40%, rgba(197, 240, 66, 0.14), transparent 70%),
+    radial-gradient(ellipse 45% 45% at 75% 55%, rgba(78, 192, 232, 0.12), transparent 70%),
+    radial-gradient(ellipse 40% 40% at 50% 80%, rgba(255, 226, 74, 0.1), transparent 70%);
+  opacity: 1;
+  z-index: 0;
+}
+
+[data-surface="marketing"] .mkt-role-stack-canvas .mkt-role-stack-glow {
+  inset: 3.5rem -8px -8px 0;
+}
+
+@media (min-width: 1024px) {
+  [data-surface="marketing"] .mkt-role-stack--canvas {
+    width: 100% !important;
+    max-width: 720px;
+    margin-inline: auto;
+  }
+}
+
+[data-surface="marketing"] .mkt-role-stack {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+[data-surface="marketing"] .mkt-role-stack--split {
+  max-width: 100%;
+  height: 420px;
+}
+
+@media (max-width: 639px) {
+  [data-surface="marketing"] {
+    max-width: 100%;
+  }
+
+  [data-surface="marketing"] .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  [data-surface="marketing"] .overflow-x-auto::-webkit-scrollbar {
+    display: none;
+  }
+
+  [data-surface="marketing"] .mkt-role-stack-wrap {
+    padding-top: 2.75rem;
+  }
+
+  [data-surface="marketing"] .mkt-role-stack--split {
+    height: 440px;
+  }
+
+  /* Scale down wide section headings on small phones */
+  [data-surface="marketing"] .font-mkt-display.text-4xl {
+    font-size: clamp(1.75rem, 7vw, 2.25rem);
+  }
+
+  [data-surface="marketing"] .font-mkt-display.text-6xl,
+  [data-surface="marketing"] .font-mkt-display.text-7xl {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+  }
+}
+
+@media (min-width: 1280px) {
+  [data-surface="marketing"] .mkt-role-stack--split {
+    height: 440px;
+  }
+}
+
+[data-surface="marketing"] .mkt-role-stack-card {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(10, 21, 80, 0.1);
+  box-shadow:
+    0 16px 40px rgba(10, 21, 80, 0.1),
+    0 4px 12px rgba(10, 21, 80, 0.06);
+  pointer-events: none;
+  transition:
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.5s ease,
+    box-shadow 0.5s ease;
+}
+
+[data-surface="marketing"] .mkt-role-stack-card[data-depth="0"] {
+  transform: translate(0, 0) scale(1);
+  opacity: 1;
+  z-index: 40;
+  pointer-events: auto;
+  box-shadow:
+    0 24px 56px rgba(10, 21, 80, 0.14),
+    0 10px 24px rgba(10, 21, 80, 0.08);
+}
+
+[data-surface="marketing"] .mkt-role-stack-card[data-depth="1"] {
+  transform: translate(16px, -20px) scale(0.985);
+  opacity: 0.92;
+  z-index: 30;
+}
+
+[data-surface="marketing"] .mkt-role-stack-card[data-depth="2"] {
+  transform: translate(32px, -40px) scale(0.97);
+  opacity: 0.86;
+  z-index: 20;
+}
+
+[data-surface="marketing"] .mkt-role-stack-card[data-depth="3"] {
+  transform: translate(48px, -60px) scale(0.955);
+  opacity: 0.8;
+  z-index: 10;
+}
+
+[data-surface="marketing"] .mkt-role-stack-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 1rem;
+  color: #0a1550;
+  border-bottom: 1px solid rgba(10, 21, 80, 0.06);
+}
+
+[data-surface="marketing"] .mkt-role-stack-header h3 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+@keyframes mkt-role-stack-live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+[data-surface="marketing"] .mkt-role-stack-live {
+  animation: mkt-role-stack-live-pulse 2s ease-in-out infinite;
+}
+
+[data-surface="marketing"] .mkt-role-stack-body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  border-top: none;
+  height: calc(100% - 2.5rem);
+}
+
+@media (min-width: 640px) {
+  [data-surface="marketing"] .mkt-role-stack-body {
+    grid-template-columns: 168px 1fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-surface="marketing"] .mkt-role-stack--split .mkt-role-stack-body {
+    grid-template-columns: 188px 1fr;
+  }
+}
+
+[data-surface="marketing"] .mkt-role-stack-visual {
+  padding: 0.85rem;
+  background: #f7f8fc;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 640px) {
+  [data-surface="marketing"] .mkt-role-stack-visual {
+    border-right: 1px solid rgba(10, 21, 80, 0.08);
+  }
+}
+
+[data-surface="marketing"] .mkt-role-stack-copy {
+  overflow: hidden;
+  padding: 0.85rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes mkt-product-orbit-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+[data-surface="marketing"] .mkt-product-orbit-spin {
+  animation: mkt-product-orbit-rotate 38s linear infinite;
+}
+
+[data-surface="marketing"] .mkt-product-orbit-counter {
+  animation: mkt-product-orbit-rotate 38s linear infinite reverse;
+}
+
+@keyframes mkt-orbit-carousel-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+[data-surface="marketing"] .mkt-orbit-carousel {
+  --sol-hero-height: 440;
+  --sol-hero-width: 640;
+  width: 100%;
+  overflow: hidden;
+}
+
+[data-surface="marketing"] .mkt-sol-badge-scaler {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+@media (max-width: 767px) {
+  [data-surface="marketing"] .mkt-sol-hero-viewport {
+    --sol-scale: min(1, calc((100vw - 3rem) / var(--sol-hero-width)));
+    min-height: calc(var(--sol-hero-height) * 1px * var(--sol-scale));
+  }
+
+  [data-surface="marketing"] .mkt-sol-badge-scaler {
+    transform: scale(var(--sol-scale));
+    transform-origin: top center;
+  }
+}
+
+@media (min-width: 768px) {
+  [data-surface="marketing"] .mkt-sol-hero-viewport {
+    min-height: 440px;
+    overflow: visible;
+  }
+
+  [data-surface="marketing"] .mkt-sol-badge-scaler {
+    transform: none;
+  }
+}
+
+@media (max-width: 479px) {
+  [data-surface="marketing"] .mkt-sol-float-badge {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.62rem;
+    gap: 0.35rem;
+  }
+}
+
+[data-surface="marketing"] .mkt-orbit-carousel {
+  transform-origin: center center;
+  will-change: transform;
+}
+
+[data-surface="marketing"] .mkt-orbit-carousel--on {
+  animation: mkt-orbit-carousel-spin var(--orbit-duration, 22s) linear infinite;
+}
+
+[data-surface="marketing"] .mkt-orbit-pill-upright {
+  transform-origin: center center;
+  will-change: transform;
+}
+
+[data-surface="marketing"] .mkt-orbit-pill-upright--on {
+  animation: mkt-orbit-carousel-spin var(--orbit-duration, 22s) linear infinite reverse;
+}
+
+[data-surface="marketing"] .mkt-orbit-hub-ring--on {
+  animation: mkt-orbit-carousel-spin var(--orbit-duration, 22s) linear infinite reverse;
+}
+
+@keyframes mkt-orbit-flow-dashes {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -36;
+  }
+}
+
+[data-surface="marketing"] .mkt-orbit-flow-dashes {
+  animation: mkt-orbit-flow-dashes 1.1s linear infinite;
+}
+
+@keyframes mkt-river-flow-dashes {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -48;
+  }
+}
+
+[data-surface="marketing"] .mkt-river-flow-dashes {
+  stroke-dasharray: 10 14;
+  animation: mkt-river-flow-dashes 1.4s linear infinite;
+}
+
+@keyframes mkt-river-scan {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes mkt-river-particle-float {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translate(6px, -10px);
+    opacity: 0.55;
+  }
+}
+
+@keyframes mkt-river-live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes mkt-river-cursor-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+[data-surface="marketing"] .mkt-river-scan {
+  animation: mkt-river-scan 5s ease-in-out infinite;
+}
+
+[data-surface="marketing"] .mkt-river-particle {
+  animation: mkt-river-particle-float 4.5s ease-in-out infinite;
+}
+
+[data-surface="marketing"] .mkt-river-live-dot {
+  animation: mkt-river-live-pulse 2s ease-in-out infinite;
+}
+
+[data-surface="marketing"] .mkt-river-blink {
+  animation: mkt-river-cursor-blink 1.1s step-end infinite;
+}
+
+@keyframes mkt-river-orbit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes mkt-river-handoff-flow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+@keyframes mkt-river-mesh-pulse {
+  0%,
+  100% {
+    opacity: 0.06;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+[data-surface="marketing"] .mkt-river-orbit-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mkt-river-orbit-spin 8s linear infinite;
+}
+
+[data-surface="marketing"] .mkt-river-handoff-beam {
+  animation: mkt-river-handoff-flow 0.8s linear infinite;
+}
+
+[data-surface="marketing"] .mkt-river-mesh-dot {
+  animation: mkt-river-mesh-pulse 3s ease-in-out infinite;
+}
+
+@keyframes mkt-cta-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes mkt-cta-stat-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+[data-surface="marketing"] .mkt-cta-glow {
+  animation: mkt-cta-glow 7s ease-in-out infinite;
+}
+
+[data-surface="marketing"] .mkt-cta-stat {
+  animation: mkt-cta-stat-float 4.5s ease-in-out infinite;
+}
+
+[data-surface="marketing"] .mkt-cta-stat:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+[data-surface="marketing"] .mkt-cta-stat:nth-child(3) {
+  animation-delay: 0.8s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-surface="marketing"] .mkt-marquee-track {
+    animation: mkt-marquee 60s linear infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-tool-carousel-track {
+    animation: none;
+  }
+}
+
+/* Restore marketing motion when OS "reduce motion" is on (global * rule kills loops) */
+@media (prefers-reduced-motion: reduce) {
+  [data-surface="marketing"] .mkt-animate-fade-in {
+    animation: mkt-fade-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  [data-surface="marketing"] .mkt-card-float {
+    animation: mkt-card-float 3.2s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-card-float-delayed {
+    animation: mkt-card-float 3.8s ease-in-out 0.5s infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-card-enter {
+    animation: mkt-card-enter 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  [data-surface="marketing"] .mkt-card-slide {
+    animation: mkt-card-slide 3s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-card-kanban {
+    animation: mkt-card-kanban 5s cubic-bezier(0.16, 1, 0.3, 1) infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-card-pulse {
+    animation: mkt-card-pulse 2.4s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-card-ring {
+    animation: mkt-card-ring 3s ease-out infinite alternate !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-card-badge-pop {
+    animation: mkt-card-badge-pop 2.6s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-hero-float,
+  [data-surface="marketing"] .mkt-hero-float-slow {
+    animation: mkt-hero-float-y 4.5s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-hero-float-slow {
+    animation: mkt-hero-float-y 3.8s ease-in-out 1.5s infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-hero-glow {
+    animation: mkt-hero-glow-pulse 6s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-float {
+    animation: mkt-float 5s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-why-float,
+  [data-surface="marketing"] .mkt-why-float-slow {
+    animation: mkt-why-float 4.2s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-why-float-slow {
+    animation: mkt-why-float 5s ease-in-out 0.8s infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-why-pulse {
+    animation: mkt-why-pulse 2.5s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-why-glow {
+    animation: mkt-why-glow 5.5s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-workflow-path {
+    stroke-dashoffset: 0 !important;
+    animation: none !important;
+  }
+
+  [data-surface="marketing"] .mkt-workflow-dot {
+    animation: mkt-workflow-dot-pulse 3s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-workflow-float {
+    animation: mkt-workflow-float 4.8s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-product-river-draw {
+    animation: mkt-product-river-draw 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  [data-surface="marketing"] .mkt-product-bar-fill {
+    animation: mkt-product-bar-grow 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  [data-surface="marketing"] .mkt-view-board-card {
+    animation: mkt-view-board-card-move 5s cubic-bezier(0.45, 0, 0.55, 1) infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-view-gantt-shimmer {
+    animation: mkt-view-gantt-shimmer 2.4s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-view-cal-today {
+    animation: mkt-view-cal-today 2.2s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-sol-float-badge {
+    animation: mkt-sol-float-badge-drift 5s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-product-orbit-spin,
+  [data-surface="marketing"] .mkt-product-orbit-counter {
+    animation: mkt-product-orbit-rotate 38s linear infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-product-orbit-counter {
+    animation-direction: reverse !important;
+  }
+
+  [data-surface="marketing"] .mkt-orbit-carousel--on,
+  [data-surface="marketing"] .mkt-orbit-pill-upright--on,
+  [data-surface="marketing"] .mkt-orbit-hub-ring--on {
+    animation: mkt-orbit-carousel-spin var(--orbit-duration, 22s) linear infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-orbit-pill-upright--on,
+  [data-surface="marketing"] .mkt-orbit-hub-ring--on {
+    animation-direction: reverse !important;
+  }
+
+  [data-surface="marketing"] .mkt-orbit-flow-dashes {
+    animation: mkt-orbit-flow-dashes 1.1s linear infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-river-flow-dashes {
+    animation: mkt-river-flow-dashes 1.4s linear infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-river-scan {
+    animation: mkt-river-scan 5s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-river-particle {
+    animation: mkt-river-particle-float 4.5s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-river-live-dot {
+    animation: mkt-river-live-pulse 2s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-river-blink {
+    animation: mkt-river-cursor-blink 1.1s step-end infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-river-orbit-ring {
+    animation: mkt-river-orbit-spin 8s linear infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-river-handoff-beam {
+    animation: mkt-river-handoff-flow 0.8s linear infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-river-mesh-dot {
+    animation: mkt-river-mesh-pulse 3s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-cta-glow {
+    animation: mkt-cta-glow 7s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  [data-surface="marketing"] .mkt-cta-stat {
+    animation: mkt-cta-stat-float 4.5s ease-in-out infinite !important;
+    animation-iteration-count: infinite !important;
+  }
+}
+
+@keyframes mkt-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+[data-surface="marketing"] .mkt-float {
+  animation: mkt-float 5s ease-in-out infinite;
 }
 
 html.lenis,

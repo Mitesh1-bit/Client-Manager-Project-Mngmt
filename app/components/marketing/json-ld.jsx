@@ -6,7 +6,7 @@ export function organizationJsonLd() {
     "@type": "Organization",
     name: SITE_NAME,
     url: metadataBase,
-    logo: `${metadataBase}/favicon.ico`,
+    logo: `${metadataBase}/icon`,
   };
 }
 
@@ -42,6 +42,28 @@ export function breadcrumbJsonLd(items) {
       name: item.name,
       item: item.url,
     })),
+  };
+}
+
+/** @param {{ name: string, url: string, description: string, dateModified: string }} props */
+export function webPageJsonLd({ name, url, description, dateModified }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name,
+    url,
+    description,
+    dateModified,
+    isPartOf: {
+      "@type": "WebSite",
+      name: SITE_NAME,
+      url: metadataBase,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: metadataBase,
+    },
   };
 }
 

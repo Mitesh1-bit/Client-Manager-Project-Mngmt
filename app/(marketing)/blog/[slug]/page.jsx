@@ -1,14 +1,11 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BlogPostBody } from "@/app/components/marketing/blog-post-body";
+import { MarketingBreadcrumb } from "@/app/components/marketing/marketing-page-shell";
+import { MarketingCta } from "@/app/components/marketing/marketing-page-shell";
 import { articleJsonLd, breadcrumbJsonLd, JsonLd } from "@/app/components/marketing/json-ld";
-import {
-  MarketingBreadcrumb,
-  MarketingCta,
-  MarketingPageBody,
-  MarketingPageHeader,
-} from "@/app/components/marketing/marketing-page-shell";
 import { blogPosts, getBlogPost } from "@/app/lib/marketing/content";
+import { createPageMetadata } from "@/app/lib/marketing/seo";
 import { metadataBase } from "@/app/lib/marketing/site";
 
 export function generateStaticParams() {
@@ -20,18 +17,16 @@ export async function generateMetadata({ params }) {
   const post = getBlogPost(slug);
   if (!post) return { title: "Guide not found" };
 
-  return {
+  return createPageMetadata({
     title: post.title,
     description: post.description,
+    path: `/blog/${slug}`,
+    type: "article",
+    publishedTime: post.datePublished,
+    modifiedTime: post.dateModified,
+    authors: [post.author],
     keywords: post.keywords,
-    alternates: { canonical: `/blog/${slug}` },
-    openGraph: {
-      type: "article",
-      publishedTime: post.datePublished,
-      modifiedTime: post.dateModified,
-      authors: [post.author],
-    },
-  };
+  });
 }
 
 export default async function BlogPostPage({ params }) {
@@ -61,9 +56,8 @@ export default async function BlogPostPage({ params }) {
         ])}
       />
 
-      <MarketingPageHeader
-        title={post.title}
-        description={post.description}
+      <BlogPostBody
+        post={post}
         breadcrumb={
           <MarketingBreadcrumb
             items={[
@@ -74,28 +68,6 @@ export default async function BlogPostPage({ params }) {
           />
         }
       />
-
-      <MarketingPageBody className="max-w-3xl">
-        <aside className="rounded-xl border border-mkt-sun bg-mkt-sun/30 p-4">
-          <p className="text-xs font-bold tracking-widest text-mkt-navy/70 uppercase">Summary</p>
-          <p className="mt-2 font-medium text-mkt-navy">{post.directAnswer}</p>
-        </aside>
-
-        <div className="prose-marketing mt-10">
-          {post.body.map((paragraph) => (
-            <p key={paragraph.slice(0, 40)}>{paragraph}</p>
-          ))}
-        </div>
-
-        <div className="mt-10 flex flex-wrap gap-4 border-t border-mkt-navy/10 pt-8">
-          <Link href="/blog" className="text-sm font-semibold text-mkt-cta hover:underline">
-            ← All guides
-          </Link>
-          <Link href="/product" className="text-sm font-semibold text-mkt-navy hover:text-mkt-cta hover:underline">
-            Product overview →
-          </Link>
-        </div>
-      </MarketingPageBody>
 
       <MarketingCta title="Use these features in Meridian" />
     </>

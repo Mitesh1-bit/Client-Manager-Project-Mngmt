@@ -14,6 +14,21 @@ export const MARKETING_PREFIXES = [
   "/terms",
 ];
 
+const SEO_PUBLIC_PATHS = new Set([
+  "/robots.txt",
+  "/sitemap.xml",
+  "/llms.txt",
+  "/llms-full.txt",
+  "/icon",
+  "/opengraph-image",
+]);
+
+/** @param {string} pathname */
+export function isSeoPublicRoute(pathname) {
+  if (SEO_PUBLIC_PATHS.has(pathname)) return true;
+  return pathname.includes("/opengraph-image");
+}
+
 /** @param {string} pathname */
 export function isMarketingRoute(pathname) {
   if (pathname === "/") return true;
@@ -42,6 +57,8 @@ export function homePathForScope(scope) {
  * @returns {string | null}
  */
 export function resolveRedirect({ pathname, search = "", session }) {
+  if (isSeoPublicRoute(pathname)) return null;
+
   if (isAuthRoute(pathname)) {
     return session ? homePathForScope(session.scope) : null;
   }

@@ -1,76 +1,47 @@
-import Link from "next/link";
+import { LegalDocumentPage } from "@/app/components/marketing/legal-marketing-page";
+import { breadcrumbJsonLd, JsonLd, webPageJsonLd } from "@/app/components/marketing/json-ld";
+import { LEGAL_LAST_UPDATED, privacyPolicyDocument } from "@/app/lib/marketing/legal-content";
+import { createPageMetadata } from "@/app/lib/marketing/seo";
+import { metadataBase } from "@/app/lib/marketing/site";
 
-import { ColorBlockCard } from "@/app/components/marketing/color-block-card";
-import {
-  MarketingBreadcrumb,
-  MarketingCta,
-  MarketingPageBody,
-  MarketingPageHeader,
-} from "@/app/components/marketing/marketing-page-shell";
-import { ScrollReveal } from "@/app/components/marketing/scroll-reveal";
-
-export const metadata = {
-  title: "Privacy policy",
-  description: "Meridian privacy policy.",
-  alternates: { canonical: "/privacy" },
-};
+export const metadata = createPageMetadata({
+  title: privacyPolicyDocument.metadataTitle,
+  description: privacyPolicyDocument.description,
+  path: privacyPolicyDocument.path,
+  keywords: privacyPolicyDocument.keywords,
+});
 
 export default function PrivacyPage() {
+  const url = `${metadataBase}${privacyPolicyDocument.path}`;
+
   return (
     <>
-      <MarketingPageHeader
-        title="Privacy policy"
-        description="Last updated: July 2026"
-        breadcrumb={
-          <MarketingBreadcrumb
-            items={[
-              { href: "/", label: "Home" },
-              { href: "/privacy", label: "Privacy" },
-            ]}
-          />
-        }
+      <JsonLd
+        data={webPageJsonLd({
+          name: privacyPolicyDocument.title,
+          url,
+          description: privacyPolicyDocument.description,
+          dateModified: LEGAL_LAST_UPDATED,
+        })}
       />
-      <MarketingPageBody className="max-w-3xl">
-        <ScrollReveal>
-          <ColorBlockCard tone="sky" className="prose-marketing !max-w-none">
-            <p>
-              Meridian provides client and project management software for agencies. This policy
-              describes how we handle personal data when you use our website and application.
-            </p>
-            <h2>Data we collect</h2>
-            <p>
-              Account information (name, email, organization), usage logs, and client data you enter
-              into the platform. We do not sell personal data.
-            </p>
-            <h2>How we use data</h2>
-            <p>
-              To provide the service, improve reliability, send product communications you opt into,
-              and meet legal obligations.
-            </p>
-            <h2>Your account</h2>
-            <p>
-              You can sign in to manage your organization data. Contact your organization admin for
-              account access questions.
-            </p>
-          </ColorBlockCard>
-        </ScrollReveal>
-        <p className="mt-8 text-sm text-mkt-navy/70">
-          <Link href="/terms" className="font-semibold text-mkt-cta hover:underline">
-            Terms of service
-          </Link>
-          {" · "}
-          <Link href="/" className="font-semibold text-mkt-cta hover:underline">
-            Back to home
-          </Link>
-        </p>
-      </MarketingPageBody>
-      <MarketingCta
-        title="Access Meridian"
-        description="Sign in to your organization account or create a new one."
-        primaryHref="/login"
-        primaryLabel="Sign in"
-        secondaryHref="/signup"
-        secondaryLabel="Create account"
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", url: metadataBase },
+          { name: "Privacy policy", url },
+        ])}
+      />
+      <LegalDocumentPage
+        document={privacyPolicyDocument}
+        tone="sky"
+        breadcrumbItems={[
+          { href: "/", label: "Home" },
+          { href: privacyPolicyDocument.path, label: "Privacy" },
+        ]}
+        related={{
+          href: "/terms",
+          label: "Terms of service",
+          description: "Rules for using Meridian and the client portal.",
+        }}
       />
     </>
   );

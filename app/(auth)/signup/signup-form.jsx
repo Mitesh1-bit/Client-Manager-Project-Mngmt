@@ -16,6 +16,8 @@ import { establishSession } from "@/app/lib/auth/establish-session";
 import { SignupDocument } from "@/app/lib/graphql/generated/documents";
 import { formatGraphqlError } from "@/app/lib/graphql/format-error";
 
+import { authInputClass } from "../auth-shell";
+
 const schema = z
   .object({
     organizationName: z.string().min(2, "Tell us your agency or company name."),
@@ -84,80 +86,85 @@ export function SignupForm() {
         event.preventDefault();
         void handleSubmit(onSubmit)(event);
       }}
-      className="space-y-5"
+      className="space-y-4"
     >
       {submitError ? (
-        <Alert variant="destructive">
-          <AlertTitle>Couldn&apos;t create your workspace</AlertTitle>
-          <AlertDescription>{submitError}</AlertDescription>
+        <Alert variant="destructive" className="py-2">
+          <AlertTitle className="text-sm">Couldn&apos;t create workspace</AlertTitle>
+          <AlertDescription className="text-xs">{submitError}</AlertDescription>
         </Alert>
       ) : null}
 
-      <FormField label="Agency or company name" error={errors.organizationName?.message} required>
+      <FormField label="Agency name" error={errors.organizationName?.message} required>
         {(field) => (
           <Input
             {...field}
             {...register("organizationName")}
             autoComplete="organization"
             placeholder="Meridian Studio"
-            className="h-10"
+            className={authInputClass(true)}
           />
         )}
       </FormField>
 
-      <FormField label="Your name" error={errors.fullName?.message} required>
-        {(field) => (
-          <Input {...field} {...register("fullName")} autoComplete="name" className="h-10" />
-        )}
-      </FormField>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <FormField label="Your name" error={errors.fullName?.message} required>
+          {(field) => (
+            <Input {...field} {...register("fullName")} autoComplete="name" className={authInputClass(true)} />
+          )}
+        </FormField>
 
-      <FormField label="Work email" error={errors.email?.message} required>
-        {(field) => (
-          <Input
-            {...field}
-            {...register("email")}
-            type="email"
-            autoComplete="username"
-            placeholder="you@company.com"
-            className="h-10"
-          />
-        )}
-      </FormField>
+        <FormField label="Work email" error={errors.email?.message} required>
+          {(field) => (
+            <Input
+              {...field}
+              {...register("email")}
+              type="email"
+              autoComplete="username"
+              placeholder="you@company.com"
+              className={authInputClass(true)}
+            />
+          )}
+        </FormField>
+      </div>
 
-      <FormField
-        label="Password"
-        hint="At least 12 characters, with a number and a symbol."
-        error={errors.password?.message}
-        required
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <FormField label="Password" error={errors.password?.message} required>
+          {(field) => (
+            <Input
+              {...field}
+              {...register("password")}
+              type="password"
+              autoComplete="new-password"
+              placeholder="12+ chars"
+              className={authInputClass(true)}
+            />
+          )}
+        </FormField>
+
+        <FormField label="Confirm" error={errors.confirmPassword?.message} required>
+          {(field) => (
+            <Input
+              {...field}
+              {...register("confirmPassword")}
+              type="password"
+              autoComplete="new-password"
+              className={authInputClass(true)}
+            />
+          )}
+        </FormField>
+      </div>
+
+      <Button
+        type="submit"
+        size="lg"
+        className="h-11 w-full rounded-lg bg-mkt-navy font-semibold text-white hover:bg-mkt-navy/90"
+        disabled={isSubmitting}
       >
-        {(field) => (
-          <Input
-            {...field}
-            {...register("password")}
-            type="password"
-            autoComplete="new-password"
-            className="h-10"
-          />
-        )}
-      </FormField>
-
-      <FormField label="Confirm password" error={errors.confirmPassword?.message} required>
-        {(field) => (
-          <Input
-            {...field}
-            {...register("confirmPassword")}
-            type="password"
-            autoComplete="new-password"
-            className="h-10"
-          />
-        )}
-      </FormField>
-
-      <Button type="submit" size="lg" className="h-10 w-full" disabled={isSubmitting}>
         {isSubmitting ? (
           <>
             <LoaderCircle aria-hidden="true" className="animate-spin" />
-            Creating workspace…
+            Creating…
           </>
         ) : (
           "Create workspace"

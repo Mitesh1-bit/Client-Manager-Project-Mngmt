@@ -20,6 +20,8 @@ import { LoginDocument, PortalLoginDocument } from "@/app/lib/graphql/generated/
 import { formatGraphqlError } from "@/app/lib/graphql/format-error";
 import { DEMO_PASSWORD, demoAccounts } from "@/app/lib/mocks/demo-accounts";
 
+import { authInputClass } from "../auth-shell";
+
 const USING_MOCK_BACKEND = isMockGraphqlEndpoint;
 
 const schema = z.object({
@@ -71,7 +73,6 @@ export function LoginForm() {
         return;
       }
 
-      // Staff login failed — try client portal credentials on the same form.
       try {
         const { data } = await portalLogin({ variables: credentials });
         const token = data?.portalLogin?.accessToken;
@@ -83,7 +84,7 @@ export function LoginForm() {
       } catch (portalError) {
         setSubmitError(
           formatGraphqlError(portalError, "Invalid credentials") +
-            " Check your email and password. Client contacts must use the portal password set under Companies → Contacts (not a staff password).",
+            " Client contacts need the portal password from Companies → Contacts.",
         );
       }
     }
@@ -97,12 +98,12 @@ export function LoginForm() {
         event.preventDefault();
         void handleSubmit(onSubmit)(event);
       }}
-      className="space-y-5"
+      className="space-y-4"
     >
       {submitError ? (
-        <Alert variant="destructive">
-          <AlertTitle>Couldn&apos;t sign you in</AlertTitle>
-          <AlertDescription>{submitError}</AlertDescription>
+        <Alert variant="destructive" className="py-2">
+          <AlertTitle className="text-sm">Couldn&apos;t sign you in</AlertTitle>
+          <AlertDescription className="text-xs">{submitError}</AlertDescription>
         </Alert>
       ) : null}
 
@@ -114,7 +115,7 @@ export function LoginForm() {
             type="email"
             autoComplete="username"
             placeholder="you@company.com"
-            className="h-10"
+            className={authInputClass()}
           />
         )}
       </FormField>
@@ -126,21 +127,26 @@ export function LoginForm() {
             {...register("password")}
             type="password"
             autoComplete="current-password"
-            className="h-10"
+            className={authInputClass()}
           />
         )}
       </FormField>
 
-      <div className="flex items-center justify-between">
-        <Link href="/sso" className="text-caption font-medium text-mkt-cta hover:underline">
-          Use single sign-on
+      <div className="flex items-center justify-between gap-2 pt-1 text-[0.78rem]">
+        <Link href="/sso" className="font-medium text-mkt-navy/70 hover:text-mkt-navy">
+          SSO
         </Link>
-        <Link href="/sso" className="text-caption text-mkt-navy/60 hover:underline">
+        <Link href="/sso" className="text-mkt-navy/45 hover:text-mkt-navy/70">
           Forgot password?
         </Link>
       </div>
 
-      <Button type="submit" size="lg" className="h-10 w-full" disabled={isSubmitting}>
+      <Button
+        type="submit"
+        size="lg"
+        className="h-11 w-full rounded-lg bg-mkt-navy font-semibold text-white hover:bg-mkt-navy/90"
+        disabled={isSubmitting}
+      >
         {isSubmitting ? (
           <>
             <LoaderCircle aria-hidden="true" className="animate-spin" />
@@ -150,13 +156,6 @@ export function LoginForm() {
           "Sign in"
         )}
       </Button>
-
-      <p className="text-center text-caption text-mkt-navy/70">
-        Client contact?{" "}
-        <Link href="/client-login" className="font-medium text-mkt-cta hover:underline">
-          Client portal sign in
-        </Link>
-      </p>
 
       {USING_MOCK_BACKEND ? (
         <DemoAccountPicker
@@ -172,26 +171,18 @@ export function LoginForm() {
 
 function DemoAccountPicker({ onPick }) {
   return (
-    <div className="rounded-lg border border-dashed bg-muted/40 p-3">
-      <p className="text-overline uppercase text-muted-foreground">Demo accounts</p>
-      <p className="mt-1 text-caption text-muted-foreground">
-        Running against local fixtures — password is{" "}
-        <code className="rounded bg-background px-1 py-0.5 font-mono text-[0.75rem]">
-          {DEMO_PASSWORD}
-        </code>
-        .
-      </p>
-      <div className="mt-2.5 flex flex-wrap gap-1.5">
+    <div className="border-t border-mkt-navy/8 pt-3">
+      <p className="text-[0.65rem] uppercase tracking-wide text-mkt-navy/40">Demo · password {DEMO_PASSWORD}</p>
+      <div className="mt-2 flex flex-wrap gap-1">
         {demoAccounts.map((account) => (
-          <Button
+          <button
             key={account.email}
             type="button"
-            variant="outline"
-            size="xs"
             onClick={() => onPick(account.email)}
+            className="rounded border border-mkt-navy/12 px-2 py-0.5 text-[0.68rem] font-medium text-mkt-navy/70 transition hover:border-mkt-navy/25 hover:text-mkt-navy"
           >
             {account.label}
-          </Button>
+          </button>
         ))}
       </div>
     </div>

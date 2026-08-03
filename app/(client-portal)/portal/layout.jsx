@@ -3,10 +3,12 @@ import { getClient } from "@/app/lib/graphql/apollo-client";
 import { PortalApprovalsDocument } from "@/app/lib/graphql/generated/documents";
 import { requireViewer } from "@/app/lib/graphql/viewer";
 import { mktFontClassName } from "@/app/lib/marketing/fonts";
+import { privateAppMetadata } from "@/app/lib/marketing/seo";
 
 import { PortalNavBar, PortalTabBar } from "./portal-nav";
 
 export const metadata = {
+  ...privateAppMetadata,
   title: { default: "Client portal", template: "%s · Client portal" },
 };
 
