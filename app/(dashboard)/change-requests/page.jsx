@@ -60,67 +60,71 @@ export default async function ChangeRequestsPage({ searchParams }) {
       />
 
       <div className="space-y-4">
-        <QueueTabs
-          active={bucket}
-          counts={{
-            all: countShape.all.totalCount,
-            submitted: countShape.submitted.totalCount,
-            "pending-approval": countShape.pendingApproval.totalCount,
-            overdue: countShape.overdue.totalCount,
-          }}
-        />
+        <div data-tour="cr-queue-tabs">
+          <QueueTabs
+            active={bucket}
+            counts={{
+              all: countShape.all.totalCount,
+              submitted: countShape.submitted.totalCount,
+              "pending-approval": countShape.pendingApproval.totalCount,
+              overdue: countShape.overdue.totalCount,
+            }}
+          />
+        </div>
 
-        <ListToolbar
-          searchPlaceholder="Search by title or reference…"
-          searchLabel="Search change requests by title or reference"
-          filters={[
-            {
-              key: "status",
-              label: "Status",
-              options: toOptions(listStatuses("changeRequestStatus")),
-            },
-            {
-              key: "type",
-              label: "Type",
-              options: [
-                "SCOPE_ADDITION",
-                "SCOPE_REDUCTION",
-                "TIMELINE_CHANGE",
-                "BUDGET_CHANGE",
-                "BUGFIX",
-                "OTHER",
-              ].map((value) => ({ value, label: humanize(value) })),
-            },
-            { key: "priority", label: "Priority", options: toOptions(listStatuses("priority")) },
-            {
-              key: "awaiting",
-              label: "Waiting on",
-              multi: false,
-              allLabel: "Anyone",
-              options: [
-                { value: "AGENCY", label: "Us" },
-                { value: "CLIENT", label: "The client" },
-              ],
-            },
-            {
-              key: "pm",
-              label: "PM",
-              multi: false,
-              allLabel: "Anyone",
-              options: users.map((user) => ({ value: user.id, label: user.name })),
-            },
-            {
-              key: "company",
-              label: "Client",
-              multi: false,
-              allLabel: "All clients",
-              options: companies.map((company) => ({
-                value: company.id,
-                label: company.name,
-              })),
-            },
-          ]}
-        />
+        <div data-tour="cr-filters">
+          <ListToolbar
+            searchPlaceholder="Search by title or reference…"
+            searchLabel="Search change requests by title or reference"
+            filters={[
+              {
+                key: "status",
+                label: "Status",
+                options: toOptions(listStatuses("changeRequestStatus")),
+              },
+              {
+                key: "type",
+                label: "Type",
+                options: [
+                  "SCOPE_ADDITION",
+                  "SCOPE_REDUCTION",
+                  "TIMELINE_CHANGE",
+                  "BUDGET_CHANGE",
+                  "BUGFIX",
+                  "OTHER",
+                ].map((value) => ({ value, label: humanize(value) })),
+              },
+              { key: "priority", label: "Priority", options: toOptions(listStatuses("priority")) },
+              {
+                key: "awaiting",
+                label: "Waiting on",
+                multi: false,
+                allLabel: "Anyone",
+                options: [
+                  { value: "AGENCY", label: "Us" },
+                  { value: "CLIENT", label: "The client" },
+                ],
+              },
+              {
+                key: "pm",
+                label: "PM",
+                multi: false,
+                allLabel: "Anyone",
+                options: users.map((user) => ({ value: user.id, label: user.name })),
+              },
+              {
+                key: "company",
+                label: "Client",
+                multi: false,
+                allLabel: "All clients",
+                options: companies.map((company) => ({
+                  value: company.id,
+                  label: company.name,
+                })),
+              },
+            ]}
+          />
+        </div>
 
         <Suspense key={JSON.stringify(params)} fallback={<TableSkeleton rows={8} columns={8} />}>
           <QueueResults params={params} bucket={bucket} />

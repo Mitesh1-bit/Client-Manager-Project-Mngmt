@@ -34,7 +34,7 @@ export default async function CompanyProjectsPage({ params }) {
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div data-tour="company-projects-list" className="grid gap-4 lg:grid-cols-2">
       {projects.map((project) => {
         const overBudget = project.budget && project.actualCost > project.budget;
 

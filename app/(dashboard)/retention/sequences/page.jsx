@@ -53,7 +53,7 @@ export default async function RetentionSequencesPage() {
             }
           />
         ) : (
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div data-tour="retention-sequences-list" className="grid gap-4 lg:grid-cols-2">
             {sequences.map((sequence) => (
               <SequenceCard key={sequence.id} sequence={sequence} />
             ))}

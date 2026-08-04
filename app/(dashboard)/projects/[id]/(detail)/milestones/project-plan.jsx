@@ -111,7 +111,7 @@ export function ProjectPlan({ projectId, phases = [], milestones = [] }) {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div data-tour="project-milestones-list" className="space-y-4">
         {phases.map((phase) => (
           <PhaseSection
             key={phase.id}

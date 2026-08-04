@@ -35,7 +35,11 @@ export default async function CompanyOverviewPage({ params }) {
   return (
     <div className="grid gap-5 lg:grid-cols-3">
       <div className="space-y-5 lg:col-span-2">
-        <SectionCard title="Health" description="Recalculated nightly from touchpoints, project status and response times.">
+        <SectionCard
+          data-tour="company-health"
+          title="Health"
+          description="Recalculated nightly from touchpoints, project status and response times."
+        >
           {/* Stacked on phones — side by side the score and the six-field grid
               squeeze each other into unreadable columns. */}
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
@@ -66,6 +70,7 @@ export default async function CompanyOverviewPage({ params }) {
         </SectionCard>
 
         <SectionCard
+          data-tour="company-activity"
           title="Activity"
           description="Touchpoints, change requests, projects and edits in one feed."
           actions={
@@ -88,6 +93,7 @@ export default async function CompanyOverviewPage({ params }) {
 
       <div className="space-y-5">
         <SectionCard
+          data-tour="company-primary-contact"
           title="Primary contact"
           actions={
             <Button variant="ghost" size="sm" asChild>
@@ -140,7 +146,7 @@ export default async function CompanyOverviewPage({ params }) {
           )}
         </SectionCard>
 
-        <SectionCard title="Details">
+        <SectionCard data-tour="company-details" title="Details">
           <dl className="space-y-3 text-caption">
             <Detail label="Industry" value={company.industry ?? "—"} />
             <Detail label="Size" value={company.size ? `${company.size} employees` : "—"} />

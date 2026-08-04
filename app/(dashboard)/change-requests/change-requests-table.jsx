@@ -158,7 +158,7 @@ export function ChangeRequestsTable({ connection, sort, emptyState }) {
   );
 
   return (
-    <>
+    <div data-tour="cr-table">
       <DataTable
         data={connection.nodes}
         columns={columns}
@@ -176,6 +176,6 @@ export function ChangeRequestsTable({ connection, sort, emptyState }) {
         totalCount={connection.totalCount}
         itemLabel="change requests"
       />
-    </>
+    </div>
   );
 }

@@ -40,7 +40,7 @@ export default async function CompanyChangeLogPage({ params }) {
   }
 
   return (
-    <ul className="space-y-3">
+    <ul data-tour="company-change-log" className="space-y-3">
       {requests.map((request) => (
         <li key={request.id} className="rounded-xl border bg-card p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">

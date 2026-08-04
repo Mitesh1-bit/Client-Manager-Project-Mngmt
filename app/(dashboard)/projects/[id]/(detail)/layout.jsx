@@ -101,7 +101,7 @@ export default async function ProjectDetailLayout({ children, params }) {
         </div>
 
         {/* The at-a-glance strip: progress, dates, budget, who's on it. */}
-        <dl className="mt-5 grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <dl data-tour="project-stats" className="mt-5 grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <dt className="text-caption text-muted-foreground">Progress</dt>
             <dd className="mt-1.5">

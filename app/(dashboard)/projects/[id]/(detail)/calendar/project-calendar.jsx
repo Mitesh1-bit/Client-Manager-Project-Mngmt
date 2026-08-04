@@ -145,7 +145,7 @@ export function ProjectCalendar({
           without a positioned ancestor its containing block is the viewport,
           which lets it escape this scroll container and give the whole page a
           phantom horizontal scrollbar. */}
-      <div className="relative overflow-x-auto rounded-xl border bg-card">
+      <div data-tour="project-calendar" className="relative overflow-x-auto rounded-xl border bg-card">
         <div className="min-w-[42rem]">
           <div className="grid grid-cols-7 border-b bg-muted/40">
             {WEEKDAYS.map((weekday) => (

@@ -152,9 +152,9 @@ export function CardGridSkeleton({ cards = 4, className }) {
  * Section wrapper used across every detail tab so headings, spacing and the
  * optional action slot stay identical between modules.
  */
-export function SectionCard({ title, description, actions, children, className }) {
+export function SectionCard({ title, description, actions, children, className, ...rest }) {
   return (
-    <section className={cn("rounded-xl border bg-card", className)}>
+    <section className={cn("rounded-xl border bg-card", className)} {...rest}>
       {(title || actions) && (
         <div className="flex items-start justify-between gap-4 border-b px-5 py-4">
           <div className="min-w-0">

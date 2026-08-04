@@ -149,6 +149,7 @@ export function ProjectGantt({
           this scroller instead of letting them widen the whole page. */}
       <div
         ref={scrollRef}
+        data-tour="project-timeline"
         className="relative overflow-x-auto rounded-xl border bg-card"
       >
         {/* A fixed min width keeps months legible; the pane scrolls instead of

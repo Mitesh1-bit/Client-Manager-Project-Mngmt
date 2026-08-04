@@ -30,7 +30,9 @@ export default async function RetentionAtRiskPage() {
       />
 
       <div className="space-y-4">
-        <RetentionTabs counts={{ "/retention": rows.length }} />
+        <div data-tour="retention-tabs">
+          <RetentionTabs counts={{ "/retention": rows.length }} />
+        </div>
 
         {rows.length === 0 ? (
           <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed py-16 text-center">
@@ -46,7 +48,7 @@ export default async function RetentionAtRiskPage() {
             </div>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div data-tour="retention-at-risk-list" className="space-y-3">
             {rows.map((row) => (
               <AtRiskCompanyCard key={row.company.id} row={row} sequences={sequences} />
             ))}

@@ -33,7 +33,7 @@ export default async function CompanyDocsPage({ params }) {
   }
 
   return (
-    <ul className="divide-y rounded-xl border bg-card">
+    <ul data-tour="company-documents" className="divide-y rounded-xl border bg-card">
       {documents.map((document) => (
         <li key={document.id} className="flex items-center gap-4 p-4">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">

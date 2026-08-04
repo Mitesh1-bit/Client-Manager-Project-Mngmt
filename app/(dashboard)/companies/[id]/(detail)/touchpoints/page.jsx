@@ -42,7 +42,7 @@ export default async function CompanyTouchpointsPage({ params }) {
   const overdue = touchpoints.filter((tp) => tp.status === "OVERDUE").length;
 
   return (
-    <div className="space-y-4">
+    <div data-tour="company-touchpoints" className="space-y-4">
       <p className="text-caption text-muted-foreground">
         {touchpoints.length} logged
         {overdue > 0 ? (

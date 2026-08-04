@@ -113,11 +113,12 @@ export default async function SequenceDetailPage({ params }) {
       ) : null}
 
       <div className="space-y-5">
-        <SectionCard title="Steps">
+        <SectionCard data-tour="sequence-steps" title="Steps">
           <SequenceStepTimeline steps={sequence.steps} />
         </SectionCard>
 
         <SectionCard
+          data-tour="sequence-enrollments"
           title="Enrollments"
           description={`${activeEnrollments.length} active`}
         >

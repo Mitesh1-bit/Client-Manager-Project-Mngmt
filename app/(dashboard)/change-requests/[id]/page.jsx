@@ -84,22 +84,28 @@ export default async function ChangeRequestDetailPage({ params }) {
       ) : null}
 
       <div className="space-y-5">
-        <ChangeRequestStatusPanel request={request} audience="INTERNAL" />
+        <div data-tour="cr-status-panel">
+          <ChangeRequestStatusPanel request={request} audience="INTERNAL" />
+        </div>
 
         {request.description ? (
-          <SectionCard title="What was asked for">
+          <SectionCard data-tour="cr-description" title="What was asked for">
             <p className="text-caption text-pretty">{request.description}</p>
           </SectionCard>
         ) : null}
 
-        <AssessmentPanel request={request} threshold={threshold} />
+        <div data-tour="cr-assessment">
+          <AssessmentPanel request={request} threshold={threshold} />
+        </div>
 
         {/* Renders the decide-now form when internal sign-off is outstanding,
             otherwise falls back to decision history if there is any. */}
-        <ChangeRequestDecisionPanel request={request} approverType="INTERNAL" />
+        <div data-tour="cr-decision">
+          <ChangeRequestDecisionPanel request={request} approverType="INTERNAL" />
+        </div>
 
         {request.attachments.length > 0 ? (
-          <SectionCard title="Attachments">
+          <SectionCard data-tour="cr-attachments" title="Attachments">
             <ul className="space-y-1.5">
               {request.attachments.map((attachment) => (
                 <li key={attachment.id}>
@@ -125,16 +131,18 @@ export default async function ChangeRequestDetailPage({ params }) {
           </SectionCard>
         ) : null}
 
-        <SectionCard title="History">
+        <SectionCard data-tour="cr-history" title="History">
           <ChangeRequestTimeline request={request} />
         </SectionCard>
 
-        <CommentThread
-          entityType="CHANGE_REQUEST"
-          entityId={request.id}
-          comments={request.comments}
-          audience="INTERNAL"
-        />
+        <div data-tour="cr-comments">
+          <CommentThread
+            entityType="CHANGE_REQUEST"
+            entityId={request.id}
+            comments={request.comments}
+            audience="INTERNAL"
+          />
+        </div>
       </div>
     </div>
   );

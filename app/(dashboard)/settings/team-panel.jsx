@@ -111,6 +111,7 @@ export function TeamPanel({ users, currentUserId, isAdmin }) {
   return (
     <div className="space-y-6">
       <SectionCard
+        data-tour="settings-roles"
         title="Roles & access"
         description="What each role can do in your workspace. Client portal access is managed per contact, not per team member."
       >
@@ -217,7 +218,11 @@ export function TeamPanel({ users, currentUserId, isAdmin }) {
         </SectionCard>
       )}
 
-      <SectionCard title="Team" description="Everyone with dashboard access in your organization.">
+      <SectionCard
+        data-tour="settings-team"
+        title="Team"
+        description="Everyone with dashboard access in your organization."
+      >
         <ul className="divide-y rounded-xl border">
           {users.map((user) => {
             const inactive = user.status === "inactive";

@@ -108,7 +108,7 @@ export function TaskList({ projectId, tasks = [], phases = [], milestones = [], 
         </Button>
       </div>
 
-      <div className="space-y-4">
+      <div data-tour="project-task-list" className="space-y-4">
         {groups.map((group) => {
           const isCollapsed = collapsed.has(group.key);
           return (
