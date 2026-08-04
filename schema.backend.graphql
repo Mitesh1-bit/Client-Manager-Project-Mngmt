@@ -66,6 +66,13 @@ type ChangeRequestType {
   createdAt: DateTime!
   updatedAt: DateTime!
   approvals: [ChangeRequestApprovalType!]!
+  responseDueAt: DateTime
+  isOverdue: Boolean!
+}
+
+type CompanySizeType {
+  id: ID!
+  label: String!
 }
 
 type CompanyType {
@@ -74,6 +81,9 @@ type CompanyType {
   industry: String
   website: String
   logoUrl: String
+  size: String
+  timezone: String
+  address: JSON
   status: String!
   accountOwnerId: ID
   healthScore: Float
@@ -159,6 +169,11 @@ type ImpactAssessmentDraftType {
   advisory: Boolean!
 }
 
+type IndustryType {
+  id: ID!
+  name: String!
+}
+
 type InvoiceType {
   id: ID!
   companyId: ID!
@@ -213,8 +228,8 @@ type Mutation {
   portalLogin(email: String!, password: String!): PortalAuthPayload!
   portalRefreshToken: PortalAuthPayload!
   portalLogout: Boolean!
-  createCompany(name: String!, industry: String = null, website: String = null, logoUrl: String = null, status: String! = "lead", accountOwnerId: ID = null, healthScore: Float = null): CompanyType!
-  updateCompany(id: ID!, name: String = null, industry: String = null, website: String = null, logoUrl: String = null, status: String = null, accountOwnerId: ID = null, healthScore: Float = null): CompanyType!
+  createCompany(name: String!, industry: String = null, website: String = null, logoUrl: String = null, size: String = null, timezone: String = null, address: JSON = null, status: String! = "lead", accountOwnerId: ID = null, healthScore: Float = null): CompanyType!
+  updateCompany(id: ID!, name: String = null, industry: String = null, website: String = null, logoUrl: String = null, size: String = null, timezone: String = null, address: JSON = null, status: String = null, accountOwnerId: ID = null, healthScore: Float = null): CompanyType!
   deleteCompany(id: ID!): Boolean!
   createContact(companyId: ID!, firstName: String!, lastName: String!, email: String = null, phone: String = null, title: String = null, department: String = null, isPrimary: Boolean! = false, preferredChannel: String = null, timezone: String = null, portalAccessEnabled: Boolean! = false, portalPassword: String = null, linkedinUrl: String = null, status: String! = "active"): ContactType!
   updateContact(id: ID!, firstName: String = null, lastName: String = null, email: String = null, phone: String = null, title: String = null, department: String = null, isPrimary: Boolean = null, preferredChannel: String = null, timezone: String = null, portalAccessEnabled: Boolean = null, portalPassword: String = null, linkedinUrl: String = null, status: String = null): ContactType!
@@ -225,8 +240,8 @@ type Mutation {
   createTag(name: String!): TagType!
   addTag(entityType: String!, entityId: ID!, tagId: ID!): Boolean!
   removeTag(entityType: String!, entityId: ID!, tagId: ID!): Boolean!
-  createProject(companyId: ID!, name: String!, description: String = null, status: String! = "planning", priority: String = null, projectManagerId: ID = null, budget: Float = null, health: String = "on_track"): ProjectType!
-  updateProject(id: ID!, name: String = null, description: String = null, status: String = null, priority: String = null, budget: Float = null, health: String = null): ProjectType!
+  createProject(companyId: ID!, name: String!, description: String = null, status: String! = "planning", priority: String = null, projectManagerId: ID = null, budget: Float = null, currency: String! = "GBP", health: String = "on_track"): ProjectType!
+  updateProject(id: ID!, name: String = null, description: String = null, status: String = null, priority: String = null, budget: Float = null, currency: String = null, health: String = null): ProjectType!
   deleteProject(id: ID!): Boolean!
   createPhase(projectId: ID!, name: String!, orderIndex: Int!, status: String! = "not_started"): PhaseType!
   updatePhase(id: ID!, name: String = null, orderIndex: Int = null, status: String = null): PhaseType!
@@ -271,6 +286,34 @@ type Mutation {
 
   """Update a team member role or status (admin only)."""
   updateUser(id: ID!, name: String = null, role: String = null, status: String = null): UserSummaryType!
+
+  """Update the signed-in user's display profile."""
+  updateMyProfile(name: String = null, avatarUrl: String = null, firstName: String = null, lastName: String = null, title: String = null): ViewerType!
+
+  """Change the signed-in user's password."""
+  changeMyPassword(currentPassword: String!, newPassword: String!): Boolean!
+
+  """Update notification channel preferences."""
+  updateMyNotificationPreferences(preferences: NotificationPreferencesInput!): [NotificationPreferenceType!]!
+}
+
+input NotificationChannelInput {
+  email: Boolean!
+  inApp: Boolean!
+}
+
+type NotificationPreferenceType {
+  key: String!
+  email: Boolean!
+  inApp: Boolean!
+}
+
+input NotificationPreferencesInput {
+  changeRequests: NotificationChannelInput = null
+  taskAssignments: NotificationChannelInput = null
+  milestoneApprovals: NotificationChannelInput = null
+  retentionTouchpoints: NotificationChannelInput = null
+  projectUpdates: NotificationChannelInput = null
 }
 
 type OrganizationViewerType {
@@ -336,6 +379,7 @@ type ProjectType {
   projectManagerId: ID
   budget: Float
   actualCost: Float
+  currency: String!
   health: String
   phases: [PhaseType!]!
   tasks: [TaskType!]!
@@ -349,6 +393,8 @@ type Query {
   contacts: [ContactType!]!
   contact(id: ID!): ContactType
   tags: [TagType!]!
+  companySizes: [CompanySizeType!]!
+  industries: [IndustryType!]!
   users: [UserSummaryType!]!
   user(id: ID!): UserSummaryType
   projects(companyId: ID = null): [ProjectType!]!
@@ -381,6 +427,7 @@ type Query {
 
   """Signed-in internal user or portal contact."""
   me: ViewerType
+  myNotificationPreferences: [NotificationPreferenceType!]!
 }
 
 type RetentionEnrollmentType {

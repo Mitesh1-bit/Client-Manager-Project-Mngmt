@@ -7,6 +7,26 @@ import { toApiStatus } from "@/app/lib/api/normalize";
  * stays the source of truth.
  */
 
+/** Mirrors the backend's `Currency` enum (app/db/enums.py) — a closed set, like status/priority. */
+export const CURRENCIES = [
+  { value: "GBP", label: "GBP — British Pound" },
+  { value: "USD", label: "USD — US Dollar" },
+  { value: "EUR", label: "EUR — Euro" },
+  { value: "CAD", label: "CAD — Canadian Dollar" },
+  { value: "AUD", label: "AUD — Australian Dollar" },
+  { value: "NZD", label: "NZD — New Zealand Dollar" },
+  { value: "CHF", label: "CHF — Swiss Franc" },
+  { value: "JPY", label: "JPY — Japanese Yen" },
+  { value: "SEK", label: "SEK — Swedish Krona" },
+  { value: "NOK", label: "NOK — Norwegian Krone" },
+  { value: "DKK", label: "DKK — Danish Krone" },
+  { value: "SGD", label: "SGD — Singapore Dollar" },
+  { value: "HKD", label: "HKD — Hong Kong Dollar" },
+  { value: "AED", label: "AED — UAE Dirham" },
+  { value: "INR", label: "INR — Indian Rupee" },
+  { value: "ZAR", label: "ZAR — South African Rand" },
+];
+
 const optionalText = (max, message) =>
   z
     .string()
@@ -45,6 +65,7 @@ export const projectSchema = z
       .refine((value) => value === null || (Number.isFinite(value) && value >= 0), {
         message: "Enter a budget of 0 or more.",
       }),
+    currency: z.enum(CURRENCIES.map((c) => c.value)),
     tagIds: z.array(z.string()).default([]),
   })
   // Caught here so the user sees it before the round trip; the server checks
@@ -65,6 +86,7 @@ export function projectToFormValues(project) {
     startDate: project?.startDate ?? "",
     endDate: project?.endDate ?? "",
     budget: project?.budget ?? "",
+    currency: project?.currency ?? "GBP",
     tagIds: project?.tags?.map((tag) => tag.id) ?? [],
   };
 }
@@ -79,6 +101,7 @@ export function toCreateProjectVariables(values) {
     priority: values.priority ? String(values.priority).toLowerCase() : null,
     projectManagerId: values.projectManagerId || null,
     budget: values.budget,
+    currency: values.currency,
     health: toApiStatus("projectHealth", "ON_TRACK"),
   };
 }
@@ -92,6 +115,7 @@ export function toUpdateProjectVariables(id, values) {
     status: toApiStatus("projectStatus", values.status),
     priority: values.priority ? String(values.priority).toLowerCase() : null,
     budget: values.budget,
+    currency: values.currency,
     health: toApiStatus("projectHealth", "ON_TRACK"),
   };
 }

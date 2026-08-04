@@ -25,6 +25,9 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   desiredDueDate
   submittedAt
   createdAt
+  updatedAt
+  responseDueAt
+  isOverdue
 }`;
 
 export const ChangeRequestRowFragmentDoc = gql`
@@ -41,6 +44,9 @@ fragment ChangeRequestRow on ChangeRequestType {
   assignedPmId
   requestedByContactId
   createdAt
+  updatedAt
+  responseDueAt
+  isOverdue
 }`;
 
 export const CompanyHeaderFragmentDoc = gql`
@@ -157,6 +163,8 @@ fragment PortalChangeRequestFields on ChangeRequestType {
   submittedAt
   createdAt
   updatedAt
+  responseDueAt
+  isOverdue
   approvals {
     id
     approverType
@@ -213,6 +221,7 @@ fragment ProjectHeader on ProjectType {
   priority
   budget
   actualCost
+  currency
   companyId
   projectManagerId
 }`;
@@ -226,6 +235,7 @@ fragment ProjectRow on ProjectType {
   priority
   budget
   actualCost
+  currency
   companyId
   projectManagerId
 }`;
@@ -374,6 +384,9 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   desiredDueDate
   submittedAt
   createdAt
+  updatedAt
+  responseDueAt
+  isOverdue
 }`;
 
 export const AtRiskDashboardDocument = gql`
@@ -448,6 +461,9 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   desiredDueDate
   submittedAt
   createdAt
+  updatedAt
+  responseDueAt
+  isOverdue
 }`;
 
 export const ChangeRequestFormOptionsDocument = gql`
@@ -511,6 +527,9 @@ fragment ChangeRequestRow on ChangeRequestType {
   assignedPmId
   requestedByContactId
   createdAt
+  updatedAt
+  responseDueAt
+  isOverdue
 }`;
 
 export const CompanyContactsDocument = gql`
@@ -584,6 +603,9 @@ query CompanyForEdit($id: ID!) {
     industry
     website
     logoUrl
+    size
+    timezone
+    address
     status
     accountOwner {
       id
@@ -598,6 +620,14 @@ query CompanyFormOptions {
   }
   tags {
     ...TagFields
+  }
+  companySizes {
+    id
+    label
+  }
+  industries {
+    id
+    name
   }
 }
 fragment TagFields on TagType {
@@ -653,6 +683,9 @@ query CompanyOverview($id: ID!) {
     name
     industry
     website
+    size
+    timezone
+    address
     status
     healthScore
     accountOwner {
@@ -709,6 +742,7 @@ query CompanyProjects($id: ID!) {
     priority
     budget
     actualCost
+    currency
     projectManagerId
   }
 }`;
@@ -796,15 +830,21 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   desiredDueDate
   submittedAt
   createdAt
+  updatedAt
+  responseDueAt
+  isOverdue
 }`;
 
 export const CreateCompanyDocument = gql`
-mutation CreateCompany($name: String!, $industry: String, $website: String, $logoUrl: String, $status: String!, $accountOwnerId: ID, $healthScore: Float) {
+mutation CreateCompany($name: String!, $industry: String, $website: String, $logoUrl: String, $size: String, $timezone: String, $address: JSON, $status: String!, $accountOwnerId: ID, $healthScore: Float) {
   createCompany(
     name: $name
     industry: $industry
     website: $website
     logoUrl: $logoUrl
+    size: $size
+    timezone: $timezone
+    address: $address
     status: $status
     accountOwnerId: $accountOwnerId
     healthScore: $healthScore
@@ -917,7 +957,7 @@ fragment PhaseFields on PhaseType {
 }`;
 
 export const CreateProjectDocument = gql`
-mutation CreateProject($companyId: ID!, $name: String!, $description: String, $status: String!, $priority: String, $projectManagerId: ID, $budget: Float, $health: String) {
+mutation CreateProject($companyId: ID!, $name: String!, $description: String, $status: String!, $priority: String, $projectManagerId: ID, $budget: Float, $currency: String, $health: String) {
   createProject(
     companyId: $companyId
     name: $name
@@ -926,6 +966,7 @@ mutation CreateProject($companyId: ID!, $name: String!, $description: String, $s
     priority: $priority
     projectManagerId: $projectManagerId
     budget: $budget
+    currency: $currency
     health: $health
   ) {
     ...ProjectRow
@@ -939,6 +980,7 @@ fragment ProjectRow on ProjectType {
   priority
   budget
   actualCost
+  currency
   companyId
   projectManagerId
 }`;
@@ -1047,6 +1089,9 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   desiredDueDate
   submittedAt
   createdAt
+  updatedAt
+  responseDueAt
+  isOverdue
 }`;
 
 export const EnrollInSequenceDocument = gql`
@@ -1195,6 +1240,8 @@ fragment PortalChangeRequestFields on ChangeRequestType {
   submittedAt
   createdAt
   updatedAt
+  responseDueAt
+  isOverdue
   approvals {
     id
     approverType
@@ -1240,6 +1287,8 @@ fragment PortalChangeRequestFields on ChangeRequestType {
   submittedAt
   createdAt
   updatedAt
+  responseDueAt
+  isOverdue
   approvals {
     id
     approverType
@@ -1544,6 +1593,7 @@ fragment ProjectHeader on ProjectType {
   priority
   budget
   actualCost
+  currency
   companyId
   projectManagerId
 }
@@ -1570,6 +1620,7 @@ fragment ProjectHeader on ProjectType {
   priority
   budget
   actualCost
+  currency
   companyId
   projectManagerId
 }`;
@@ -1679,6 +1730,7 @@ fragment ProjectRow on ProjectType {
   priority
   budget
   actualCost
+  currency
   companyId
   projectManagerId
 }
@@ -1941,16 +1993,22 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   desiredDueDate
   submittedAt
   createdAt
+  updatedAt
+  responseDueAt
+  isOverdue
 }`;
 
 export const UpdateCompanyDocument = gql`
-mutation UpdateCompany($id: ID!, $name: String, $industry: String, $website: String, $logoUrl: String, $status: String, $accountOwnerId: ID, $healthScore: Float) {
+mutation UpdateCompany($id: ID!, $name: String, $industry: String, $website: String, $logoUrl: String, $size: String, $timezone: String, $address: JSON, $status: String, $accountOwnerId: ID, $healthScore: Float) {
   updateCompany(
     id: $id
     name: $name
     industry: $industry
     website: $website
     logoUrl: $logoUrl
+    size: $size
+    timezone: $timezone
+    address: $address
     status: $status
     accountOwnerId: $accountOwnerId
     healthScore: $healthScore
@@ -2124,7 +2182,7 @@ fragment PhaseFields on PhaseType {
 }`;
 
 export const UpdateProjectDocument = gql`
-mutation UpdateProject($id: ID!, $name: String, $description: String, $status: String, $priority: String, $budget: Float, $health: String) {
+mutation UpdateProject($id: ID!, $name: String, $description: String, $status: String, $priority: String, $budget: Float, $currency: String, $health: String) {
   updateProject(
     id: $id
     name: $name
@@ -2132,6 +2190,7 @@ mutation UpdateProject($id: ID!, $name: String, $description: String, $status: S
     status: $status
     priority: $priority
     budget: $budget
+    currency: $currency
     health: $health
   ) {
     ...ProjectHeader
@@ -2146,6 +2205,7 @@ fragment ProjectHeader on ProjectType {
   priority
   budget
   actualCost
+  currency
   companyId
   projectManagerId
 }`;

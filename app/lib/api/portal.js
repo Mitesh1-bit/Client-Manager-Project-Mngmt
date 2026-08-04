@@ -86,8 +86,10 @@ export function normalizePortalChangeRequest(cr) {
     comments: cr.comments ?? [],
   };
   normalized.awaitingParty = awaitingParty(normalized);
-  normalized.responseDueAt = responseDueAt(normalized);
-  normalized.isOverdue = isOverdue(normalized);
+  // The backend now computes these from the org's real SLA setting; the local
+  // helpers are a fallback for mock mode only — see app/lib/change-requests.js.
+  normalized.responseDueAt = cr.responseDueAt ?? responseDueAt(normalized);
+  normalized.isOverdue = cr.isOverdue ?? isOverdue(normalized);
   return normalized;
 }
 

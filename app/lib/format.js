@@ -6,8 +6,10 @@
  * different locale on the server than in the browser, which produces hydration
  * mismatches. Pinning makes the output identical in both places.
  *
- * Org-level locale/currency settings would replace the constants here — see
- * NEEDED_SCHEMA_CHANGES.md §5.
+ * Projects now carry a real `currency` field (see `Project.currency`) — pass
+ * it to `formatCurrency`. Entities that don't have a currency yet (contracts,
+ * change requests — see NEEDED_SCHEMA_CHANGES.md §4.4) fall back to GBP, same
+ * as before.
  */
 
 const LOCALE = "en-GB";
@@ -30,11 +32,20 @@ const dateTimeFormatter = new Intl.DateTimeFormat(LOCALE, {
   timeZone: TIME_ZONE,
 });
 
-const currencyFormatter = new Intl.NumberFormat(LOCALE, {
-  style: "currency",
-  currency: CURRENCY,
-  maximumFractionDigits: 0,
-});
+const currencyFormatters = new Map();
+
+function getCurrencyFormatter(currency) {
+  let formatter = currencyFormatters.get(currency);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(LOCALE, {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    });
+    currencyFormatters.set(currency, formatter);
+  }
+  return formatter;
+}
 
 /**
  * Date-only values (`2026-09-05`) are parsed as UTC midnight so they never
@@ -59,9 +70,9 @@ export function formatDateTime(value, fallback = "—") {
   return date ? dateTimeFormatter.format(date) : fallback;
 }
 
-export function formatCurrency(value, fallback = "—") {
+export function formatCurrency(value, currency = CURRENCY, fallback = "—") {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return fallback;
-  return currencyFormatter.format(Number(value));
+  return getCurrencyFormatter(currency).format(Number(value));
 }
 
 export function formatNumber(value, fallback = "—") {

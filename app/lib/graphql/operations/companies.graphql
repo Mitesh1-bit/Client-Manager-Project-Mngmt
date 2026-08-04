@@ -80,6 +80,9 @@ query CompanyOverview($id: ID!) {
     name
     industry
     website
+    size
+    timezone
+    address
     status
     healthScore
     accountOwner {
@@ -122,6 +125,7 @@ query CompanyProjects($id: ID!) {
     priority
     budget
     actualCost
+    currency
     projectManagerId
   }
 }
@@ -133,6 +137,9 @@ query CompanyForEdit($id: ID!) {
     industry
     website
     logoUrl
+    size
+    timezone
+    address
     status
     accountOwner {
       id
@@ -147,6 +154,14 @@ query CompanyFormOptions {
   tags {
     ...TagFields
   }
+  companySizes {
+    id
+    label
+  }
+  industries {
+    id
+    name
+  }
 }
 
 mutation CreateCompany(
@@ -154,6 +169,9 @@ mutation CreateCompany(
   $industry: String
   $website: String
   $logoUrl: String
+  $size: String
+  $timezone: String
+  $address: JSON
   $status: String!
   $accountOwnerId: ID
   $healthScore: Float
@@ -163,6 +181,9 @@ mutation CreateCompany(
     industry: $industry
     website: $website
     logoUrl: $logoUrl
+    size: $size
+    timezone: $timezone
+    address: $address
     status: $status
     accountOwnerId: $accountOwnerId
     healthScore: $healthScore
@@ -177,6 +198,9 @@ mutation UpdateCompany(
   $industry: String
   $website: String
   $logoUrl: String
+  $size: String
+  $timezone: String
+  $address: JSON
   $status: String
   $accountOwnerId: ID
   $healthScore: Float
@@ -187,6 +211,9 @@ mutation UpdateCompany(
     industry: $industry
     website: $website
     logoUrl: $logoUrl
+    size: $size
+    timezone: $timezone
+    address: $address
     status: $status
     accountOwnerId: $accountOwnerId
     healthScore: $healthScore

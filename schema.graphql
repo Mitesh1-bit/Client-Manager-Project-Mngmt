@@ -228,6 +228,18 @@ type Tag {
   color: String
 }
 
+# Added by the frontend — see NEEDED_SCHEMA_CHANGES.md §5.
+type CompanySize {
+  id: ID!
+  label: String!
+}
+
+# Added by the frontend — see NEEDED_SCHEMA_CHANGES.md §5.
+type Industry {
+  id: ID!
+  name: String!
+}
+
 type HealthScorePoint {
   id: ID!
   score: Int!
@@ -308,6 +320,7 @@ type Project {
   endDate: Date
   budget: Float
   actualCost: Float
+  currency: String!
   completionPercent: Int!
   company: Company!
   projectManager: User
@@ -823,6 +836,8 @@ type Query {
 
   # Added by the frontend — see NEEDED_SCHEMA_CHANGES.md §5.
   tags: [Tag!]!
+  companySizes: [CompanySize!]!
+  industries: [Industry!]!
   users: [User!]!
 
   # Added by the frontend — see NEEDED_SCHEMA_CHANGES.md §8.

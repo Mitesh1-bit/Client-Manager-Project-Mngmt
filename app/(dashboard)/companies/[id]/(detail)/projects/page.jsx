@@ -82,12 +82,12 @@ export default async function CompanyProjectsPage({ params }) {
               </div>
               <div>
                 <dt className="text-muted-foreground">Budget</dt>
-                <dd className="mt-0.5 font-medium">{formatCurrency(project.budget)}</dd>
+                <dd className="mt-0.5 font-medium">{formatCurrency(project.budget, project.currency)}</dd>
               </div>
               <div>
                 <dt className="text-muted-foreground">Spent</dt>
                 <dd className={cn("mt-0.5 font-medium", overBudget && "text-tone-critical-fg")}>
-                  {formatCurrency(project.actualCost)}
+                  {formatCurrency(project.actualCost, project.currency)}
                   {overBudget ? <span className="sr-only"> — over budget</span> : null}
                 </dd>
               </div>

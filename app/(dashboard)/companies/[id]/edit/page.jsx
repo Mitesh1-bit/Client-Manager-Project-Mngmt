@@ -47,6 +47,8 @@ export default async function EditCompanyPage({ params }) {
         company={data.company}
         owners={options?.users ?? []}
         tags={options?.tags ?? []}
+        sizes={options?.companySizes ?? []}
+        industries={options?.industries ?? []}
       />
     </div>
   );

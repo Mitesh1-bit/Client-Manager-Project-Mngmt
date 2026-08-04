@@ -10,19 +10,7 @@ import { toApiStatus, toUiStatus } from "@/app/lib/api/normalize";
  * Kept in its own module so it can be unit tested without rendering the form.
  */
 
-export const COMPANY_SIZES = ["1-10", "10-50", "50-200", "200-500", "500-1000", "1000+"];
-
-export const TIMEZONES = [
-  "Europe/London",
-  "Europe/Dublin",
-  "Europe/Berlin",
-  "Europe/Amsterdam",
-  "America/New_York",
-  "America/Chicago",
-  "America/Los_Angeles",
-  "Asia/Singapore",
-  "Australia/Sydney",
-];
+export const TIMEZONES = Intl.supportedValuesOf("timeZone");
 
 const optionalText = (max, message) =>
   z
@@ -110,6 +98,9 @@ export function toCreateCompanyVariables(values) {
     industry: input.industry,
     website: input.website,
     logoUrl: null,
+    size: input.size,
+    timezone: input.timezone,
+    address: input.address,
     status: toApiStatus("companyStatus", input.status),
     accountOwnerId: input.accountOwnerId || null,
     healthScore: null,
@@ -125,6 +116,9 @@ export function toUpdateCompanyVariables(id, values) {
     industry: input.industry,
     website: input.website,
     logoUrl: null,
+    size: input.size,
+    timezone: input.timezone,
+    address: input.address,
     status: toApiStatus("companyStatus", input.status),
     accountOwnerId: input.accountOwnerId || null,
     healthScore: null,

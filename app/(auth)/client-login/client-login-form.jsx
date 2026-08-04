@@ -13,6 +13,7 @@ import { FormField } from "@/app/components/domain/form-field";
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
+import { PasswordInput } from "@/app/components/ui/password-input";
 import { establishSession } from "@/app/lib/auth/establish-session";
 import { PortalLoginDocument } from "@/app/lib/graphql/generated/documents";
 import { formatGraphqlError } from "@/app/lib/graphql/format-error";
@@ -84,10 +85,9 @@ export function ClientLoginForm() {
 
       <FormField label="Password" error={errors.password?.message} required>
         {(field) => (
-          <Input
+          <PasswordInput
             {...field}
             {...register("password")}
-            type="password"
             autoComplete="current-password"
             className="h-10"
           />

@@ -130,11 +130,11 @@ export default async function ProjectDetailLayout({ children, params }) {
             <dt className="text-caption text-muted-foreground">Budget</dt>
             <dd className="mt-1.5 text-caption font-medium">
               <span className={cn("tabular", overBudget && "text-tone-critical-fg")}>
-                {formatCurrency(project.actualCost)}
+                {formatCurrency(project.actualCost, project.currency)}
               </span>
               <span className="tabular font-normal text-muted-foreground">
                 {" "}
-                of {formatCurrency(project.budget)}
+                of {formatCurrency(project.budget, project.currency)}
               </span>
               {overBudget ? (
                 <span className="ml-1.5 text-tone-critical-fg">over</span>

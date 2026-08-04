@@ -27,6 +27,8 @@ export function ChangeControlIllustration() {
           <motion.circle
             r="4"
             fill="#c5f042"
+            cx={28}
+            cy={80}
             animate={{ cx: [28, 72, 72, 128, 172], cy: 80 }}
             transition={{ duration: 2.4, repeat: Infinity, ease: "linear", repeatDelay: 0.5 }}
           />
@@ -171,6 +173,8 @@ export function PipelineIllustration() {
               key={n}
               r="5"
               fill="#ffe24a"
+              cx={n === 0 ? 46 : 154}
+              cy={82}
               animate={{
                 cx: n === 0 ? [46, 154] : [154, 46],
                 cy: 82,

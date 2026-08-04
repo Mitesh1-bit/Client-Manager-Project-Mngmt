@@ -11,6 +11,9 @@ fragment ChangeRequestRow on ChangeRequestType {
   assignedPmId
   requestedByContactId
   createdAt
+  updatedAt
+  responseDueAt
+  isOverdue
 }
 
 fragment ChangeRequestDetailFields on ChangeRequestType {
@@ -34,6 +37,9 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   desiredDueDate
   submittedAt
   createdAt
+  updatedAt
+  responseDueAt
+  isOverdue
 }
 
 query ChangeRequestFormOptions {

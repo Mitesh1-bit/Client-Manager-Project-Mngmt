@@ -28,7 +28,13 @@ export const CLOSED_STATUSES = ["REJECTED", "IMPLEMENTED", "CLOSED"];
 
 /**
  * How long the current holder has to respond, in days, before the request
- * counts as overdue. Belongs in org settings — see §8.3.
+ * counts as overdue. The backend now owns this for real (single org-level
+ * `cr_response_sla_days` setting, exposed as `ChangeRequestType.responseDueAt`
+ * / `isOverdue` — see §8.3) — every real API response already carries those
+ * fields, so `responseDueAt()`/`isOverdue()` below only run as a fallback for
+ * mock mode. This per-status table was always a guess at the real shape and
+ * intentionally doesn't match the backend's flat number; don't "fix" it to
+ * match — replace it if the mock's org settings model changes instead.
  */
 export const RESPONSE_SLA_DAYS = {
   SUBMITTED: 2,

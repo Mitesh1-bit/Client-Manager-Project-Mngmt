@@ -30,6 +30,7 @@ import {
 import { listStatuses } from "@/app/lib/status";
 
 import {
+  CURRENCIES,
   projectSchema,
   projectToFormValues,
   toCreateProjectVariables,
@@ -237,7 +238,7 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
           </FormField>
 
           <div data-tour="project-field-budget">
-          <FormField label="Budget" hint="In pounds, excluding VAT." error={errors.budget?.message}>
+          <FormField label="Budget" hint="Excluding VAT." error={errors.budget?.message}>
             {(field) => (
               <Input
                 {...field}
@@ -251,6 +252,29 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
             )}
           </FormField>
           </div>
+
+          <FormField label="Currency" error={errors.currency?.message}>
+            {(field) => (
+              <Controller
+                control={control}
+                name="currency"
+                render={({ field: control_ }) => (
+                  <Select value={control_.value} onValueChange={control_.onChange}>
+                    <SelectTrigger {...field} className="h-10 w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CURRENCIES.map((currency) => (
+                        <SelectItem key={currency.value} value={currency.value}>
+                          {currency.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            )}
+          </FormField>
 
           <FormField label="Tags" error={errors.tagIds?.message}>
             {(field) => (

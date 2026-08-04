@@ -52,6 +52,8 @@ fragment PortalChangeRequestFields on ChangeRequestType {
   submittedAt
   createdAt
   updatedAt
+  responseDueAt
+  isOverdue
   approvals {
     id
     approverType

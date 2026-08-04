@@ -12,14 +12,20 @@ export const metadata = { title: "New company" };
 export default async function NewCompanyPage() {
   let owners = [];
   let tags = [];
+  let sizes = [];
+  let industries = [];
 
   try {
     const { data } = await getClient().query({ query: CompanyFormOptionsDocument });
     owners = data?.users ?? [];
     tags = data?.tags ?? [];
+    sizes = data?.companySizes ?? [];
+    industries = data?.industries ?? [];
   } catch {
     owners = [];
     tags = [];
+    sizes = [];
+    industries = [];
   }
 
   return (
@@ -37,7 +43,7 @@ export default async function NewCompanyPage() {
         description="Start with the essentials — you can fill in the rest once the relationship is underway."
       />
 
-      <CompanyForm mode="create" owners={owners} tags={tags} />
+      <CompanyForm mode="create" owners={owners} tags={tags} sizes={sizes} industries={industries} />
     </div>
   );
 }

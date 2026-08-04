@@ -85,17 +85,16 @@ function reindexColumn(projectId, status) {
 }
 
 /**
- * Change-request derivations. These mirror `app/lib/change-requests.js` on
- * purpose: the server owns the answer, the client owns the presentation, and
- * both have to agree. If they ever drift, the client's copy is the one to
- * delete — see NEEDED_SCHEMA_CHANGES.md §8.3.
+ * Change-request derivations. Mirrors the real backend's model now: a single
+ * org-level `cr_response_sla_days` setting (see `organization.settings` in
+ * data.js), not a per-status table — see NEEDED_SCHEMA_CHANGES.md §8.3.
  */
-const RESPONSE_SLA_DAYS = {
-  SUBMITTED: 2,
-  UNDER_REVIEW: 3,
-  PENDING_IMPACT_ASSESSMENT: 5,
-  PENDING_APPROVAL: 5,
-};
+const RESPONSE_SLA_STATUSES = new Set([
+  "SUBMITTED",
+  "UNDER_REVIEW",
+  "PENDING_IMPACT_ASSESSMENT",
+  "PENDING_APPROVAL",
+]);
 
 function approvalsFor(entityType, entityId) {
   return db.approvals.filter((a) => a.entityType === entityType && a.entityId === entityId);
@@ -121,8 +120,8 @@ function awaitingPartyFor(request) {
 }
 
 function responseDueAtFor(request) {
-  const days = RESPONSE_SLA_DAYS[request.status];
-  if (days === undefined) return null;
+  if (!RESPONSE_SLA_STATUSES.has(request.status)) return null;
+  const days = db.organization.settings?.cr_response_sla_days ?? 7;
   const from = new Date(request.updatedAt);
   if (Number.isNaN(from.getTime())) return null;
   return new Date(from.getTime() + days * 24 * 60 * 60 * 1000).toISOString();
@@ -520,6 +519,8 @@ export const resolvers = {
     },
 
     tags: () => db.tags,
+    companySizes: () => db.companySizes,
+    industries: () => db.industries,
     users: () => db.users.filter((user) => user.status === "ACTIVE"),
   },
 

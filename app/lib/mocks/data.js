@@ -30,7 +30,9 @@ export const organization = {
   timezone: "Europe/London",
   settings: {
     changeRequestInternalApprovalThresholdCost: 5000,
-    changeRequestSlaHours: 48,
+    // Matches the real backend's Organization.settings key exactly — a single
+    // flat day-count, not per-status (see resolvers.js responseDueAtFor).
+    cr_response_sla_days: 7,
     // A scheduled touchpoint doesn't flip to overdue the instant its date
     // passes — it gets this many days of grace first. See
     // NEEDED_SCHEMA_CHANGES.md §9.3 for why this is inferred, not specified.
@@ -103,6 +105,42 @@ export const tags = [
   { id: "tag_2", name: "Retainer", color: "info" },
   { id: "tag_3", name: "Renewal Q3", color: "caution" },
   { id: "tag_4", name: "Strategic", color: "positive" },
+];
+
+/** Mirrors the real backend's `company_sizes` lookup table (see backend alembic/versions/011_lookup_tables.py). */
+export const companySizes = [
+  { id: "size_1", label: "1-10" },
+  { id: "size_2", label: "11-50" },
+  { id: "size_3", label: "51-200" },
+  { id: "size_4", label: "201-500" },
+  { id: "size_5", label: "501-1000" },
+  { id: "size_6", label: "1000+" },
+];
+
+/** Mirrors the real backend's `industries` lookup table. */
+export const industries = [
+  { id: "ind_1", name: "Technology & Software" },
+  { id: "ind_2", name: "Healthcare" },
+  { id: "ind_3", name: "Financial Services" },
+  { id: "ind_4", name: "Retail & E-commerce" },
+  { id: "ind_5", name: "Manufacturing" },
+  { id: "ind_6", name: "Education" },
+  { id: "ind_7", name: "Real Estate" },
+  { id: "ind_8", name: "Professional Services" },
+  { id: "ind_9", name: "Media & Entertainment" },
+  { id: "ind_10", name: "Nonprofit" },
+  { id: "ind_11", name: "Hospitality & Travel" },
+  { id: "ind_12", name: "Construction" },
+  { id: "ind_13", name: "Legal Services" },
+  { id: "ind_14", name: "Government & Public Sector" },
+  { id: "ind_15", name: "Telecommunications" },
+  { id: "ind_16", name: "Energy & Utilities" },
+  { id: "ind_17", name: "Automotive" },
+  { id: "ind_18", name: "Insurance" },
+  { id: "ind_19", name: "Consumer Goods" },
+  { id: "ind_20", name: "Transportation & Logistics" },
+  { id: "ind_21", name: "Agriculture" },
+  { id: "ind_22", name: "Other" },
 ];
 
 export const companies = [
@@ -459,6 +497,7 @@ export const projects = [
     endDate: day(38),
     budget: 184000,
     actualCost: 121400,
+    currency: "GBP",
     completionPercent: 62,
     createdAt: iso(-102),
     updatedAt: iso(-1),
@@ -479,6 +518,7 @@ export const projects = [
     endDate: day(12),
     budget: 320000,
     actualCost: 288900,
+    currency: "USD",
     completionPercent: 71,
     createdAt: iso(-148),
     updatedAt: iso(0),
@@ -499,6 +539,7 @@ export const projects = [
     endDate: day(-8),
     budget: 145000,
     actualCost: 152300,
+    currency: "EUR",
     completionPercent: 84,
     createdAt: iso(-130),
     updatedAt: iso(-2),
@@ -519,6 +560,7 @@ export const projects = [
     endDate: day(56),
     budget: 68000,
     actualCost: 21750,
+    currency: "GBP",
     completionPercent: 28,
     createdAt: iso(-48),
     updatedAt: iso(-4),
@@ -539,6 +581,7 @@ export const projects = [
     endDate: day(168),
     budget: 240000,
     actualCost: 0,
+    currency: "GBP",
     completionPercent: 0,
     createdAt: iso(-12),
     updatedAt: iso(-5),
@@ -559,6 +602,7 @@ export const projects = [
     endDate: day(30),
     budget: 54000,
     actualCost: 19800,
+    currency: "AUD",
     completionPercent: 35,
     createdAt: iso(-94),
     updatedAt: iso(-26),
@@ -579,6 +623,7 @@ export const projects = [
     endDate: day(-64),
     budget: 96000,
     actualCost: 93100,
+    currency: "USD",
     completionPercent: 100,
     createdAt: iso(-288),
     updatedAt: iso(-64),

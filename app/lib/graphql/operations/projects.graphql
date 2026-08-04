@@ -19,6 +19,7 @@ fragment ProjectRow on ProjectType {
   priority
   budget
   actualCost
+  currency
   companyId
   projectManagerId
 }
@@ -32,6 +33,7 @@ fragment ProjectHeader on ProjectType {
   priority
   budget
   actualCost
+  currency
   companyId
   projectManagerId
 }
@@ -164,6 +166,7 @@ mutation CreateProject(
   $priority: String
   $projectManagerId: ID
   $budget: Float
+  $currency: String
   $health: String
 ) {
   createProject(
@@ -174,6 +177,7 @@ mutation CreateProject(
     priority: $priority
     projectManagerId: $projectManagerId
     budget: $budget
+    currency: $currency
     health: $health
   ) {
     ...ProjectRow
@@ -187,6 +191,7 @@ mutation UpdateProject(
   $status: String
   $priority: String
   $budget: Float
+  $currency: String
   $health: String
 ) {
   updateProject(
@@ -196,6 +201,7 @@ mutation UpdateProject(
     status: $status
     priority: $priority
     budget: $budget
+    currency: $currency
     health: $health
   ) {
     ...ProjectHeader

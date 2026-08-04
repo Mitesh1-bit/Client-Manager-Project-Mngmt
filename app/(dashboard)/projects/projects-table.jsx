@@ -172,10 +172,10 @@ function BudgetCell({ project }) {
   return (
     <div className="whitespace-nowrap">
       <p className={cn("tabular text-caption font-medium", over && "text-tone-critical-fg")}>
-        {formatCurrency(project.actualCost)}
+        {formatCurrency(project.actualCost, project.currency)}
       </p>
       <p className="tabular text-[0.75rem] text-muted-foreground">
-        of {formatCurrency(project.budget)}
+        of {formatCurrency(project.budget, project.currency)}
         {used === null ? "" : ` · ${used}%`}
         {over ? <span className="sr-only"> — over budget</span> : null}
       </p>

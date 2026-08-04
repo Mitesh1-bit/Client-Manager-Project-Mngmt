@@ -29,7 +29,6 @@ import {
 import { listStatuses } from "@/app/lib/status";
 
 import {
-  COMPANY_SIZES,
   TIMEZONES,
   companySchema,
   companyToFormValues,
@@ -46,9 +45,9 @@ const STATUS_OPTIONS = listStatuses("companyStatus");
  * in `<SectionCard>`, server errors surfaced above the actions, and a sticky
  * action bar so Save is always reachable on a long form.
  *
- * @param {{ mode: 'create' | 'edit', company?: unknown, owners: unknown[], tags: unknown[] }} props
+ * @param {{ mode: 'create' | 'edit', company?: unknown, owners: unknown[], tags: unknown[], sizes: unknown[], industries: unknown[] }} props
  */
-export function CompanyForm({ mode, company, owners = [], tags = [] }) {
+export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [], industries = [] }) {
   const router = useRouter();
   const [serverError, setServerError] = useState(null);
 
@@ -106,7 +105,24 @@ export function CompanyForm({ mode, company, owners = [], tags = [] }) {
           <div data-tour="company-field-industry">
           <FormField label="Industry" error={errors.industry?.message}>
             {(field) => (
-              <Input {...field} {...register("industry")} className="h-10" placeholder="Healthcare" />
+              <Controller
+                control={control}
+                name="industry"
+                render={({ field: control_ }) => (
+                  <Select value={control_.value} onValueChange={control_.onChange}>
+                    <SelectTrigger {...field} className="h-10 w-full">
+                      <SelectValue placeholder="Not set" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {industries.map((industry) => (
+                        <SelectItem key={industry.id} value={industry.name}>
+                          {industry.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             )}
           </FormField>
           </div>
@@ -134,9 +150,9 @@ export function CompanyForm({ mode, company, owners = [], tags = [] }) {
                       <SelectValue placeholder="Not set" />
                     </SelectTrigger>
                     <SelectContent>
-                      {COMPANY_SIZES.map((size) => (
-                        <SelectItem key={size} value={size}>
-                          {size} employees
+                      {sizes.map((size) => (
+                        <SelectItem key={size.id} value={size.label}>
+                          {size.label} employees
                         </SelectItem>
                       ))}
                     </SelectContent>
