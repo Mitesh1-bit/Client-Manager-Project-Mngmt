@@ -25,8 +25,42 @@ export function matchTourRoutes(pathname, routes) {
       return path === prefix || path.startsWith(`${prefix}/`);
     }
 
-    return path === pattern || path.startsWith(`${pattern}/`);
+    // Exact match only. A plain route like "/companies" must NOT also match
+    // "/companies/<id>" — that sub-path has its own, more specific `:id`
+    // step. Genuine "this page and everything under it" intent has to opt in
+    // via the explicit "/*" suffix above.
+    return path === pattern;
   });
+}
+
+/**
+ * If `pathname` already sits under the same `:id` entity a `targetRoute`
+ * needs (e.g. moving from `/projects/abc/board` to `/projects/abc/change-requests`),
+ * return that id so the tour can navigate there directly. Returns null when
+ * the current page isn't under a matching prefix (different entity type
+ * entirely, or a list page with no id yet) — the caller should leave
+ * navigation to the app itself in that case.
+ *
+ * @param {string} pathname
+ * @param {string} targetRoute
+ */
+export function idFromCurrentPath(pathname, targetRoute) {
+  const targetSegments = targetRoute.split("/").filter(Boolean);
+  const idIndex = targetSegments.indexOf(":id");
+  if (idIndex === -1) return null;
+
+  const prefix = targetSegments.slice(0, idIndex);
+  const currentSegments = pathname.split("/").filter(Boolean);
+  if (currentSegments.length <= idIndex) return null;
+
+  const prefixMatches = prefix.every(
+    (segment, i) => currentSegments[i]?.toLowerCase() === segment.toLowerCase(),
+  );
+  if (!prefixMatches) return null;
+
+  const candidate = currentSegments[idIndex];
+  if (!candidate || candidate === "new" || candidate === "edit") return null;
+  return candidate;
 }
 
 /**

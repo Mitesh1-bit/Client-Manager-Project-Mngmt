@@ -2,7 +2,7 @@
  * Interactive product-tour — master ordered steps with page detection & resume.
  */
 
-import { firstStepForPath } from "./tour-routes";
+import { firstStepForPath, matchTourRoutes } from "./tour-routes";
 import { INTERNAL_TOUR_STEPS } from "./tour-steps-internal";
 import { PORTAL_TOUR_STEPS } from "./tour-steps-portal";
 
@@ -55,14 +55,25 @@ export function buildMasterTour(scope, role) {
 /**
  * Where to start: resume step, or first step matching current page, or welcome.
  *
+ * Saved progress is stored per scope+role, not per page — someone can leave
+ * mid-tour on one page (close the tab, click away without "Skip all") and
+ * open a completely different page days later. Only honor the saved step if
+ * it's actually reachable from here: either it's page-agnostic (no `routes`,
+ * e.g. a sidebar nav step) or its routes match where we are right now.
+ * Otherwise a stale resume would silently point at a step whose target can
+ * never be found on this page — fall back to finding the right step for the
+ * current page instead, same as starting fresh.
+ *
  * @param {TourStep[]} masterSteps
  * @param {string} pathname
  * @param {string | null} resumeStepId
  */
 export function resolveStartStepId(masterSteps, pathname, resumeStepId) {
   if (resumeStepId) {
-    const exists = masterSteps.some((step) => step.id === resumeStepId);
-    if (exists) return resumeStepId;
+    const resumeStep = masterSteps.find((step) => step.id === resumeStepId);
+    if (resumeStep && (!resumeStep.routes || matchTourRoutes(pathname, resumeStep.routes))) {
+      return resumeStepId;
+    }
   }
 
   const pageStep = firstStepForPath(masterSteps, pathname);

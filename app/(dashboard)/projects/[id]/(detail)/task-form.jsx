@@ -107,23 +107,27 @@ export function TaskForm({ projectId, task, defaults, phases = [], milestones = 
           </Alert>
         ) : null}
 
-        <FormField label="Title" error={errors.title?.message} required>
-          {(field) => <Input {...field} {...register("title")} className="h-10" autoFocus />}
-        </FormField>
+        <div data-tour="task-field-title">
+          <FormField label="Title" error={errors.title?.message} required>
+            {(field) => <Input {...field} {...register("title")} className="h-10" autoFocus />}
+          </FormField>
+        </div>
 
         <FormField label="Description" error={errors.description?.message}>
           {(field) => <Textarea {...field} {...register("description")} rows={3} />}
         </FormField>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <SelectField
-            control={control}
-            name="status"
-            label="Status"
-            required
-            error={errors.status?.message}
-            options={STATUS_OPTIONS.map((s) => ({ value: s.value, label: s.label }))}
-          />
+          <div data-tour="task-field-status">
+            <SelectField
+              control={control}
+              name="status"
+              label="Status"
+              required
+              error={errors.status?.message}
+              options={STATUS_OPTIONS.map((s) => ({ value: s.value, label: s.label }))}
+            />
+          </div>
           <SelectField
             control={control}
             name="priority"
@@ -132,15 +136,17 @@ export function TaskForm({ projectId, task, defaults, phases = [], milestones = 
             error={errors.priority?.message}
             options={PRIORITY_OPTIONS.map((p) => ({ value: p.value, label: p.label }))}
           />
-          <SelectField
-            control={control}
-            name="assigneeId"
-            label="Assignee"
-            placeholder="Unassigned"
-            clearLabel="Unassigned"
-            error={errors.assigneeId?.message}
-            options={users.map((user) => ({ value: user.id, label: user.name }))}
-          />
+          <div data-tour="task-field-assignee">
+            <SelectField
+              control={control}
+              name="assigneeId"
+              label="Assignee"
+              placeholder="Unassigned"
+              clearLabel="Unassigned"
+              error={errors.assigneeId?.message}
+              options={users.map((user) => ({ value: user.id, label: user.name }))}
+            />
+          </div>
           <SelectField
             control={control}
             name="parentTaskId"
@@ -153,15 +159,17 @@ export function TaskForm({ projectId, task, defaults, phases = [], milestones = 
               label: candidate.title,
             }))}
           />
-          <SelectField
-            control={control}
-            name="phaseId"
-            label="Phase"
-            placeholder="No phase"
-            clearLabel="No phase"
-            error={errors.phaseId?.message}
-            options={phases.map((phase) => ({ value: phase.id, label: phase.name }))}
-          />
+          <div data-tour="task-field-schedule">
+            <SelectField
+              control={control}
+              name="phaseId"
+              label="Phase"
+              placeholder="No phase"
+              clearLabel="No phase"
+              error={errors.phaseId?.message}
+              options={phases.map((phase) => ({ value: phase.id, label: phase.name }))}
+            />
+          </div>
           <SelectField
             control={control}
             name="milestoneId"
@@ -195,7 +203,7 @@ export function TaskForm({ projectId, task, defaults, phases = [], milestones = 
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-2 border-t px-5 py-3">
+      <div className="flex items-center justify-end gap-2 border-t px-5 py-3" data-tour="task-field-save">
         <Button type="button" variant="ghost" onClick={onCancel}>
           Cancel
         </Button>

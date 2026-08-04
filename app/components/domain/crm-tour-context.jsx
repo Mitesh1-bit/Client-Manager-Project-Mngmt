@@ -13,7 +13,7 @@ import {
   loadTourProgress,
   saveTourProgress,
 } from "@/app/lib/guide/tour-progress";
-import { matchTourRoutes, stepIdAfterNavigation } from "@/app/lib/guide/tour-routes";
+import { idFromCurrentPath, matchTourRoutes, stepIdAfterNavigation } from "@/app/lib/guide/tour-routes";
 
 /** @typedef {import('@/app/lib/guide/tour-steps').TourScope} TourScope */
 
@@ -62,17 +62,25 @@ export function CrmTourProvider({ scope, role, children }) {
 
   // A step whose `routes` don't include the page we're currently on can't find
   // its target — drive the browser there ourselves instead of leaving the
-  // tooltip stranded describing a page that isn't showing. Routes with a
-  // `:id` placeholder (a specific company/project's detail page) can't be
-  // constructed this way — those are only reachable by actually completing
-  // the real action (e.g. saving a form), so leave navigation to the app;
-  // `stepIdAfterNavigation` picks the step back up once that lands.
+  // tooltip stranded describing a page that isn't showing.
   const navigateForStep = useCallback(
     (step) => {
       const target = step?.routes?.[0];
-      if (target && !target.includes(":id") && !matchTourRoutes(pathname, step.routes)) {
-        router.push(target);
+      if (!target || matchTourRoutes(pathname, step.routes)) return;
+
+      if (target.includes(":id")) {
+        // Switching tabs on the same company/project/etc — the id is already
+        // in the current URL, so reuse it rather than treating this like a
+        // brand-new entity we can't possibly know the id for.
+        const id = idFromCurrentPath(pathname, target);
+        if (id) router.push(target.replace(":id", id));
+        // No id available (e.g. coming from a list page) — nothing to
+        // navigate to yet; `stepIdAfterNavigation` picks the step back up
+        // once the user actually opens a specific entity.
+        return;
       }
+
+      router.push(target);
     },
     [pathname, router],
   );
