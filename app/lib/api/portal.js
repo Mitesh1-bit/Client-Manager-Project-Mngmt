@@ -1,4 +1,4 @@
-import { pickList } from "@/app/lib/api/safe-list";
+import { asArray } from "@/app/lib/api/safe-list";
 import { toUiStatus } from "@/app/lib/api/normalize";
 import { awaitingParty, isOverdue, responseDueAt } from "@/app/lib/change-requests";
 
@@ -64,7 +64,7 @@ export function normalizePortalProject(project) {
 
 /** @param {unknown} value */
 export function normalizePortalProjects(value) {
-  return pickList(value).map((project) => normalizePortalProject(project));
+  return asArray(value).map((project) => normalizePortalProject(project));
 }
 
 /** @param {Record<string, unknown> | null | undefined} cr */
@@ -95,7 +95,7 @@ export function normalizePortalChangeRequest(cr) {
 
 /** @param {unknown} value */
 export function normalizePortalChangeRequests(value) {
-  return pickList(value).map((cr) => normalizePortalChangeRequest(cr));
+  return asArray(value).map((cr) => normalizePortalChangeRequest(cr));
 }
 
 /** @param {{ firstName?: string, lastName?: string }} contact */
