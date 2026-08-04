@@ -11,6 +11,16 @@ import { z } from "zod";
 
 import { FormField } from "@/app/components/domain/form-field";
 import { SectionCard } from "@/app/components/domain/states";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/app/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -23,6 +33,7 @@ import {
 } from "@/app/components/ui/select";
 import {
   CreateUserDocument,
+  DeleteUserDocument,
   TeamListDocument,
   UpdateUserDocument,
 } from "@/app/lib/graphql/generated/documents";
@@ -47,8 +58,10 @@ const inviteSchema = z.object({
 export function TeamPanel({ users, currentUserId, isAdmin }) {
   const router = useRouter();
   const [serverError, setServerError] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [createUser] = useMutation(CreateUserDocument);
   const [updateUser] = useMutation(UpdateUserDocument);
+  const [deleteUser, { loading: deleting }] = useMutation(DeleteUserDocument);
 
   const {
     register,
@@ -105,6 +118,21 @@ export function TeamPanel({ users, currentUserId, isAdmin }) {
       router.refresh();
     } catch (error) {
       toast.error("Couldn't update status", { description: error?.message });
+    }
+  }
+
+  async function confirmDelete() {
+    if (!isAdmin || !deleteTarget || deleteTarget.id === currentUserId) return;
+    try {
+      await deleteUser({
+        variables: { id: deleteTarget.id },
+        refetchQueries: [{ query: TeamListDocument }],
+      });
+      toast.success(`${deleteTarget.name} was deleted`);
+      setDeleteTarget(null);
+      router.refresh();
+    } catch (error) {
+      toast.error("Couldn't delete this team member", { description: error?.message });
     }
   }
 
@@ -264,6 +292,9 @@ export function TeamPanel({ users, currentUserId, isAdmin }) {
                       >
                         {inactive ? "Reactivate" : "Deactivate"}
                       </Button>
+                      <Button variant="destructive" size="sm" onClick={() => setDeleteTarget(user)}>
+                        Delete
+                      </Button>
                     </>
                   ) : (
                     <span className="text-caption text-muted-foreground">
@@ -277,6 +308,25 @@ export function TeamPanel({ users, currentUserId, isAdmin }) {
           })}
         </ul>
       </SectionCard>
+
+      <AlertDialog open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {deleteTarget?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes their account — unlike Deactivate, it can&apos;t be undone.
+              Projects, tasks, and change requests assigned to them become unassigned rather than
+              being deleted themselves.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={confirmDelete} disabled={deleting}>
+              {deleting ? "Deleting…" : "Delete team member"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

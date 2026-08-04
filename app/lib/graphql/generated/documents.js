@@ -1094,6 +1094,11 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   isOverdue
 }`;
 
+export const DeleteUserDocument = gql`
+mutation DeleteUser($id: ID!) {
+  deleteUser(id: $id)
+}`;
+
 export const EnrollInSequenceDocument = gql`
 mutation EnrollInSequence($sequenceId: ID!, $companyId: ID!, $contactId: ID!, $projectId: ID) {
   enrollInSequence(

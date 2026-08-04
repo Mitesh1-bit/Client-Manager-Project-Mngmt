@@ -27,3 +27,7 @@ mutation UpdateUser($id: ID!, $name: String, $role: String, $status: String) {
     status
   }
 }
+
+mutation DeleteUser($id: ID!) {
+  deleteUser(id: $id)
+}

@@ -287,6 +287,9 @@ type Mutation {
   """Update a team member role or status (admin only)."""
   updateUser(id: ID!, name: String = null, role: String = null, status: String = null): UserSummaryType!
 
+  """Permanently delete a team member (admin only). Cannot be undone."""
+  deleteUser(id: ID!): Boolean!
+
   """Update the signed-in user's display profile."""
   updateMyProfile(name: String = null, avatarUrl: String = null, firstName: String = null, lastName: String = null, title: String = null): ViewerType!
 
