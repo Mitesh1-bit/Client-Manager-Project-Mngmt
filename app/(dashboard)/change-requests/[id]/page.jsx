@@ -21,7 +21,10 @@ import { ChangeRequestActions } from "./change-request-actions";
 export async function generateMetadata({ params }) {
   const { id } = await params;
   const { data } = await getClient().query({ query: ChangeRequestDetailDocument, variables: { id } });
-  return { title: data.changeRequest ? `${data.changeRequest.reference} · ${data.changeRequest.title}` : "Change request" };
+  const cr = data.changeRequest;
+  if (!cr) return { title: "Change request" };
+  const reference = cr.reference ?? String(cr.id).slice(0, 8);
+  return { title: `${reference} · ${cr.title}` };
 }
 
 export default async function ChangeRequestDetailPage({ params }) {
@@ -36,6 +39,11 @@ export default async function ChangeRequestDetailPage({ params }) {
   if (!request) notFound();
 
   const threshold = data.me?.organization?.settings?.changeRequestInternalApprovalThresholdCost ?? 0;
+  const company = data.companies?.find((candidate) => candidate.id === request.companyId);
+  const project = data.projects?.find((candidate) => candidate.id === request.projectId);
+  const attachments = request.attachments ?? [];
+  // Real backend doesn't generate a human reference yet — see NEEDED_SCHEMA_CHANGES.md §8.
+  const reference = request.reference ?? String(request.id).slice(0, 8);
 
   return (
     <div className="mx-auto w-full max-w-4xl">
@@ -49,25 +57,28 @@ export default async function ChangeRequestDetailPage({ params }) {
 
       <header className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <p className="tabular text-caption text-muted-foreground">{request.reference}</p>
+          <p className="tabular text-caption text-muted-foreground">{reference}</p>
           <h1 className="mt-0.5 text-title text-balance">{request.title}</h1>
           <p className="mt-1.5 text-caption text-muted-foreground">
-            <Link
-              href={`/companies/${request.company.id}`}
-              className="rounded-sm hover:text-foreground hover:underline focus-ring"
-            >
-              {request.company.name}
-            </Link>
-            {" · "}
-            <Link
-              href={`/projects/${request.project.id}/board`}
-              className="rounded-sm hover:text-foreground hover:underline focus-ring"
-            >
-              {request.project.name}
-            </Link>
+            {company ? (
+              <Link
+                href={`/companies/${company.id}`}
+                className="rounded-sm hover:text-foreground hover:underline focus-ring"
+              >
+                {company.name}
+              </Link>
+            ) : null}
+            {company && project ? " · " : ""}
+            {project ? (
+              <Link
+                href={`/projects/${project.id}/board`}
+                className="rounded-sm hover:text-foreground hover:underline focus-ring"
+              >
+                {project.name}
+              </Link>
+            ) : null}
             {" · "}
             {humanizeType(request.type)}
-            {request.requestedByContact ? ` · raised by ${request.requestedByContact.fullName}` : ""}
           </p>
         </div>
 
@@ -104,10 +115,10 @@ export default async function ChangeRequestDetailPage({ params }) {
           <ChangeRequestDecisionPanel request={request} approverType="INTERNAL" />
         </div>
 
-        {request.attachments.length > 0 ? (
+        {attachments.length > 0 ? (
           <SectionCard data-tour="cr-attachments" title="Attachments">
             <ul className="space-y-1.5">
-              {request.attachments.map((attachment) => (
+              {attachments.map((attachment) => (
                 <li key={attachment.id}>
                   <a
                     href={attachment.fileUrl}

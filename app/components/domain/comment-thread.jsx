@@ -9,7 +9,7 @@ import { cn } from "@/app/lib/utils";
  * Read-only comment thread until the backend exposes comment mutations.
  */
 export function CommentThread({
-  comments,
+  comments = [],
   audience = "INTERNAL",
   canPost = false,
   emptyText,
