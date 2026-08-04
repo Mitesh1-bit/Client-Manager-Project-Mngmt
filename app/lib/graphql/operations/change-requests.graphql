@@ -159,3 +159,9 @@ mutation UpdateChangeRequestStatus($id: ID!, $toStatus: String!, $reason: String
     ...ChangeRequestDetailFields
   }
 }
+
+mutation AssignChangeRequest($id: ID!, $assignedPmId: ID) {
+  assignChangeRequest(id: $id, assignedPmId: $assignedPmId) {
+    ...ChangeRequestDetailFields
+  }
+}

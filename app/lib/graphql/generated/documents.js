@@ -389,6 +389,38 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   isOverdue
 }`;
 
+export const AssignChangeRequestDocument = gql`
+mutation AssignChangeRequest($id: ID!, $assignedPmId: ID) {
+  assignChangeRequest(id: $id, assignedPmId: $assignedPmId) {
+    ...ChangeRequestDetailFields
+  }
+}
+fragment ChangeRequestDetailFields on ChangeRequestType {
+  id
+  projectId
+  companyId
+  title
+  type
+  description
+  status
+  priority
+  impactHours
+  impactCost
+  impactTimelineDays
+  assessmentNotes
+  assignedPmId
+  requestedByContactId
+  requiresClientApproval
+  requiresInternalApproval
+  revisionCount
+  desiredDueDate
+  submittedAt
+  createdAt
+  updatedAt
+  responseDueAt
+  isOverdue
+}`;
+
 export const AtRiskDashboardDocument = gql`
 query AtRiskDashboard {
   atRiskCompanies {

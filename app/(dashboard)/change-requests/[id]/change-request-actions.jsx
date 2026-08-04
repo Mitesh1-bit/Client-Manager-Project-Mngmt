@@ -29,7 +29,10 @@ import {
 } from "@/app/components/ui/dropdown-menu";
 import { Textarea } from "@/app/components/ui/textarea";
 import { allowedTransitions } from "@/app/lib/change-requests";
-import { UpdateChangeRequestStatusDocument } from "@/app/lib/graphql/generated/documents";
+import {
+  AssignChangeRequestDocument,
+  UpdateChangeRequestStatusDocument,
+} from "@/app/lib/graphql/generated/documents";
 import { getStatusMeta } from "@/app/lib/status";
 
 /**
@@ -41,12 +44,15 @@ import { getStatusMeta } from "@/app/lib/status";
 export function ChangeRequestActions({ request, users = [] }) {
   const router = useRouter();
   const [updateStatus] = useMutation(UpdateChangeRequestStatusDocument);
+  const [assignPm] = useMutation(AssignChangeRequestDocument);
 
   const [confirming, setConfirming] = useState(null); // { status, note } | null
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
+  const [assigning, setAssigning] = useState(false);
 
   const transitions = allowedTransitions(request.status);
+  const assignedPm = users.find((user) => user.id === request.assignedPmId) ?? null;
 
   async function move(status) {
     setBusy(true);
@@ -69,17 +75,33 @@ export function ChangeRequestActions({ request, users = [] }) {
     }
   }
 
-  async function reassign(_userId) {
-    toast.message("PM assignment is not exposed by the API yet.");
+  async function reassign(userId) {
+    setAssigning(true);
+    try {
+      await assignPm({
+        variables: { id: request.id, assignedPmId: userId || null },
+      });
+      const assignee = users.find((user) => user.id === userId);
+      toast.success(assignee ? `Assigned to ${assignee.name}` : "Unassigned");
+      router.refresh();
+    } catch (error) {
+      toast.error("Couldn't update the assignee", { description: error?.message });
+    } finally {
+      setAssigning(false);
+    }
   }
 
   return (
     <div className="flex flex-wrap items-center gap-2">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm">
-            <UserRound aria-hidden="true" />
-            {request.assignedPm ? request.assignedPm.name : "Unassigned"}
+          <Button variant="outline" size="sm" disabled={assigning}>
+            {assigning ? (
+              <LoaderCircle aria-hidden="true" className="animate-spin" />
+            ) : (
+              <UserRound aria-hidden="true" />
+            )}
+            {assignedPm ? assignedPm.name : "Unassigned"}
             <ChevronDown aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
@@ -87,7 +109,7 @@ export function ChangeRequestActions({ request, users = [] }) {
           <DropdownMenuLabel>Assigned PM</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuRadioGroup
-            value={request.assignedPm?.id ?? ""}
+            value={assignedPm?.id ?? ""}
             onValueChange={reassign}
           >
             <DropdownMenuRadioItem value="">Unassigned</DropdownMenuRadioItem>

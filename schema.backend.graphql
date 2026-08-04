@@ -261,6 +261,9 @@ type Mutation {
   requestMilestoneChanges(approvalId: ID!, comment: String!): ApprovalType!
   requestUploadUrl(entityType: String!, entityId: ID!, filename: String!, contentType: String!): UploadUrlPayload!
   confirmUpload(entityType: String!, entityId: ID!, fileUrl: String!): DocumentType!
+
+  """Assign or unassign the internal PM responsible for this request."""
+  assignChangeRequest(id: ID!, assignedPmId: ID = null): ChangeRequestType!
   transitionChangeRequest(id: ID!, toStatus: String!, reason: String = null): ChangeRequestType!
   submitImpactAssessment(id: ID!, impactHours: Float = null, impactCost: Float = null, impactTimelineDays: Int = null, assessmentNotes: String = null): ChangeRequestType!
   decideChangeRequest(id: ID!, approvalId: ID!, decision: String!, comment: String = null, applyFinancialImpact: Boolean! = false): ChangeRequestType!
