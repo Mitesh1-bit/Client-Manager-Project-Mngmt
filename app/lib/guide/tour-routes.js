@@ -50,6 +50,9 @@ export function stepIdAfterNavigation(pathname, currentStepId, masterSteps) {
 
   const current = masterSteps[currentIdx];
 
+  // The step's own "open create form" link was followed — that's a more
+  // specific match than the step's general `routes`, so check it first and
+  // advance past this step.
   if (current?.actionHref && matchTourRoutes(pathname, [current.actionHref])) {
     for (let i = currentIdx + 1; i < masterSteps.length; i += 1) {
       const step = masterSteps[i];
@@ -57,6 +60,12 @@ export function stepIdAfterNavigation(pathname, currentStepId, masterSteps) {
     }
     const next = masterSteps[currentIdx + 1];
     return next?.id ?? currentStepId;
+  }
+
+  // Already on the step that matches this page (e.g. the tour itself just
+  // navigated here) — don't skip past it looking for a later match.
+  if (current?.routes && matchTourRoutes(pathname, current.routes)) {
+    return currentStepId;
   }
 
   for (let i = currentIdx + 1; i < masterSteps.length; i += 1) {

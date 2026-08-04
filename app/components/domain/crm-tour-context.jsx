@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import {
   buildMasterTour,
@@ -13,7 +13,7 @@ import {
   loadTourProgress,
   saveTourProgress,
 } from "@/app/lib/guide/tour-progress";
-import { stepIdAfterNavigation } from "@/app/lib/guide/tour-routes";
+import { matchTourRoutes, stepIdAfterNavigation } from "@/app/lib/guide/tour-routes";
 
 /** @typedef {import('@/app/lib/guide/tour-steps').TourScope} TourScope */
 
@@ -24,6 +24,7 @@ const CrmTourContext = createContext(null);
  */
 export function CrmTourProvider({ scope, role, children }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [stepId, setStepId] = useState(null);
   const [hydrated, setHydrated] = useState(false);
@@ -59,6 +60,23 @@ export function CrmTourProvider({ scope, role, children }) {
     [masterSteps, open, persistStep],
   );
 
+  // A step whose `routes` don't include the page we're currently on can't find
+  // its target — drive the browser there ourselves instead of leaving the
+  // tooltip stranded describing a page that isn't showing. Routes with a
+  // `:id` placeholder (a specific company/project's detail page) can't be
+  // constructed this way — those are only reachable by actually completing
+  // the real action (e.g. saving a form), so leave navigation to the app;
+  // `stepIdAfterNavigation` picks the step back up once that lands.
+  const navigateForStep = useCallback(
+    (step) => {
+      const target = step?.routes?.[0];
+      if (target && !target.includes(":id") && !matchTourRoutes(pathname, step.routes)) {
+        router.push(target);
+      }
+    },
+    [pathname, router],
+  );
+
   const startTour = useCallback(
     (currentPathname, { restart = false } = {}) => {
       if (restart) clearTourProgress(scope, role);
@@ -69,21 +87,23 @@ export function CrmTourProvider({ scope, role, children }) {
 
       if (!id) return;
 
+      navigateForStep(masterSteps.find((item) => item.id === id));
       setStepId(id);
       setOpen(true);
       saveTourProgress(scope, role, { active: true, stepId: id });
     },
-    [masterSteps, scope, role],
+    [masterSteps, scope, role, navigateForStep],
   );
 
   const restartTour = useCallback(() => {
     clearTourProgress(scope, role);
     const first = masterSteps[0];
     if (!first) return;
+    navigateForStep(first);
     setStepId(first.id);
     setOpen(true);
     saveTourProgress(scope, role, { active: true, stepId: first.id });
-  }, [masterSteps, scope, role]);
+  }, [masterSteps, scope, role, navigateForStep]);
 
   const nextStep = useCallback(() => {
     if (stepIndex < 0) return;
@@ -93,8 +113,9 @@ export function CrmTourProvider({ scope, role, children }) {
       clearTourProgress(scope, role);
       return;
     }
+    navigateForStep(next);
     goToStepId(next.id);
-  }, [stepIndex, masterSteps, goToStepId, scope, role]);
+  }, [stepIndex, masterSteps, goToStepId, scope, role, navigateForStep]);
 
   const skipStep = useCallback(() => {
     nextStep();

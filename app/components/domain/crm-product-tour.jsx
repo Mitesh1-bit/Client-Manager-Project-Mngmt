@@ -25,12 +25,12 @@ function useTargetRect(targetId, open, stepIndex) {
   const measure = useCallback(() => {
     if (!targetId) {
       setRect(null);
-      return;
+      return true; // nothing to find — not a "missing target" case
     }
     const el = document.querySelector(`[data-tour="${targetId}"]`);
     if (!el) {
       setRect(null);
-      return;
+      return false;
     }
     el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
     const box = el.getBoundingClientRect();
@@ -40,15 +40,34 @@ function useTargetRect(targetId, open, stepIndex) {
       width: box.width + PAD * 2,
       height: box.height + PAD * 2,
     });
+    return true;
   }, [targetId]);
 
   useEffect(() => {
     if (!open) return undefined;
-    measure();
     const onLayout = () => measure();
     window.addEventListener("resize", onLayout);
     window.addEventListener("scroll", onLayout, true);
+
+    // A step change often lands here mid-navigation (see navigateForStep in
+    // crm-tour-context) — the target may not have mounted yet, so retry for a
+    // bit instead of settling for "not found" on the first paint.
+    let cancelled = false;
+    const retryDelays = [50, 150, 300, 600, 1000];
+    const timers = [];
+    if (!measure()) {
+      for (const delay of retryDelays) {
+        timers.push(
+          setTimeout(() => {
+            if (!cancelled) measure();
+          }, delay),
+        );
+      }
+    }
+
     return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
       window.removeEventListener("resize", onLayout);
       window.removeEventListener("scroll", onLayout, true);
     };
@@ -183,7 +202,10 @@ export function CrmProductTour() {
     step.id === "portal-welcome" ? "You're signed in as a client contact — staff use a separate login." : null;
   const hint = welcomeHint ?? portalHint;
   const showSpotlight = !isCenter && Boolean(rect);
-  const showBlockingOverlay = !isInteractive && (showSpotlight || step?.placement === "center");
+  // isCenter also covers the fallback case where a step's target isn't on the
+  // page (e.g. mid-navigation) — that still needs the dimmed backdrop so it
+  // reads as an intentional dialog rather than a stray floating box.
+  const showBlockingOverlay = !isInteractive && (showSpotlight || isCenter);
 
   const content = (
     <AnimatePresence>
