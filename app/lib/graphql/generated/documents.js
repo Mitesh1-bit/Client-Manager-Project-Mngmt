@@ -1923,6 +1923,45 @@ fragment RetentionSequenceRow on RetentionSequenceType {
   isTemplate
 }`;
 
+export const SearchDocument = gql`
+query Search($query: String!) {
+  search(query: $query) {
+    companies {
+      id
+      name
+      industry
+      logoUrl
+      status
+    }
+    companiesCount
+    contacts {
+      id
+      companyId
+      firstName
+      lastName
+      email
+      title
+    }
+    contactsCount
+    projects {
+      id
+      name
+      status
+      health
+      companyId
+    }
+    projectsCount
+    tasks {
+      id
+      title
+      status
+      priority
+      projectId
+    }
+    tasksCount
+  }
+}`;
+
 export const SetContactPortalPasswordDocument = gql`
 mutation SetContactPortalPassword($id: ID!, $password: String!) {
   setContactPortalPassword(id: $id, password: $password) {

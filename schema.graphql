@@ -491,6 +491,22 @@ input CompleteTouchpointInput {
 }
 
 """
+One search across companies, contacts, projects and tasks. Each group is
+capped server-side; `*Count` carries the true total so the client can say
+"showing N of M" without a second round trip. See NEEDED_SCHEMA_CHANGES.md §5.
+"""
+type SearchResults {
+  companies: [Company!]!
+  companiesCount: Int!
+  contacts: [Contact!]!
+  contactsCount: Int!
+  projects: [Project!]!
+  projectsCount: Int!
+  tasks: [Task!]!
+  tasksCount: Int!
+}
+
+"""
 A company flagged for retention attention, with the reasons already computed
 server-side. See NEEDED_SCHEMA_CHANGES.md §9.3 for the thresholds this is
 built from and why they should move to org settings.
@@ -839,6 +855,7 @@ type Query {
   companySizes: [CompanySize!]!
   industries: [Industry!]!
   users: [User!]!
+  search(query: String!): SearchResults!
 
   # Added by the frontend — see NEEDED_SCHEMA_CHANGES.md §8.
   changeRequest(id: ID!): ChangeRequest

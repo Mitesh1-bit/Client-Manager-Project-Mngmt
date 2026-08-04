@@ -46,6 +46,19 @@ function matchesText(haystack, needle) {
 
 const contactName = (contact) => `${contact.firstName} ${contact.lastName}`;
 
+const SEARCH_MIN_LENGTH = 2;
+const SEARCH_RESULT_LIMIT = 8;
+const emptySearchResults = () => ({
+  companies: [],
+  companiesCount: 0,
+  contacts: [],
+  contactsCount: 0,
+  projects: [],
+  projectsCount: 0,
+  tasks: [],
+  tasksCount: 0,
+});
+
 /**
  * Would adding `task depends on dependsOn` close a loop? Walks the existing
  * edges forward from `dependsOn` looking for the way back to `task`.
@@ -522,6 +535,29 @@ export const resolvers = {
     companySizes: () => db.companySizes,
     industries: () => db.industries,
     users: () => db.users.filter((user) => user.status === "ACTIVE"),
+
+    search: (_parent, { query }, ctx) => {
+      const cleaned = query.trim();
+      if (cleaned.length < SEARCH_MIN_LENGTH || ctx.claims?.scope === "PORTAL") {
+        return emptySearchResults();
+      }
+      const companies = db.companies.filter((c) => matchesText(c.name, cleaned));
+      const contacts = db.contacts.filter(
+        (c) => matchesText(contactName(c), cleaned) || matchesText(c.email, cleaned),
+      );
+      const projects = db.projects.filter((p) => matchesText(p.name, cleaned));
+      const tasks = db.tasks.filter((t) => matchesText(t.title, cleaned));
+      return {
+        companies: companies.slice(0, SEARCH_RESULT_LIMIT),
+        companiesCount: companies.length,
+        contacts: contacts.slice(0, SEARCH_RESULT_LIMIT),
+        contactsCount: contacts.length,
+        projects: projects.slice(0, SEARCH_RESULT_LIMIT),
+        projectsCount: projects.length,
+        tasks: tasks.slice(0, SEARCH_RESULT_LIMIT),
+        tasksCount: tasks.length,
+      };
+    },
   },
 
   Mutation: {

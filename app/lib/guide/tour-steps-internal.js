@@ -18,6 +18,29 @@ export const INTERNAL_TOUR_STEPS = [
     placement: "center",
   },
 
+  // Global search
+  {
+    id: "internal-topbar-search",
+    scope: "INTERNAL",
+    order: 15,
+    target: "topbar-search",
+    title: "Search anything",
+    body: "This search bar is available on every page. Use it to jump straight to a company, contact, project, or task by name.",
+    placement: "bottom",
+    roles: R_ALL,
+  },
+  {
+    id: "internal-search-page",
+    scope: "INTERNAL",
+    order: 16,
+    routes: ["/search"],
+    target: "search-page",
+    title: "Search results",
+    body: "Type at least two characters and results appear grouped by companies, contacts, projects, and tasks — click any row to jump straight there. Your recent searches are saved here for next time.",
+    placement: "top",
+    roles: R_ALL,
+  },
+
   // Dashboard
   {
     id: "internal-dashboard-stats",

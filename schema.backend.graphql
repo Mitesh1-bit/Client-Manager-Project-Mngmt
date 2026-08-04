@@ -420,6 +420,9 @@ type Query {
   retentionSequences(activeOnly: Boolean! = false): [RetentionSequenceType!]!
   retentionSequence(id: ID!): RetentionSequenceType
   upcomingTouchpoints: [TouchpointType!]!
+
+  """One search across companies, contacts, projects and tasks."""
+  search(query: String!): SearchResultsType!
   atRiskCompanies(threshold: Float = null): [CompanyType!]!
   healthScoreHistory(companyId: ID!, limit: Int! = 30): [HealthScoreType!]!
   contracts(companyId: ID = null, status: String = null): [ContractType!]!
@@ -451,6 +454,17 @@ type RetentionSequenceType {
   isActive: Boolean!
   isTemplate: Boolean!
   steps: [SequenceStepType!]!
+}
+
+type SearchResultsType {
+  companies: [CompanyType!]!
+  companiesCount: Int!
+  contacts: [ContactType!]!
+  contactsCount: Int!
+  projects: [ProjectType!]!
+  projectsCount: Int!
+  tasks: [TaskType!]!
+  tasksCount: Int!
 }
 
 type SequenceStepType {
