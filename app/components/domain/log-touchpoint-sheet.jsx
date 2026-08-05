@@ -154,7 +154,7 @@ export function LogTouchpointSheet({ trigger, companyId, companyName, companies 
               </FormField>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="form-grid gap-4">
               <FormField label="Contact" hint={contextLoading ? "Loading…" : undefined}>
                 {(field) => (
                   <Controller
@@ -236,7 +236,7 @@ export function LogTouchpointSheet({ trigger, companyId, companyName, companies 
             </FormField>
 
             <fieldset className="rounded-lg border p-1">
-              <div className="grid grid-cols-2 gap-1" role="radiogroup" aria-label="When">
+              <div className="grid grid-cols-1 gap-1 sm:grid-cols-2" role="radiogroup" aria-label="When">
                 <ModeButton
                   active={when === "COMPLETED"}
                   label="Already happened"
@@ -254,7 +254,7 @@ export function LogTouchpointSheet({ trigger, companyId, companyName, companies 
               </div>
             </fieldset>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="form-grid gap-4">
               <FormField
                 label={when === "COMPLETED" ? "When it happened" : "Scheduled for"}
                 error={errors.date?.message}

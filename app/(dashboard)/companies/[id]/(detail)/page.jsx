@@ -49,7 +49,7 @@ export default async function CompanyOverviewPage({ params }) {
               size="lg"
               className="self-start"
             />
-            <dl className="grid flex-1 grid-cols-2 gap-x-6 gap-y-3 text-caption sm:grid-cols-3">
+            <dl className="meta-grid-3 flex-1 gap-x-6 gap-y-3 text-caption">
               <Detail label="Client since" value={company.createdAt ? formatDate(company.createdAt) : "—"} />
               <Detail label="Last updated" value={company.updatedAt ? formatDate(company.updatedAt) : "—"} />
               <Detail

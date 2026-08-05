@@ -70,7 +70,7 @@ export function DataTable({
   }
 
   return (
-    <div className="relative overflow-x-auto rounded-xl border bg-card">
+    <div className="relative scroll-panel rounded-xl border bg-card">
       <Table>
         {caption ? <caption className="sr-only">{caption}</caption> : null}
         <TableHeader>

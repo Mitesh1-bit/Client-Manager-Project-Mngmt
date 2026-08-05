@@ -73,7 +73,7 @@ export default async function CompanyProjectsPage({ params }) {
               />
             </div>
 
-            <dl className="mt-4 grid grid-cols-3 gap-3 text-caption">
+            <dl className="meta-grid-3 mt-4 gap-3 text-caption">
               <div>
                 <dt className="text-muted-foreground">Dates</dt>
                 <dd className="mt-0.5 font-medium">

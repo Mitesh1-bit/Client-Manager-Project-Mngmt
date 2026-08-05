@@ -56,7 +56,7 @@ export function PortalAppShell({ viewer, companyName, badges, children }) {
           </div>
         </header>
 
-        <main id="main" className="page-shell w-full flex-1 pt-8 pb-24 md:pb-14">
+        <main id="main" className="page-shell min-w-0 w-full flex-1 pt-8 pb-24 md:pb-14">
           {children}
         </main>
 

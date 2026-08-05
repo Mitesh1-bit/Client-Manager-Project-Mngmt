@@ -30,7 +30,7 @@ export default async function CompanyContractsPage({ params }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="toolbar-row">
         <p className="text-caption text-muted-foreground">
           {contracts.length} contract{contracts.length === 1 ? "" : "s"}
         </p>

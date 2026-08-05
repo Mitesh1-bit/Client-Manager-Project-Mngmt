@@ -97,7 +97,7 @@ export function TaskList({ projectId, tasks = [], phases = [], milestones = [], 
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-4 toolbar-row">
         <p className="text-caption text-muted-foreground">
           {tasks.filter((task) => !task.parentTask).length} tasks ·{" "}
           {tasks.filter((task) => task.parentTask).length} subtasks

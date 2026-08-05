@@ -245,7 +245,7 @@ export function ContactsPanel({ companyId, companyName, contacts = [] }) {
 
   return (
     <div data-tour="contacts-panel">
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-4 toolbar-row">
         <p className="text-caption text-muted-foreground" aria-live="polite">
           {rows.length} {rows.length === 1 ? "contact" : "contacts"} at {companyName}
         </p>
@@ -361,7 +361,7 @@ function ContactDetail({ contact, onEdit }) {
       </SheetHeader>
 
       <div className="min-h-0 flex-1 space-y-6 overflow-x-hidden overflow-y-auto overscroll-contain px-5 py-5 pb-6">
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-caption">
+        <dl className="meta-grid gap-x-6 gap-y-3 text-caption">
           <Field label="Email">
             <a href={`mailto:${contact.email}`} className="rounded-sm text-primary hover:underline focus-ring">
               {contact.email}

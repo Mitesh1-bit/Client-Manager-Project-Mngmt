@@ -26,7 +26,7 @@ function ProductPageHero({ hero }) {
   const { mounted } = useMktMotion();
 
   return (
-    <header className="relative overflow-x-hidden bg-[#f7f8fc]">
+    <header className="relative overflow-visible bg-[#f7f8fc]">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute -left-40 -top-32 size-[520px] rounded-full bg-mkt-lime/18 blur-[100px]" />
         <div className="absolute -right-32 top-20 size-[480px] rounded-full bg-mkt-sky/14 blur-[100px]" />
@@ -116,7 +116,7 @@ function ProductPageHero({ hero }) {
             </div>
           </div>
 
-          <div className="min-w-0 overflow-visible py-2 sm:py-0">
+          <div className="relative min-w-0 overflow-visible py-2 sm:py-0">
             <ProductHeroOrbit />
           </div>
         </div>

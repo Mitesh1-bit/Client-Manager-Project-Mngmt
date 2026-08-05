@@ -52,7 +52,7 @@ export default async function ProjectDetailLayout({ children, params }) {
   const overdue = live && endsAt && endsAt < startOfDay(new Date());
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       <div>
         <div className="mb-4 flex items-center gap-1.5 text-caption text-muted-foreground">
           <Link
@@ -91,7 +91,7 @@ export default async function ProjectDetailLayout({ children, params }) {
             {(project.tags?.length ?? 0) > 0 ? <TagList tags={project.tags} className="mt-2.5" /> : null}
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:shrink-0">
             <Button variant="outline" asChild>
               <Link href={`/projects/${id}/edit`}>
                 <Pencil aria-hidden="true" />

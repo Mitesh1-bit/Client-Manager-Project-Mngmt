@@ -88,7 +88,7 @@ export function ListToolbar({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="relative min-w-56 flex-1 sm:max-w-xs">
+      <div className="relative min-w-0 flex-1 basis-full sm:min-w-56 sm:max-w-xs sm:basis-auto">
         <Search
           aria-hidden="true"
           className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"

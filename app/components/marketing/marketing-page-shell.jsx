@@ -100,15 +100,12 @@ export function MarketingCta({
           <div className="pointer-events-none absolute -top-16 -right-16 size-48 rounded-full bg-mkt-pink/20 blur-3xl" />
           <div className="relative">
             <h2 className="font-mkt-display text-2xl md:text-3xl">{title}</h2>
-            {description ? <p className="mx-auto mt-3 max-w-xl text-white/85">{description}</p> : null}
+            {description ? <p className="mx-auto mt-3 max-w-xl text-white/90">{description}</p> : null}
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link href={primaryHref} className="mkt-btn-primary bg-mkt-cta shadow-lg shadow-black/20">
                 {primaryLabel}
               </Link>
-              <Link
-                href={secondaryHref}
-                className="mkt-btn-secondary border-white text-white hover:bg-white hover:text-mkt-navy"
-              >
+              <Link href={secondaryHref} className="mkt-btn-on-dark">
                 {secondaryLabel}
               </Link>
             </div>

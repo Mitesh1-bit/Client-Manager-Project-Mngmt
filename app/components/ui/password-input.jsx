@@ -11,11 +11,17 @@ const PasswordInput = React.forwardRef(function PasswordInput({ className, ...pr
 
   return (
     <div className="relative">
-      <Input ref={ref} type={visible ? "text" : "password"} className={cn("pr-9", className)} {...props} />
+      <Input
+        ref={ref}
+        type={visible ? "text" : "password"}
+        className={cn("password-input pr-10", className)}
+        {...props}
+      />
       <button
         type="button"
+        tabIndex={-1}
         onClick={() => setVisible((current) => !current)}
-        className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded-sm text-muted-foreground hover:text-foreground focus-ring"
+        className="absolute top-1/2 right-2.5 z-[1] flex size-7 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground focus-ring"
         aria-label={visible ? "Hide password" : "Show password"}
       >
         {visible ? <EyeOff aria-hidden="true" className="size-4" /> : <Eye aria-hidden="true" className="size-4" />}

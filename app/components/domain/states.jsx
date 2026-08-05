@@ -156,14 +156,16 @@ export function SectionCard({ title, description, actions, children, className, 
   return (
     <section className={cn("rounded-xl border bg-card", className)} {...rest}>
       {(title || actions) && (
-        <div className="flex items-start justify-between gap-4 border-b px-5 py-4">
+        <div className="flex flex-col gap-3 border-b px-5 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div className="min-w-0">
             <h2 className="text-subheading">{title}</h2>
             {description ? (
               <p className="mt-0.5 text-caption text-muted-foreground">{description}</p>
             ) : null}
           </div>
-          {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+          {actions ? (
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0">{actions}</div>
+          ) : null}
         </div>
       )}
       <div className="p-5">{children}</div>

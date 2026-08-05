@@ -106,7 +106,7 @@ export default async function CompanyDetailLayout({ children, params }) {
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:shrink-0">
             <CompanyStatusMenu
               companyId={company.id}
               companyName={company.name}

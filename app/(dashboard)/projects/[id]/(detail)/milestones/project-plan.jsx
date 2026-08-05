@@ -96,7 +96,7 @@ export function ProjectPlan({ projectId, phases = [], milestones = [] }) {
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between gap-3" data-tour="milestones-panel">
+      <div className="mb-4 toolbar-row" data-tour="milestones-panel">
         <p className="text-caption text-muted-foreground">
           {phases.length} phases · {milestones.length} milestones
         </p>

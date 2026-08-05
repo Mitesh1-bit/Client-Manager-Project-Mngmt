@@ -144,13 +144,17 @@ export function ProjectGantt({
         </p>
       </div>
 
+      <p className="mb-2 text-caption text-muted-foreground md:hidden">
+        Swipe sideways to see the full timeline.
+      </p>
+
       {/* The scroll container is the bordered card itself. `relative` keeps
           absolutely-positioned descendants — `sr-only` text especially — inside
           this scroller instead of letting them widen the whole page. */}
       <div
         ref={scrollRef}
         data-tour="project-timeline"
-        className="relative overflow-x-auto rounded-xl border bg-card"
+        className="scroll-panel relative rounded-xl border bg-card"
       >
         {/* A fixed min width keeps months legible; the pane scrolls instead of
             squeezing bars into invisibility on narrow screens. */}

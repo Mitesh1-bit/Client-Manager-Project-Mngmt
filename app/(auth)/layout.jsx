@@ -12,7 +12,7 @@ export default function AuthLayout({ children }) {
   return (
     <div
       data-surface="marketing"
-      className={`${mktFontClassName} h-svh overflow-hidden bg-white font-mkt-sans text-mkt-navy antialiased`}
+      className={`${mktFontClassName} min-h-svh overflow-x-hidden bg-white font-mkt-sans text-mkt-navy antialiased`}
     >
       <Suspense fallback={null}>
         <AuthUrlScrubber />

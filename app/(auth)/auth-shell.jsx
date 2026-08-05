@@ -2,10 +2,24 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { Building2, LogIn, Users } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { cn } from "@/app/lib/utils";
+
+const AUTH_ACTION_ICONS = {
+  building: Building2,
+  users: Users,
+  login: LogIn,
+};
+
+const authAltButtonClass = {
+  primary:
+    "border-mkt-navy bg-white text-mkt-navy hover:border-mkt-navy hover:bg-mkt-navy hover:text-white",
+  portal:
+    "border-mkt-sky/45 bg-mkt-sky/[0.08] text-mkt-navy hover:border-mkt-sky hover:bg-mkt-sky/15",
+};
 import { LOGIN_URL, SIGNUP_URL } from "@/app/lib/marketing/site";
 import { MKT_EASE } from "@/app/components/marketing/motion";
 
@@ -139,7 +153,7 @@ export function AuthShell({ children }) {
   const isSignup = pathname === "/signup";
 
   return (
-    <div className="grid h-full lg:grid-cols-2">
+    <div className="grid min-h-svh lg:grid-cols-2">
       <AuthBrandPanel />
 
       <div className="flex min-h-0 flex-col bg-white">
@@ -156,8 +170,8 @@ export function AuthShell({ children }) {
           </Link>
         </header>
 
-        <main id="main" className="flex min-h-0 flex-1 items-center justify-center overflow-hidden px-6 pb-8 lg:px-12 xl:px-16">
-          <div className="w-full max-w-[400px]">{children}</div>
+        <main id="main" className="flex min-h-0 flex-1 items-center justify-center overflow-y-auto px-6 py-6 pb-8 lg:px-12 xl:px-16">
+          <div className="my-auto w-full max-w-[400px]">{children}</div>
         </main>
       </div>
     </div>
@@ -175,6 +189,49 @@ export function AuthPageHeader({ title, subtitle }) {
 
 export function AuthPageFooter({ children }) {
   return <p className="mt-6 text-center text-sm text-mkt-navy/55">{children}</p>;
+}
+
+export function AuthAlternateActions({ label, actions }) {
+  if (!actions?.length) return null;
+
+  return (
+    <div className="mt-8 border-t border-mkt-navy/8 pt-6">
+      {label ? <p className="mb-4 text-center text-sm text-mkt-navy/55">{label}</p> : null}
+      <div className="flex flex-col gap-3">
+        {actions.map(({ href, label: actionLabel, description, icon, tone = "primary" }) => {
+          const Icon = icon ? AUTH_ACTION_ICONS[icon] : null;
+
+          return (
+          <Link
+            key={href}
+            href={href}
+            className={cn(
+              "group inline-flex min-h-11 w-full items-center gap-3 rounded-lg border-2 px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mkt-sky/30 focus-visible:ring-offset-2",
+              authAltButtonClass[tone] ?? authAltButtonClass.primary,
+            )}
+          >
+            {Icon ? (
+              <span
+                className="flex size-9 shrink-0 items-center justify-center rounded-md bg-white/80 text-mkt-navy/80 ring-1 ring-mkt-navy/10 transition group-hover:bg-white group-hover:text-mkt-navy"
+                aria-hidden
+              >
+                <Icon className="size-4" />
+              </span>
+            ) : null}
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold leading-tight">{actionLabel}</span>
+              {description ? (
+                <span className="mt-0.5 block text-[0.72rem] font-normal leading-snug text-mkt-navy/55 group-hover:text-inherit group-hover:opacity-80">
+                  {description}
+                </span>
+              ) : null}
+            </span>
+          </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 export function authInputClass(compact = false) {

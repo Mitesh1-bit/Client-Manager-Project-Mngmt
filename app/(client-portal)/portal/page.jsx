@@ -73,7 +73,7 @@ export default async function PortalOverviewPage() {
           ) : null}
 
           <section aria-labelledby="your-projects">
-            <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="mb-3 toolbar-row">
               <h2 id="your-projects" className="text-subheading">
                 Your projects
               </h2>

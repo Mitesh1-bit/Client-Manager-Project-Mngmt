@@ -106,6 +106,8 @@ function EnergyPacket({ begin, reduce, reverse }) {
       {trail.map((offset, i) => (
         <circle
           key={`${reverse}-${offset}`}
+          cx={0}
+          cy={0}
           r={(reverse ? 7 : 14) - i * 3}
           fill={reverse ? "#4ec0e8" : "url(#product-energy-ball)"}
           opacity={0.45 - i * 0.1}
@@ -123,10 +125,10 @@ function EnergyPacket({ begin, reduce, reverse }) {
       ))}
       {!reverse ? (
         <>
-          <circle r={5.5} fill="#fff">
+          <circle cx={0} cy={0} r={5.5} fill="#fff">
             <animateMotion dur={`${dur}s`} repeatCount="indefinite" begin={`${begin}s`} path={RIVER_PATH} calcMode="linear" />
           </circle>
-          <circle r={2.5} fill="#0a1550">
+          <circle cx={0} cy={0} r={2.5} fill="#0a1550">
             <animateMotion dur={`${dur}s`} repeatCount="indefinite" begin={`${begin}s`} path={RIVER_PATH} calcMode="linear" />
           </circle>
         </>
@@ -161,7 +163,7 @@ function ActiveNodeOrbit({ node, active, reduce }) {
 
   return (
     <g transform={`translate(${node.x}, 100)`}>
-      <circle r={22} fill="none" stroke={node.fill} strokeWidth={1} opacity={0.35} strokeDasharray="3 5" className="mkt-river-orbit-ring" />
+      <circle cx={0} cy={0} r={22} fill="none" stroke={node.fill} strokeWidth={1} opacity={0.35} strokeDasharray="3 5" className="mkt-river-orbit-ring" />
       <circle r={3} fill={node.fill} cx={22} cy={0} opacity={0.9}>
         <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="3s" repeatCount="indefinite" />
       </circle>
@@ -220,6 +222,7 @@ function RiverNode({ node, index, play: show, hovered, active, onHover }) {
       <motion.circle
         cx={node.x}
         cy={100}
+        r={30}
         fill={node.fill}
         initial={false}
         animate={{ r: lit ? 40 : 30, opacity: lit ? 0.32 : show ? 0.14 : 0 }}
@@ -231,6 +234,7 @@ function RiverNode({ node, index, play: show, hovered, active, onHover }) {
         <motion.circle
           cx={node.x}
           cy={100}
+          r={15}
           fill="none"
           stroke={node.fill}
           strokeWidth={2}
@@ -250,6 +254,7 @@ function RiverNode({ node, index, play: show, hovered, active, onHover }) {
         <motion.circle
           cx={node.x}
           cy={100}
+          r={15}
           fill="none"
           stroke={node.fill}
           strokeWidth={1.5}
@@ -262,6 +267,7 @@ function RiverNode({ node, index, play: show, hovered, active, onHover }) {
       <motion.circle
         cx={node.x}
         cy={100}
+        r={15}
         fill={node.fill}
         stroke="#0a1550"
         strokeWidth={2.5}

@@ -17,7 +17,7 @@ export function DashboardAppShell({ viewer, organizationName, children }) {
         <DashboardSidebar viewer={viewer} organizationName={organizationName} />
         <SidebarInset className="min-w-0">
           <DashboardTopbar />
-          <main id="main" data-tour="main-content" className="page-shell flex-1 py-8">
+          <main id="main" data-tour="main-content" className="page-shell min-w-0 flex-1 py-8">
             {children}
           </main>
         </SidebarInset>

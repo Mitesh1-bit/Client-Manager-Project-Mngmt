@@ -70,7 +70,7 @@ export function StartDeliveringCta() {
                 </Link>
               </div>
 
-              <p className="mt-4 text-xs text-white/45">Free to start · No credit card required</p>
+              <p className="mt-4 text-xs text-white/65">Free to start · No credit card required</p>
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">

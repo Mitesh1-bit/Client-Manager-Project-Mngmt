@@ -91,7 +91,7 @@ export function InvoiceDialog({ companyId }) {
           New invoice
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent size="form">
         <DialogHeader>
           <DialogTitle>New invoice</DialogTitle>
           <DialogDescription>Bill this client for work delivered.</DialogDescription>
@@ -110,7 +110,7 @@ export function InvoiceDialog({ companyId }) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="form-grid gap-3">
             <div className="space-y-1.5">
               <Label className="text-caption font-medium">
                 Amount <span aria-hidden="true" className="-ml-1 text-destructive">*</span>

@@ -18,10 +18,10 @@ export function DashboardTopbar() {
   const current = ALL_ITEMS.find((item) => isNavItemActive(pathname, item));
 
   return (
-    <header className="sticky top-0 z-30 flex h-(--topbar-height) shrink-0 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur-sm">
+    <header className="sticky top-0 z-30 flex h-(--topbar-height) min-w-0 shrink-0 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur-sm">
       <SidebarTrigger />
       <Separator orientation="vertical" className="mr-1 !h-5" />
-      <span className="truncate font-medium">{current?.label ?? "Meridian"}</span>
+      <span className="min-w-0 truncate font-medium">{current?.label ?? "Meridian"}</span>
 
       <div className="ml-auto flex items-center gap-1.5">
         <Button variant="outline" size="sm" className="gap-2 text-muted-foreground" asChild data-tour="topbar-search">

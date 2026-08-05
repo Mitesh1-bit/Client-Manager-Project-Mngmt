@@ -93,7 +93,7 @@ export function LogTouchpointDialog({ companyId, contacts = [] }) {
           Log a touchpoint
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent size="form">
         <DialogHeader>
           <DialogTitle>Log a touchpoint</DialogTitle>
           <DialogDescription>Record a call, email, or meeting that already happened.</DialogDescription>

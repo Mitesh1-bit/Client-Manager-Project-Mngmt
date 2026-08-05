@@ -19,7 +19,7 @@ export default async function ProjectDocumentsPage({ params }) {
 
   return (
     <div data-tour="project-documents" className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="toolbar-row">
         <p className="text-caption text-muted-foreground">{documents.length} file{documents.length === 1 ? "" : "s"}</p>
         <DocumentUpload projectId={id} />
       </div>

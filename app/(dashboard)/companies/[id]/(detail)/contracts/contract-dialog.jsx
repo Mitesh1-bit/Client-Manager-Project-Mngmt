@@ -98,7 +98,7 @@ export function ContractDialog({ companyId }) {
           New contract
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent size="form">
         <DialogHeader>
           <DialogTitle>New contract</DialogTitle>
           <DialogDescription>Record the terms this client is signed up under.</DialogDescription>
@@ -112,7 +112,7 @@ export function ContractDialog({ companyId }) {
             <Input value={name} onChange={(event) => setName(event.target.value)} className="h-10" placeholder="Annual retainer" />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="form-grid gap-3">
             <div className="space-y-1.5">
               <Label className="text-caption font-medium">
                 Start date <span aria-hidden="true" className="-ml-1 text-destructive">*</span>
@@ -127,7 +127,7 @@ export function ContractDialog({ companyId }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="form-grid gap-3">
             <div className="space-y-1.5">
               <Label className="text-caption font-medium">Value</Label>
               <Input

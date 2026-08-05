@@ -46,7 +46,7 @@ export function AssessmentPanel({ request, threshold }) {
         <p className="text-caption text-muted-foreground">Not assessed yet.</p>
       ) : (
         <div className="space-y-4">
-          <dl className="grid grid-cols-3 gap-4 text-caption">
+          <dl className="meta-grid-3 gap-4 text-caption">
             <div>
               <dt className="text-muted-foreground">Effort</dt>
               <dd className="tabular mt-0.5 font-medium">{request.impactHours ?? 0}h</dd>

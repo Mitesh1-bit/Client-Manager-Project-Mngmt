@@ -163,7 +163,7 @@ export function ProjectBoard({ projectId, tasks = [], phases = [], milestones = 
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-4 toolbar-row">
         <p className="text-caption text-muted-foreground">
           Drag a card, or use its menu, to move it between columns.
         </p>

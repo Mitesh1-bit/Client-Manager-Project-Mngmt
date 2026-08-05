@@ -48,7 +48,7 @@ export default async function CompanyTouchpointsPage({ params }) {
 
   return (
     <div data-tour="company-touchpoints" className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="toolbar-row">
         <p className="text-caption text-muted-foreground">
           {touchpoints.length} logged
           {overdue > 0 ? (

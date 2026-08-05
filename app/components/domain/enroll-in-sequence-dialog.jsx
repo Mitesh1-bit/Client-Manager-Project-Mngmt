@@ -105,7 +105,7 @@ export function EnrollInSequenceDialog({
       }}
     >
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent>
+      <DialogContent size="form">
         <DialogHeader>
           <DialogTitle>Enroll in a sequence</DialogTitle>
           <DialogDescription>

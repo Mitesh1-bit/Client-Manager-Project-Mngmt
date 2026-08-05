@@ -138,6 +138,10 @@ export function ProjectCalendar({
         </p>
       </div>
 
+      <p className="mb-2 text-caption text-muted-foreground md:hidden">
+        Swipe sideways to see the full month.
+      </p>
+
       {/* A seven-column month is unreadable below about 42rem, so the grid keeps
           its minimum and the card scrolls rather than crushing the cells.
 
@@ -145,7 +149,7 @@ export function ProjectCalendar({
           without a positioned ancestor its containing block is the viewport,
           which lets it escape this scroll container and give the whole page a
           phantom horizontal scrollbar. */}
-      <div data-tour="project-calendar" className="relative overflow-x-auto rounded-xl border bg-card">
+      <div data-tour="project-calendar" className="scroll-panel relative rounded-xl border bg-card">
         <div className="min-w-[42rem]">
           <div className="grid grid-cols-7 border-b bg-muted/40">
             {WEEKDAYS.map((weekday) => (

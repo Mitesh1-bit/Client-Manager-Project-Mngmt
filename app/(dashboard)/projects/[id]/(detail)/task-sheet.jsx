@@ -153,7 +153,7 @@ function TaskDetail({ task, tasks, onEdit, onOpenTask, onAddSubtask }) {
           <p className="text-caption text-pretty text-muted-foreground">{task.description}</p>
         ) : null}
 
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-caption">
+        <dl className="meta-grid gap-x-6 gap-y-3 text-caption">
           <Field label="Assignee">
             {task.assignee ? (
               <span className="flex items-center gap-1.5">

@@ -7,7 +7,6 @@ import { useCallback, useEffect, useRef, forwardRef } from "react";
 import { cn } from "@/app/lib/utils";
 
 import { Reveal } from "./motion";
-import { useMktMotion } from "./motion";
 import { ToolCardIllustration } from "./tool-card-illustrations";
 
 const CARD_BG = {
@@ -21,28 +20,37 @@ const CARD_BG = {
 const AUTO_SCROLL_PX = 0.9;
 const PAUSE_AFTER_MANUAL_MS = 2200;
 
-function ToolCard({ tool }) {
+function ToolCard({ tool, className }) {
   const gradient = CARD_BG[tool.tone] || CARD_BG.lime;
 
   return (
     <Link
       href={`/product#${tool.id}`}
-      className="group relative block h-[280px] w-[220px] shrink-0 sm:h-[320px] sm:w-[252px] md:h-[360px] md:w-[280px] lg:h-[400px] lg:w-[300px]"
+      className={cn(
+        "group relative block shrink-0",
+        "h-[min(72vw,300px)] w-[min(76vw,240px)]",
+        "sm:h-[320px] sm:w-[252px]",
+        "md:h-[360px] md:w-[280px]",
+        "lg:h-[400px] lg:w-[300px]",
+        className,
+      )}
     >
       <div
         className={cn(
-          "relative h-full overflow-hidden rounded-[1.75rem] bg-gradient-to-br p-6 shadow-lg transition-transform duration-500 group-hover:scale-[1.03] group-hover:shadow-2xl",
+          "relative flex h-full flex-col overflow-hidden rounded-[1.5rem] bg-gradient-to-br p-5 shadow-lg transition-transform duration-500 group-hover:scale-[1.02] group-hover:shadow-2xl sm:rounded-[1.75rem] sm:p-6",
           gradient,
         )}
       >
         <ToolCardIllustration toolId={tool.id} />
 
-        <div className="relative z-10 flex h-full flex-col justify-end">
-          <p className="font-mkt-display text-2xl leading-tight text-mkt-navy transition-transform duration-300 group-hover:translate-x-1 md:text-[1.65rem]">
+        <div className="relative z-10 mt-auto flex min-h-0 flex-col justify-end pt-3">
+          <p className="font-mkt-display text-xl leading-tight text-mkt-navy transition-transform duration-300 group-hover:translate-x-1 sm:text-2xl md:text-[1.65rem]">
             {tool.title}
           </p>
-          <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-mkt-navy/75">{tool.body}</p>
-          <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-mkt-navy/60 transition-all group-hover:gap-2 group-hover:text-mkt-navy">
+          <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-mkt-navy/75 sm:line-clamp-3">
+            {tool.body}
+          </p>
+          <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-mkt-navy/60 transition-all group-hover:gap-2 group-hover:text-mkt-navy sm:mt-4">
             Explore
             <span aria-hidden>→</span>
           </span>
@@ -56,7 +64,7 @@ const ToolCardRow = forwardRef(function ToolCardRow({ tools, className, rowKey =
   return (
     <div
       ref={ref}
-      className={cn("flex shrink-0 gap-5 px-3 md:gap-6 md:px-4", className)}
+      className={cn("flex shrink-0 gap-4 px-2 md:gap-6 md:px-4", className)}
       {...props}
     >
       {tools.map((tool) => (
@@ -67,7 +75,6 @@ const ToolCardRow = forwardRef(function ToolCardRow({ tools, className, rowKey =
 });
 
 export function ToolCarousel({ tools, title, subtitle, ctaHref, ctaLabel }) {
-  const { mounted } = useMktMotion();
   const trackRef = useRef(null);
   const rowRef = useRef(null);
   const offsetRef = useRef(0);
@@ -127,17 +134,15 @@ export function ToolCarousel({ tools, title, subtitle, ctaHref, ctaLabel }) {
   );
 
   const tick = useCallback(() => {
-    if (mounted && !pausedRef.current && halfWidthRef.current > 0) {
+    if (!pausedRef.current && halfWidthRef.current > 0) {
       offsetRef.current -= AUTO_SCROLL_PX;
       normalizeOffset();
       applyTransform();
     }
     frameRef.current = requestAnimationFrame(tick);
-  }, [applyTransform, mounted, normalizeOffset]);
+  }, [applyTransform, normalizeOffset]);
 
   useEffect(() => {
-    if (!mounted) return undefined;
-
     const row = rowRef.current;
     if (!row) return undefined;
 
@@ -153,37 +158,46 @@ export function ToolCarousel({ tools, title, subtitle, ctaHref, ctaLabel }) {
 
     frameRef.current = requestAnimationFrame(tick);
 
+    const onTouchStart = () => pause(true);
+    row.addEventListener("touchstart", onTouchStart, { passive: true });
+
     return () => {
       observer.disconnect();
+      row.removeEventListener("touchstart", onTouchStart);
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
       if (pauseTimerRef.current) window.clearTimeout(pauseTimerRef.current);
     };
-  }, [applyTransform, measure, mounted, normalizeOffset, tick]);
+  }, [applyTransform, measure, normalizeOffset, pause, tick]);
 
   return (
-    <section className="overflow-hidden bg-white py-20 md:py-28">
+    <section className="overflow-hidden bg-white py-14 sm:py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Reveal className="mx-auto max-w-3xl text-center">
-          <h2 className="font-mkt-display text-4xl text-mkt-navy md:text-6xl lg:text-7xl">{title}</h2>
+          <h2 className="font-mkt-display text-[clamp(2rem,7vw,4.5rem)] leading-[1.05] text-balance text-mkt-navy md:text-6xl lg:text-7xl">
+            {title}
+          </h2>
           {subtitle ? (
-            <p className="mx-auto mt-4 max-w-xl text-lg text-mkt-navy/65 md:text-xl">{subtitle}</p>
+            <p className="mx-auto mt-4 max-w-xl text-base text-pretty text-mkt-navy/65 sm:text-lg md:text-xl">
+              {subtitle}
+            </p>
           ) : null}
           {ctaHref ? (
-            <Link href={ctaHref} className="mkt-btn-primary mt-8 inline-flex">
+            <Link href={ctaHref} className="mkt-btn-primary mt-6 inline-flex sm:mt-8">
               {ctaLabel || "Get started"}
             </Link>
           ) : null}
         </Reveal>
       </div>
 
-      <div className="relative mt-14">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-white to-transparent md:w-28" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-white to-transparent md:w-28" />
+      <div className="relative mt-10 md:mt-14">
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-white to-transparent sm:w-16 md:w-20 lg:w-28" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-white to-transparent sm:w-16 md:w-20 lg:w-28" />
 
+        {/* Side arrows — desktop / tablet */}
         <button
           type="button"
           onClick={() => nudge(1)}
-          className="absolute left-3 top-1/2 z-20 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-mkt-navy/15 bg-white text-mkt-navy shadow-lg transition hover:border-mkt-navy/30 hover:bg-mkt-navy hover:text-white md:left-6 md:size-12"
+          className="absolute left-2 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full border border-mkt-navy/15 bg-white text-mkt-navy shadow-lg transition hover:border-mkt-navy/30 hover:bg-mkt-navy hover:text-white sm:left-3 sm:flex sm:size-11 md:left-6 md:size-12"
           aria-label="Previous slide"
         >
           <ChevronLeft className="size-5" strokeWidth={2.5} />
@@ -192,7 +206,7 @@ export function ToolCarousel({ tools, title, subtitle, ctaHref, ctaLabel }) {
         <button
           type="button"
           onClick={() => nudge(-1)}
-          className="absolute right-3 top-1/2 z-20 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-mkt-navy/15 bg-white text-mkt-navy shadow-lg transition hover:border-mkt-navy/30 hover:bg-mkt-navy hover:text-white md:right-6 md:size-12"
+          className="absolute right-2 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full border border-mkt-navy/15 bg-white text-mkt-navy shadow-lg transition hover:border-mkt-navy/30 hover:bg-mkt-navy hover:text-white sm:right-3 sm:flex sm:size-11 md:right-6 md:size-12"
           aria-label="Next slide"
         >
           <ChevronRight className="size-5" strokeWidth={2.5} />
@@ -207,6 +221,26 @@ export function ToolCarousel({ tools, title, subtitle, ctaHref, ctaLabel }) {
             <ToolCardRow ref={rowRef} tools={tools} rowKey="a" />
             <ToolCardRow tools={tools} rowKey="b" aria-hidden />
           </div>
+        </div>
+
+        {/* Bottom arrows — mobile */}
+        <div className="mt-5 flex items-center justify-center gap-3 px-4 sm:hidden">
+          <button
+            type="button"
+            onClick={() => nudge(1)}
+            className="flex size-10 items-center justify-center rounded-full border border-mkt-navy/15 bg-white text-mkt-navy shadow-md transition hover:border-mkt-navy/30 hover:bg-mkt-navy hover:text-white"
+            aria-label="Previous module"
+          >
+            <ChevronLeft className="size-5" strokeWidth={2.5} />
+          </button>
+          <button
+            type="button"
+            onClick={() => nudge(-1)}
+            className="flex size-10 items-center justify-center rounded-full border border-mkt-navy/15 bg-white text-mkt-navy shadow-md transition hover:border-mkt-navy/30 hover:bg-mkt-navy hover:text-white"
+            aria-label="Next module"
+          >
+            <ChevronRight className="size-5" strokeWidth={2.5} />
+          </button>
         </div>
       </div>
     </section>

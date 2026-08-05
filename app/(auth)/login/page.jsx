@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { Suspense } from "react";
 
 import { Skeleton } from "@/app/components/ui/skeleton";
 
-import { AuthPageFooter, AuthPageHeader } from "../auth-shell";
+import { AuthAlternateActions, AuthPageHeader } from "../auth-shell";
 import { LoginForm } from "./login-form";
 
 export const metadata = { title: "Sign in" };
@@ -20,16 +19,25 @@ export default function LoginPage() {
         <LoginForm />
       </Suspense>
 
-      <AuthPageFooter>
-        No account?{" "}
-        <Link href="/signup" className="font-semibold text-mkt-navy hover:text-mkt-coral">
-          Create workspace
-        </Link>
-        {" · "}
-        <Link href="/client-login" className="font-semibold text-mkt-navy hover:text-mkt-coral">
-          Client portal
-        </Link>
-      </AuthPageFooter>
+      <AuthAlternateActions
+        label="No account?"
+        actions={[
+          {
+            href: "/signup",
+            label: "Create workspace",
+            description: "Set up Meridian for your agency team",
+            icon: "building",
+            tone: "primary",
+          },
+          {
+            href: "/client-login",
+            label: "Client portal",
+            description: "Sign in as a client contact",
+            icon: "users",
+            tone: "portal",
+          },
+        ]}
+      />
     </>
   );
 }

@@ -84,12 +84,12 @@ export function PortalTabBar({ badges = {} }) {
                 data-tour={item.tourId}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex flex-col items-center gap-1 px-1 py-2.5 text-[0.6875rem] font-medium transition-colors focus-ring",
+                  "flex flex-col items-center gap-0.5 px-0.5 py-2 text-[0.625rem] font-medium leading-tight transition-colors focus-ring sm:gap-1 sm:px-1 sm:py-2.5 sm:text-[0.6875rem]",
                   active ? "text-primary" : "text-muted-foreground",
                 )}
               >
                 <span className="relative">
-                  <item.icon aria-hidden="true" className="size-5" />
+                  <item.icon aria-hidden="true" className="size-5 shrink-0" />
                   {count > 0 ? (
                     <span className="tabular absolute -top-1.5 -right-2 flex min-w-4 items-center justify-center rounded-full bg-tone-caution px-1 text-[0.5625rem] font-semibold text-white">
                       {count}
@@ -97,7 +97,7 @@ export function PortalTabBar({ badges = {} }) {
                     </span>
                   ) : null}
                 </span>
-                {item.label}
+                <span className="max-w-full truncate text-center">{item.label}</span>
               </Link>
             </li>
           );

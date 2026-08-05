@@ -343,6 +343,16 @@
     background-color: var(--brand-200);
     color: var(--brand-900);
   }
+
+  /* One reveal control only — hide browser-native password eyes (Edge/Chrome). */
+  .password-input::-ms-reveal,
+  .password-input::-ms-clear {
+    display: none;
+  }
+
+  .password-input::-webkit-textfield-decoration-container {
+    display: none;
+  }
 }
 
 @layer components {
@@ -351,6 +361,71 @@
     max-width: var(--content-max);
     margin-inline: auto;
     padding-inline: var(--content-gutter);
+  }
+
+  /* Shared responsive grids — use instead of bare grid-cols-2/3 in forms & metadata */
+  .form-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .form-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .meta-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .meta-grid-3 {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .meta-grid-3 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .meta-grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  /* Toolbar row: stacks on narrow screens, side-by-side from sm up */
+  .toolbar-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  /* Horizontal scroll container with momentum scrolling on touch devices */
+  .scroll-panel {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 639px) {
+  [data-surface="app"] {
+    --content-gutter: 1rem;
   }
 }
 
@@ -577,6 +652,11 @@
   @apply inline-flex items-center justify-center rounded-md border-2 border-mkt-navy px-6 py-3 text-sm font-bold text-mkt-navy transition-all duration-300 hover:bg-mkt-navy hover:text-white;
 }
 
+/* Secondary actions on navy/dark marketing banners — do not use mkt-btn-secondary here */
+[data-surface="marketing"] .mkt-btn-on-dark {
+  @apply inline-flex items-center justify-center rounded-md border-2 border-white/90 bg-white/10 px-6 py-3 text-sm font-bold text-white shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-white hover:bg-white hover:text-mkt-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-mkt-navy;
+}
+
 [data-surface="marketing"] .mkt-navbar .mkt-nav-link {
   position: relative;
 }
@@ -688,8 +768,8 @@
 
 [data-surface="marketing"] .mkt-hero-stage {
   min-height: 440px;
-  width: 580px;
-  max-width: none;
+  width: 100%;
+  max-width: 580px;
 }
 
 [data-surface="marketing"] .mkt-hero-panel,
@@ -1432,13 +1512,6 @@
   }
 }
 
-[data-surface="marketing"] .mkt-orbit-carousel {
-  --sol-hero-height: 440;
-  --sol-hero-width: 640;
-  width: 100%;
-  overflow: hidden;
-}
-
 [data-surface="marketing"] .mkt-sol-badge-scaler {
   position: absolute;
   inset: 0;
@@ -1447,6 +1520,8 @@
 
 @media (max-width: 767px) {
   [data-surface="marketing"] .mkt-sol-hero-viewport {
+    --sol-hero-width: 640;
+    --sol-hero-height: 440;
     --sol-scale: min(1, calc((100vw - 3rem) / var(--sol-hero-width)));
     min-height: calc(var(--sol-hero-height) * 1px * var(--sol-scale));
   }
@@ -1479,6 +1554,7 @@
 [data-surface="marketing"] .mkt-orbit-carousel {
   transform-origin: center center;
   will-change: transform;
+  overflow: visible;
 }
 
 [data-surface="marketing"] .mkt-orbit-carousel--on {

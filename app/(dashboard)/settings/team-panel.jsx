@@ -24,6 +24,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
+import { PasswordInput } from "@/app/components/ui/password-input";
 import {
   Select,
   SelectContent,
@@ -202,10 +203,9 @@ export function TeamPanel({ users, currentUserId, isAdmin, isProjectManager = fa
               </FormField>
               <FormField label="Temporary password" error={errors.password?.message} required>
                 {(field) => (
-                  <Input
+                  <PasswordInput
                     {...field}
                     {...register("password")}
-                    type="password"
                     className="h-10"
                     autoComplete="new-password"
                   />

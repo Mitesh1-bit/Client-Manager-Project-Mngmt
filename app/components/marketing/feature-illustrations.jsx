@@ -23,16 +23,13 @@ export function ChangeControlIllustration() {
       />
       {/* Moving pulse along path */}
       {animate ? (
-        <>
-          <motion.circle
-            r="4"
-            fill="#c5f042"
-            cx={28}
-            cy={80}
-            animate={{ cx: [28, 72, 72, 128, 172], cy: 80 }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: "linear", repeatDelay: 0.5 }}
-          />
-        </>
+        <motion.circle
+          r="4"
+          fill="#c5f042"
+          initial={{ cx: 28, cy: 80 }}
+          animate={{ cx: [28, 72, 72, 128, 172], cy: [80, 80, 80, 80, 80] }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: "linear", repeatDelay: 0.5 }}
+        />
       ) : null}
 
       {/* Source doc */}
@@ -173,11 +170,10 @@ export function PipelineIllustration() {
               key={n}
               r="5"
               fill="#ffe24a"
-              cx={n === 0 ? 46 : 154}
-              cy={82}
+              initial={{ cx: n === 0 ? 46 : 154, cy: 82, opacity: 0 }}
               animate={{
                 cx: n === 0 ? [46, 154] : [154, 46],
-                cy: 82,
+                cy: [82, 82],
                 opacity: [0, 1, 1, 0],
               }}
               transition={{

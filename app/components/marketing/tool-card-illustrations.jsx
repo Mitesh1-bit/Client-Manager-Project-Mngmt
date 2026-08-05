@@ -135,27 +135,30 @@ function PortalIllustration() {
 function RetentionIllustration() {
   return (
     <div className="relative flex h-full items-center justify-center">
-      <div className="relative size-24">
-        <svg viewBox="0 0 100 100" className="size-full -rotate-90">
-          <circle cx="50" cy="50" r="42" fill="none" stroke="rgb(10 21 80 / 0.12)" strokeWidth="8" />
+      <div className="relative size-20 sm:size-24">
+        <svg viewBox="0 0 100 100" className="size-full -rotate-90" aria-hidden="true">
+          <circle cx={50} cy={50} r={42} fill="none" stroke="rgb(10 21 80 / 0.12)" strokeWidth={8} />
           <circle
-            cx="50"
-            cy="50"
-            r="42"
+            cx={50}
+            cy={50}
+            r={42}
             fill="none"
             stroke="currentColor"
-            strokeWidth="8"
+            strokeWidth={8}
             strokeLinecap="round"
-            strokeDasharray="264"
+            strokeDasharray={264}
+            strokeDashoffset={52}
             className="mkt-card-ring text-mkt-navy"
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-mkt-display text-xl text-mkt-navy">82</span>
-          <span className="text-[0.55rem] font-bold uppercase tracking-wider text-mkt-navy/50">Health</span>
+          <span className="font-mkt-display text-lg text-mkt-navy sm:text-xl">82</span>
+          <span className="text-[0.5rem] font-bold uppercase tracking-wider text-mkt-navy/50 sm:text-[0.55rem]">
+            Health
+          </span>
         </div>
       </div>
-      <div className="mkt-card-float absolute bottom-2 right-0 rounded-lg border border-white/50 bg-white/80 px-2 py-1 text-[0.55rem] font-bold text-mkt-navy/70 shadow-sm">
+      <div className="mkt-card-float absolute bottom-1 right-0 max-w-[45%] truncate rounded-lg border border-white/50 bg-white/80 px-2 py-1 text-[0.5rem] font-bold text-mkt-navy/70 shadow-sm sm:bottom-2 sm:max-w-none sm:text-[0.55rem]">
         ↑ At risk
       </div>
     </div>

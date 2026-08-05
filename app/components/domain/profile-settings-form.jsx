@@ -13,6 +13,7 @@ import { FormField } from "@/app/components/domain/form-field";
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
+import { PasswordInput } from "@/app/components/ui/password-input";
 import { ChangeMyPasswordDocument, UpdateMyProfileDocument } from "@/app/lib/graphql/generated/documents";
 
 const internalProfileSchema = z.object({
@@ -214,10 +215,9 @@ export function ProfileSettingsForm({ scope, viewer }) {
 
           <FormField label="Current password" error={passwordErrors.currentPassword?.message} required>
             {(field) => (
-              <Input
+              <PasswordInput
                 {...field}
                 {...passwordForm.register("currentPassword")}
-                type="password"
                 autoComplete="current-password"
                 className="h-10"
               />
@@ -225,10 +225,9 @@ export function ProfileSettingsForm({ scope, viewer }) {
           </FormField>
           <FormField label="New password" error={passwordErrors.newPassword?.message} required>
             {(field) => (
-              <Input
+              <PasswordInput
                 {...field}
                 {...passwordForm.register("newPassword")}
-                type="password"
                 autoComplete="new-password"
                 className="h-10"
               />
@@ -236,10 +235,9 @@ export function ProfileSettingsForm({ scope, viewer }) {
           </FormField>
           <FormField label="Confirm new password" error={passwordErrors.confirmPassword?.message} required>
             {(field) => (
-              <Input
+              <PasswordInput
                 {...field}
                 {...passwordForm.register("confirmPassword")}
-                type="password"
                 autoComplete="new-password"
                 className="h-10"
               />

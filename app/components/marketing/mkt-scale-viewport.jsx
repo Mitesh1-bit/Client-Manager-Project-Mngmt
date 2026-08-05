@@ -73,18 +73,17 @@ export function MktScaleViewport({
   return (
     <div
       ref={viewportRef}
-      className={cn(
-        "relative mx-auto w-full max-w-full",
-        !layout.fluid && "overflow-hidden",
-        className,
-      )}
-      style={layout.fluid ? undefined : { height: layout.height }}
+      className={cn("relative mx-auto w-full max-w-full overflow-visible", className)}
+      style={layout.fluid ? { minHeight: designHeight + topInset } : { height: layout.height }}
     >
       <div
-        className={cn(layout.fluid ? "relative w-full" : "absolute left-0 top-0", innerClassName)}
+        className={cn(
+          layout.fluid ? "relative mx-auto overflow-visible" : "absolute left-0 top-0 overflow-visible",
+          innerClassName,
+        )}
         style={
           layout.fluid
-            ? undefined
+            ? { width: designWidth, maxWidth: "100%", height: designHeight + topInset, paddingTop: topInset }
             : {
                 width: designWidth,
                 height: designHeight + topInset,

@@ -17,7 +17,9 @@ export function PageHeader({ eyebrow, title, description, actions, children, cla
         ) : null}
         {children}
       </div>
-      {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+      {actions ? (
+        <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:shrink-0">{actions}</div>
+      ) : null}
     </header>
   );
 }
