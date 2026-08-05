@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import { LoaderCircle, Shield } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -55,7 +55,7 @@ const inviteSchema = z.object({
   ]),
 });
 
-export function TeamPanel({ users, currentUserId, isAdmin, isProjectManager = false }) {
+export function MembersPanel({ users, currentUserId, isAdmin, isProjectManager = false }) {
   const router = useRouter();
   const [serverError, setServerError] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -63,8 +63,6 @@ export function TeamPanel({ users, currentUserId, isAdmin, isProjectManager = fa
   const [updateUser] = useMutation(UpdateUserDocument);
   const [deleteUser, { loading: deleting }] = useMutation(DeleteUserDocument);
 
-  // Admins can invite/delete any role. Project managers can only bring on
-  // (or remove) team members — everything else about the team stays admin-only.
   const canManageTeam = isAdmin || isProjectManager;
   const inviteRoleOptions = isAdmin
     ? ROLE_CATALOG
@@ -152,112 +150,89 @@ export function TeamPanel({ users, currentUserId, isAdmin, isProjectManager = fa
 
   return (
     <div className="space-y-6">
-      <SectionCard
-        data-tour="settings-roles"
-        title="Roles & access"
-        description="What each role can do in your workspace. Client portal access is managed per contact, not per team member."
-      >
-        <div className="grid gap-3 lg:grid-cols-2">
-          {ROLE_CATALOG.map((role) => (
-            <article key={role.value} className="rounded-xl border bg-card p-4">
-              <h3 className="font-medium">{role.label}</h3>
-              <p className="mt-1 text-caption text-pretty text-muted-foreground">{role.summary}</p>
-              <ul className="mt-3 space-y-1 text-[0.75rem] text-muted-foreground">
-                {role.access.map((item) => (
-                  <li key={item} className="flex gap-2">
-                    <Shield aria-hidden="true" className="mt-0.5 size-3 shrink-0 text-primary" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
-      </SectionCard>
-
       {canManageTeam ? (
         <div data-tour="team-invite">
-        <SectionCard
-          title="Add team member"
-          description={
-            isAdmin
-              ? "Create a dashboard account with a temporary password. Share login credentials securely — email invites are not enabled yet."
-              : "As a project manager you can add team members to grow delivery capacity — other roles need an admin."
-          }
-        >
-          <form noValidate onSubmit={handleSubmit(onInvite)} className="space-y-4">
-            {serverError ? (
-              <Alert variant="destructive">
-                <AlertTitle>Couldn&apos;t add member</AlertTitle>
-                <AlertDescription>{serverError}</AlertDescription>
-              </Alert>
-            ) : null}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormField label="Full name" error={errors.name?.message} required>
-                {(field) => <Input {...field} {...register("name")} className="h-10" />}
-              </FormField>
-              <FormField label="Work email" error={errors.email?.message} required>
-                {(field) => (
-                  <Input {...field} {...register("email")} type="email" className="h-10" />
+          <SectionCard
+            title="Add team member"
+            description={
+              isAdmin
+                ? "Create a dashboard account with a temporary password. Share login credentials securely — email invites are not enabled yet."
+                : "As a project manager you can add team members to grow delivery capacity — other roles need an admin."
+            }
+          >
+            <form noValidate onSubmit={handleSubmit(onInvite)} className="space-y-4">
+              {serverError ? (
+                <Alert variant="destructive">
+                  <AlertTitle>Couldn&apos;t add member</AlertTitle>
+                  <AlertDescription>{serverError}</AlertDescription>
+                </Alert>
+              ) : null}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField label="Full name" error={errors.name?.message} required>
+                  {(field) => <Input {...field} {...register("name")} className="h-10" />}
+                </FormField>
+                <FormField label="Work email" error={errors.email?.message} required>
+                  {(field) => (
+                    <Input {...field} {...register("email")} type="email" className="h-10" />
+                  )}
+                </FormField>
+                <FormField label="Temporary password" error={errors.password?.message} required>
+                  {(field) => (
+                    <PasswordInput
+                      {...field}
+                      {...register("password")}
+                      className="h-10"
+                      autoComplete="new-password"
+                    />
+                  )}
+                </FormField>
+                <FormField label="Role" error={errors.role?.message} required>
+                  {(field) => (
+                    <Controller
+                      control={control}
+                      name="role"
+                      render={({ field: control_ }) => (
+                        <Select value={control_.value} onValueChange={control_.onChange}>
+                          <SelectTrigger {...field} className="h-10 w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {inviteRoleOptions.map((role) => (
+                              <SelectItem key={role.value} value={role.value}>
+                                {role.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  )}
+                </FormField>
+              </div>
+              {!isAdmin ? (
+                <p className="text-caption text-muted-foreground">
+                  Only &quot;Team member&quot; is available here — inviting any other role needs an admin.
+                </p>
+              ) : null}
+              {selectedRoleInfo ? (
+                <p className="rounded-lg border bg-muted/40 px-3 py-2 text-caption text-muted-foreground">
+                  <span className="font-medium text-foreground">{selectedRoleInfo.label}</span>
+                  {" — "}
+                  {selectedRoleInfo.summary}
+                </p>
+              ) : null}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <LoaderCircle aria-hidden="true" className="animate-spin" />
+                    Adding…
+                  </>
+                ) : (
+                  "Add team member"
                 )}
-              </FormField>
-              <FormField label="Temporary password" error={errors.password?.message} required>
-                {(field) => (
-                  <PasswordInput
-                    {...field}
-                    {...register("password")}
-                    className="h-10"
-                    autoComplete="new-password"
-                  />
-                )}
-              </FormField>
-              <FormField label="Role" error={errors.role?.message} required>
-                {(field) => (
-                  <Controller
-                    control={control}
-                    name="role"
-                    render={({ field: control_ }) => (
-                      <Select value={control_.value} onValueChange={control_.onChange}>
-                        <SelectTrigger {...field} className="h-10 w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {inviteRoleOptions.map((role) => (
-                            <SelectItem key={role.value} value={role.value}>
-                              {role.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                )}
-              </FormField>
-            </div>
-            {!isAdmin ? (
-              <p className="text-caption text-muted-foreground">
-                Only &quot;Team member&quot; is available here — inviting any other role needs an admin.
-              </p>
-            ) : null}
-            {selectedRoleInfo ? (
-              <p className="rounded-lg border bg-muted/40 px-3 py-2 text-caption text-muted-foreground">
-                <span className="font-medium text-foreground">{selectedRoleInfo.label}</span>
-                {" — "}
-                {selectedRoleInfo.summary}
-              </p>
-            ) : null}
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <LoaderCircle aria-hidden="true" className="animate-spin" />
-                  Adding…
-                </>
-              ) : (
-                "Add team member"
-              )}
-            </Button>
-          </form>
-        </SectionCard>
+              </Button>
+            </form>
+          </SectionCard>
         </div>
       ) : (
         <SectionCard title="Team management" description="Only admins and project managers can add team members.">
@@ -321,9 +296,6 @@ export function TeamPanel({ users, currentUserId, isAdmin, isProjectManager = fa
                       {inactive ? " · inactive" : ""}
                     </span>
                   )}
-                  {/* Role change and deactivate stay admin-only above — a PM's
-                      reach into team management is deliberately narrower:
-                      they can only remove a team member, nothing else. */}
                   {canDeleteUser(user) ? (
                     <Button variant="destructive" size="sm" onClick={() => setDeleteTarget(user)}>
                       Delete

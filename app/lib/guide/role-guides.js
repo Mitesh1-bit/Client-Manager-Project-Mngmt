@@ -21,8 +21,8 @@ export const INTERNAL_ROLE_GUIDES = {
       {
         id: "team",
         title: "Invite your team",
-        body: "Go to Settings → Add team member. Pick a role (project manager, finance admin, etc.) and share login credentials securely.",
-        href: "/settings",
+        body: "Go to Settings → Members → Add team member. Pick a role (project manager, finance admin, etc.) and share login credentials securely.",
+        href: "/settings/members",
         action: "Open Settings",
         icon: "Users",
       },

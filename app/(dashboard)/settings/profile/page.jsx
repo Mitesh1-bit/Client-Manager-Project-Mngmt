@@ -1,9 +1,8 @@
-import Link from "next/link";
-
-import { PageHeader } from "@/app/components/domain/page-header";
 import { ProfileSettingsForm } from "@/app/components/domain/profile-settings-form";
-import { Button } from "@/app/components/ui/button";
+import { PageHeader } from "@/app/components/domain/page-header";
 import { requireViewer } from "@/app/lib/graphql/viewer";
+
+import { SettingsTabs } from "../settings-tabs";
 
 export const metadata = { title: "Profile & preferences" };
 
@@ -16,13 +15,12 @@ export default async function ProfileSettingsPage() {
         eyebrow="Settings"
         title="Profile & preferences"
         description="Update how you appear in the workspace and change your password."
-        actions={
-          <Button variant="outline" asChild>
-            <Link href="/settings">Back to settings</Link>
-          </Button>
-        }
       />
-      <ProfileSettingsForm scope="INTERNAL" viewer={viewer} />
+
+      <div className="space-y-6">
+        <SettingsTabs />
+        <ProfileSettingsForm scope="INTERNAL" viewer={viewer} />
+      </div>
     </>
   );
 }
