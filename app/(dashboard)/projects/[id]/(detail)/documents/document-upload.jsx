@@ -51,7 +51,10 @@ export function DocumentUpload({ projectId }) {
       });
       const ticket = ticketData.requestUploadUrl;
 
-      const response = await fetch(ticket.uploadUrl, {
+      // Same-origin proxy, not ticket.uploadUrl directly — that's an absolute
+      // backend URL that only resolves correctly from the machine the
+      // backend itself runs on. See app/api/backend/assets/upload/route.js.
+      const response = await fetch("/api/backend/assets/upload", {
         method: "PUT",
         headers: { Authorization: `Bearer ${ticket.uploadToken}` },
         body: file,
