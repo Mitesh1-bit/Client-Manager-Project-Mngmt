@@ -184,6 +184,9 @@ query ProjectFormOptions {
   users {
     ...UserSummaryFields
   }
+  tags {
+    ...TagFields
+  }
 }
 
 query ProjectForEdit($id: ID!) {

@@ -3,6 +3,12 @@ fragment TagFields on TagType {
   name
 }
 
+mutation CreateTag($name: String!) {
+  createTag(name: $name) {
+    ...TagFields
+  }
+}
+
 fragment UserSummaryFields on UserSummaryType {
   id
   name

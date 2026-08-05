@@ -24,6 +24,7 @@ import {
 } from "@/app/components/ui/select";
 import {
   CreateCompanyDocument,
+  CreateTagDocument,
   UpdateCompanyDocument,
 } from "@/app/lib/graphql/generated/documents";
 import { listStatuses } from "@/app/lib/status";
@@ -53,6 +54,8 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
 
   const [createCompany] = useMutation(CreateCompanyDocument);
   const [updateCompany] = useMutation(UpdateCompanyDocument);
+  const [createTag] = useMutation(CreateTagDocument);
+  const [tagList, setTagList] = useState(tags);
 
   const {
     register,
@@ -64,8 +67,15 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
     defaultValues: companyToFormValues(company),
   });
 
-  const tagOptions = tags.map((tag) => ({ value: tag.id, label: tag.name }));
+  const tagOptions = tagList.map((tag) => ({ value: tag.id, label: tag.name }));
   const cancelHref = mode === "edit" ? `/companies/${company.id}` : "/companies";
+
+  async function handleCreateTag(name) {
+    const { data } = await createTag({ variables: { name } });
+    const tag = data.createTag;
+    setTagList((current) => [...current, tag]);
+    return { value: tag.id, label: tag.name };
+  }
 
   async function onSubmit(values) {
     setServerError(null);
@@ -250,8 +260,9 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
                       options={tagOptions}
                       value={control_.value}
                       onChange={control_.onChange}
+                      onCreate={handleCreateTag}
                       placeholder="No tags"
-                      emptyText="No tags defined yet."
+                      emptyText="No tags yet — type a name to create one."
                     />
                     <SelectedChips
                       options={tagOptions}

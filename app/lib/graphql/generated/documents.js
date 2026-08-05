@@ -1283,6 +1283,17 @@ fragment RetentionSequenceRow on RetentionSequenceType {
   activeEnrollmentCount
 }`;
 
+export const CreateTagDocument = gql`
+mutation CreateTag($name: String!) {
+  createTag(name: $name) {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
+}`;
+
 export const CreateTaskDocument = gql`
 mutation CreateTask($projectId: ID!, $phaseId: ID!, $title: String!, $milestoneId: ID, $parentTaskId: ID, $assigneeId: ID, $status: String!, $priority: String!, $estimatedHours: Float) {
   createTask(
@@ -2010,6 +2021,13 @@ query ProjectFormOptions {
   users {
     ...UserSummaryFields
   }
+  tags {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
 }
 fragment UserSummaryFields on UserSummaryType {
   id

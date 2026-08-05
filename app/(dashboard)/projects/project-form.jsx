@@ -25,6 +25,7 @@ import {
 import { Textarea } from "@/app/components/ui/textarea";
 import {
   CreateProjectDocument,
+  CreateTagDocument,
   UpdateProjectDocument,
 } from "@/app/lib/graphql/generated/documents";
 import { listStatuses } from "@/app/lib/status";
@@ -51,6 +52,8 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
 
   const [createProject] = useMutation(CreateProjectDocument);
   const [updateProject] = useMutation(UpdateProjectDocument);
+  const [createTag] = useMutation(CreateTagDocument);
+  const [tagList, setTagList] = useState(tags);
 
   const {
     register,
@@ -62,8 +65,15 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
     defaultValues: projectToFormValues(project),
   });
 
-  const tagOptions = tags.map((tag) => ({ value: tag.id, label: tag.name }));
+  const tagOptions = tagList.map((tag) => ({ value: tag.id, label: tag.name }));
   const cancelHref = mode === "edit" ? `/projects/${project.id}` : "/projects";
+
+  async function handleCreateTag(name) {
+    const { data } = await createTag({ variables: { name } });
+    const tag = data.createTag;
+    setTagList((current) => [...current, tag]);
+    return { value: tag.id, label: tag.name };
+  }
 
   async function onSubmit(input) {
     setServerError(null);
@@ -288,8 +298,9 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
                       options={tagOptions}
                       value={control_.value}
                       onChange={control_.onChange}
+                      onCreate={handleCreateTag}
                       placeholder="No tags"
-                      emptyText="No tags defined yet."
+                      emptyText="No tags yet — type a name to create one."
                     />
                     <SelectedChips
                       options={tagOptions}

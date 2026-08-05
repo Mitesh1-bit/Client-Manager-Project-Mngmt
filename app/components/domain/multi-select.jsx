@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, ChevronsUpDown, X } from "lucide-react";
+import { useState } from "react";
+import { Check, ChevronsUpDown, LoaderCircle, Plus, X } from "lucide-react";
 
 import { Button } from "@/app/components/ui/button";
 import {
@@ -19,18 +20,46 @@ import { cn } from "@/app/lib/utils";
  * navigable and announces selection state. Used for tags, and reusable for any
  * many-to-many picker in later modules.
  *
- * @param {{ options: Array<{ value: string, label: string }>, value: string[], onChange: (next: string[]) => void, placeholder?: string, emptyText?: string, id?: string, 'aria-describedby'?: string, 'aria-invalid'?: boolean }} props
+ * `onCreate`, when passed, turns this into a creatable select: typing a name
+ * that doesn't match any existing option offers a "Create '<name>'" row.
+ * Selecting it calls `onCreate(name)`, which must create the record and
+ * resolve to its new `{ value, label }` — the option list is the caller's
+ * (it's what makes the newly-created one show as selected immediately,
+ * without this component needing to know how the option was persisted).
+ *
+ * @param {{
+ *   options: Array<{ value: string, label: string }>,
+ *   value: string[],
+ *   onChange: (next: string[]) => void,
+ *   onCreate?: (name: string) => Promise<{ value: string, label: string }>,
+ *   createLabel?: (name: string) => string,
+ *   placeholder?: string,
+ *   emptyText?: string,
+ *   id?: string,
+ *   'aria-describedby'?: string,
+ *   'aria-invalid'?: boolean,
+ * }} props
  */
 export function MultiSelect({
   options,
   value,
   onChange,
+  onCreate,
+  createLabel = (name) => `Create "${name}"`,
   placeholder = "Select…",
   emptyText = "Nothing found.",
   id,
   ...aria
 }) {
+  const [search, setSearch] = useState("");
+  const [creating, setCreating] = useState(false);
   const selected = options.filter((option) => value.includes(option.value));
+
+  const trimmedSearch = search.trim();
+  const hasExactMatch = options.some(
+    (option) => option.label.toLowerCase() === trimmedSearch.toLowerCase(),
+  );
+  const canCreate = Boolean(onCreate) && trimmedSearch.length > 0 && !hasExactMatch;
 
   function toggle(optionValue) {
     onChange(
@@ -40,8 +69,20 @@ export function MultiSelect({
     );
   }
 
+  async function handleCreate() {
+    if (!canCreate || creating) return;
+    setCreating(true);
+    try {
+      const created = await onCreate(trimmedSearch);
+      if (created?.value) onChange([...value, created.value]);
+      setSearch("");
+    } finally {
+      setCreating(false);
+    }
+  }
+
   return (
-    <Popover>
+    <Popover onOpenChange={(open) => !open && setSearch("")}>
       <PopoverTrigger asChild>
         <Button
           id={id}
@@ -64,9 +105,9 @@ export function MultiSelect({
 
       <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-0">
         <Command>
-          <CommandInput placeholder="Search…" />
+          <CommandInput placeholder="Search…" value={search} onValueChange={setSearch} />
           <CommandList>
-            <CommandEmpty>{emptyText}</CommandEmpty>
+            {!canCreate ? <CommandEmpty>{emptyText}</CommandEmpty> : null}
             <CommandGroup>
               {options.map((option) => {
                 const isSelected = value.includes(option.value);
@@ -89,6 +130,16 @@ export function MultiSelect({
                   </CommandItem>
                 );
               })}
+              {canCreate ? (
+                <CommandItem value={`__create__${trimmedSearch}`} onSelect={handleCreate} disabled={creating}>
+                  {creating ? (
+                    <LoaderCircle aria-hidden="true" className="size-4 animate-spin" />
+                  ) : (
+                    <Plus aria-hidden="true" className="size-4" />
+                  )}
+                  {createLabel(trimmedSearch)}
+                </CommandItem>
+              ) : null}
             </CommandGroup>
           </CommandList>
         </Command>
