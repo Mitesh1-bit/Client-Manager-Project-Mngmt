@@ -247,6 +247,7 @@ fragment RetentionSequenceRow on RetentionSequenceType {
   triggerType
   isActive
   isTemplate
+  activeEnrollmentCount
 }`;
 
 export const TagFieldsFragmentDoc = gql`
@@ -424,10 +425,39 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
 export const AtRiskDashboardDocument = gql`
 query AtRiskDashboard {
   atRiskCompanies {
-    id
-    name
-    status
-    healthScore
+    company {
+      id
+      name
+      status
+      healthScore
+      industry
+      accountOwner {
+        id
+        name
+      }
+      primaryContact {
+        id
+        firstName
+        lastName
+        phone
+      }
+      contacts {
+        id
+        firstName
+        lastName
+        isPrimary
+      }
+    }
+    reasons
+    overdueTouchpointCount
+    lastTouchpointAt
+    activeEnrollments {
+      id
+      sequence {
+        id
+        name
+      }
+    }
   }
   upcomingTouchpoints {
     id
@@ -1033,6 +1063,7 @@ fragment RetentionSequenceRow on RetentionSequenceType {
   triggerType
   isActive
   isTemplate
+  activeEnrollmentCount
 }`;
 
 export const CreateTaskDocument = gql`
@@ -1900,6 +1931,7 @@ query RetentionFormOptions {
   retentionSequences(activeOnly: false) {
     id
     name
+    isActive
   }
   companies {
     id
@@ -1925,6 +1957,22 @@ query RetentionSequenceDetail($id: ID!) {
       templateId
       assigneeRole
     }
+    enrollments {
+      id
+      status
+      currentStep
+      enrolledAt
+      company {
+        id
+        name
+        healthScore
+      }
+      contact {
+        id
+        firstName
+        lastName
+      }
+    }
   }
 }
 fragment RetentionSequenceRow on RetentionSequenceType {
@@ -1933,6 +1981,7 @@ fragment RetentionSequenceRow on RetentionSequenceType {
   triggerType
   isActive
   isTemplate
+  activeEnrollmentCount
 }`;
 
 export const RetentionSequencesDocument = gql`
@@ -1953,6 +2002,7 @@ fragment RetentionSequenceRow on RetentionSequenceType {
   triggerType
   isActive
   isTemplate
+  activeEnrollmentCount
 }`;
 
 export const SearchDocument = gql`

@@ -37,7 +37,8 @@ import { EnrollInSequenceDocument } from "@/app/lib/graphql/generated/documents"
  *   companyId?: string, companyName?: string,
  *   sequenceId?: string, sequenceName?: string,
  *   sequences?: Array<{ id: string, name: string, isActive: boolean }>,
- *   companies?: Array<{ id: string, name: string }>,
+ *   companies?: Array<{ id: string, name: string, contacts?: Array<object> }>,
+ *   contacts?: Array<{ id: string, firstName: string, lastName: string, isPrimary?: boolean }>,
  * }} props
  */
 export function EnrollInSequenceDialog({
@@ -48,27 +49,39 @@ export function EnrollInSequenceDialog({
   sequenceName,
   sequences,
   companies,
+  contacts,
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState(companyId ?? "");
   const [selectedSequenceId, setSelectedSequenceId] = useState(sequenceId ?? "");
+  const [selectedContactId, setSelectedContactId] = useState("");
   const [error, setError] = useState(null);
   const [enroll, { loading }] = useMutation(EnrollInSequenceDocument);
 
   const activeSequences = sequences?.filter((sequence) => sequence.isActive) ?? [];
+  const availableContacts =
+    contacts ?? companies?.find((company) => company.id === selectedCompanyId)?.contacts ?? [];
 
   async function handleEnroll() {
     const finalCompanyId = companyId ?? selectedCompanyId;
     const finalSequenceId = sequenceId ?? selectedSequenceId;
+    const finalContactId =
+      selectedContactId || availableContacts.find((contact) => contact.isPrimary)?.id || "";
     if (!finalCompanyId || !finalSequenceId) {
       setError(companyId ? "Choose a sequence." : "Choose a company.");
+      return;
+    }
+    if (!finalContactId) {
+      setError("Choose a contact.");
       return;
     }
 
     setError(null);
     try {
-      await enroll({ variables: { sequenceId: finalSequenceId, companyId: finalCompanyId } });
+      await enroll({
+        variables: { sequenceId: finalSequenceId, companyId: finalCompanyId, contactId: finalContactId },
+      });
       const enrolledSequenceName =
         sequenceName ?? sequences?.find((s) => s.id === finalSequenceId)?.name ?? "the sequence";
       const enrolledCompanyName =
@@ -157,6 +170,36 @@ export function EnrollInSequenceDialog({
               </Select>
             </Field>
           )}
+
+          <Field label="Contact" required>
+            <Select
+              value={
+                selectedContactId && availableContacts.some((contact) => contact.id === selectedContactId)
+                  ? selectedContactId
+                  : (availableContacts.find((contact) => contact.isPrimary)?.id ?? "")
+              }
+              onValueChange={setSelectedContactId}
+              disabled={availableContacts.length === 0}
+            >
+              <SelectTrigger className="h-10 w-full">
+                <SelectValue placeholder="Choose a contact" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableContacts.length === 0 ? (
+                  <p className="px-2 py-1.5 text-caption text-muted-foreground">
+                    No contacts on file for this company
+                  </p>
+                ) : (
+                  availableContacts.map((contact) => (
+                    <SelectItem key={contact.id} value={contact.id}>
+                      {contact.firstName} {contact.lastName}
+                      {contact.isPrimary ? " (primary)" : ""}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </Field>
 
           {error ? <p className="text-caption font-medium text-destructive">{error}</p> : null}
         </div>

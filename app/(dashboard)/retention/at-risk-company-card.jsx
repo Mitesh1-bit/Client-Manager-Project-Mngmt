@@ -99,7 +99,9 @@ export function AtRiskCompanyCard({ row, sequences }) {
         {company.primaryContact ? (
           <div className="flex min-w-0 items-center gap-1.5">
             <UserRound aria-hidden="true" className="size-3.5 shrink-0" />
-            <dd className="truncate">{company.primaryContact.fullName}</dd>
+            <dd className="truncate">
+              {company.primaryContact.firstName} {company.primaryContact.lastName}
+            </dd>
           </div>
         ) : null}
       </dl>
@@ -123,6 +125,7 @@ export function AtRiskCompanyCard({ row, sequences }) {
           companyId={company.id}
           companyName={company.name}
           sequences={sequences}
+          contacts={company.contacts}
           trigger={
             <Button variant="outline" size="sm">
               <Workflow aria-hidden="true" />

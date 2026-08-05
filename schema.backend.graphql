@@ -18,6 +18,14 @@ type ApprovalType {
   decidedAt: DateTime
 }
 
+type AtRiskCompanyType {
+  company: CompanyType!
+  reasons: [String!]!
+  lastTouchpointAt: DateTime
+  overdueTouchpointCount: Int!
+  activeEnrollments: [RetentionEnrollmentType!]!
+}
+
 type AuthPayload {
   accessToken: String
   requires2fa: Boolean!
@@ -426,7 +434,7 @@ type Query {
 
   """One search across companies, contacts, projects and tasks."""
   search(query: String!): SearchResultsType!
-  atRiskCompanies(threshold: Float = null): [CompanyType!]!
+  atRiskCompanies(threshold: Float = null): [AtRiskCompanyType!]!
   healthScoreHistory(companyId: ID!, limit: Int! = 30): [HealthScoreType!]!
   contracts(companyId: ID = null, status: String = null): [ContractType!]!
   contract(id: ID!): ContractType
@@ -448,6 +456,9 @@ type RetentionEnrollmentType {
   status: String!
   currentStep: Int!
   enrolledAt: DateTime!
+  sequence: RetentionSequenceType
+  company: CompanyType
+  contact: ContactType
 }
 
 type RetentionSequenceType {
@@ -457,6 +468,8 @@ type RetentionSequenceType {
   isActive: Boolean!
   isTemplate: Boolean!
   steps: [SequenceStepType!]!
+  enrollments: [RetentionEnrollmentType!]!
+  activeEnrollmentCount: Int!
 }
 
 type SearchResultsType {

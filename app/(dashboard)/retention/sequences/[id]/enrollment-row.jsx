@@ -54,7 +54,7 @@ export function EnrollmentRow({ enrollment, totalSteps }) {
           <StatusBadge kind="enrollmentStatus" value={enrollment.status} size="sm" />
         </div>
         <p className="mt-0.5 text-caption text-muted-foreground">
-          {enrollment.contact ? `${enrollment.contact.fullName} · ` : ""}
+          {enrollment.contact ? `${enrollment.contact.firstName} ${enrollment.contact.lastName} · ` : ""}
           Step {Math.min(enrollment.currentStep + 1, totalSteps)} of {totalSteps} · enrolled{" "}
           {formatDate(enrollment.enrolledAt)}
         </p>
