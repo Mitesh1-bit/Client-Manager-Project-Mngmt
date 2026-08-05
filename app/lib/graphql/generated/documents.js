@@ -117,13 +117,54 @@ fragment ContactFields on ContactType {
   status
 }`;
 
+export const ContractFieldsFragmentDoc = gql`
+fragment ContractFields on ContractType {
+  id
+  companyId
+  name
+  startDate
+  endDate
+  value
+  autoRenew
+  status
+}`;
+
+export const InvoiceFieldsFragmentDoc = gql`
+fragment InvoiceFields on InvoiceType {
+  id
+  companyId
+  projectId
+  invoiceNumber
+  amount
+  status
+  dueDate
+  issuedAt
+  paidAt
+  notes
+  createdAt
+}`;
+
 export const MilestoneFieldsFragmentDoc = gql`
 fragment MilestoneFields on MilestoneType {
   id
   phaseId
   title
+  description
   status
   orderIndex
+  requiresClientApproval
+  dueDate
+  approvedAt
+  approvals {
+    id
+    approverType
+    status
+    approverName
+  }
+  tasks {
+    id
+    status
+  }
 }`;
 
 export const NotificationPreferenceFieldsFragmentDoc = gql`
@@ -224,6 +265,11 @@ fragment ProjectHeader on ProjectType {
   currency
   companyId
   projectManagerId
+  projectManager {
+    id
+    name
+    avatarUrl
+  }
 }`;
 
 export const ProjectRowFragmentDoc = gql`
@@ -238,6 +284,11 @@ fragment ProjectRow on ProjectType {
   currency
   companyId
   projectManagerId
+  projectManager {
+    id
+    name
+    avatarUrl
+  }
 }`;
 
 export const RetentionSequenceRowFragmentDoc = gql`
@@ -266,6 +317,11 @@ fragment TaskFields on TaskType {
   title
   description
   assigneeId
+  assignee {
+    id
+    name
+    avatarUrl
+  }
   status
   priority
   estimatedHours
@@ -275,6 +331,11 @@ fragment TaskFields on TaskType {
     title
     status
     assigneeId
+    assignee {
+      id
+      name
+      avatarUrl
+    }
     parentTaskId
   }
   dependencies {
@@ -320,6 +381,24 @@ fragment ViewerFields on ViewerType {
     lastName
     title
     isPrimary
+  }
+}`;
+
+export const AddSequenceStepDocument = gql`
+mutation AddSequenceStep($sequenceId: ID!, $channel: String!, $offsetDays: Int!, $templateId: ID, $assigneeRole: String) {
+  addSequenceStep(
+    sequenceId: $sequenceId
+    channel: $channel
+    offsetDays: $offsetDays
+    templateId: $templateId
+    assigneeRole: $assigneeRole
+  ) {
+    id
+    stepOrder
+    channel
+    offsetDays
+    templateId
+    assigneeRole
   }
 }`;
 
@@ -621,6 +700,23 @@ fragment ContactFields on ContactType {
   status
 }`;
 
+export const CompanyContractsDocument = gql`
+query CompanyContracts($companyId: ID!) {
+  contracts(companyId: $companyId) {
+    ...ContractFields
+  }
+}
+fragment ContractFields on ContractType {
+  id
+  companyId
+  name
+  startDate
+  endDate
+  value
+  autoRenew
+  status
+}`;
+
 export const CompanyDetailHeaderDocument = gql`
 query CompanyDetailHeader($id: ID!) {
   company(id: $id) {
@@ -702,6 +798,26 @@ fragment UserSummaryFields on UserSummaryType {
   email
   role
   avatarUrl
+}`;
+
+export const CompanyInvoicesDocument = gql`
+query CompanyInvoices($companyId: ID!) {
+  invoices(companyId: $companyId) {
+    ...InvoiceFields
+  }
+}
+fragment InvoiceFields on InvoiceType {
+  id
+  companyId
+  projectId
+  invoiceNumber
+  amount
+  status
+  dueDate
+  issuedAt
+  paidAt
+  notes
+  createdAt
 }`;
 
 export const CompanyListDocument = gql`
@@ -806,6 +922,11 @@ query CompanyProjects($id: ID!) {
     actualCost
     currency
     projectManagerId
+    projectManager {
+      id
+      name
+      avatarUrl
+    }
   }
 }`;
 
@@ -825,8 +946,17 @@ query CompanyTouchpointContext($id: ID!) {
 }`;
 
 export const CompanyTouchpointsDocument = gql`
-query CompanyTouchpoints {
-  upcomingTouchpoints {
+query CompanyTouchpoints($companyId: ID!) {
+  company(id: $companyId) {
+    id
+    contacts {
+      id
+      firstName
+      lastName
+      isPrimary
+    }
+  }
+  companyTouchpoints(companyId: $companyId) {
     id
     type
     status
@@ -836,6 +966,11 @@ query CompanyTouchpoints {
     completedAt
     companyId
     contactId
+    contact {
+      id
+      firstName
+      lastName
+    }
   }
 }`;
 
@@ -847,6 +982,15 @@ mutation CompleteTouchpoint($id: ID!, $outcome: String, $notes: String) {
     outcome
     notes
     completedAt
+  }
+}`;
+
+export const ConfirmProjectUploadDocument = gql`
+mutation ConfirmProjectUpload($entityId: ID!, $fileUrl: String!) {
+  confirmUpload(entityType: "project", entityId: $entityId, fileUrl: $fileUrl) {
+    id
+    fileUrl
+    version
   }
 }`;
 
@@ -980,6 +1124,60 @@ fragment ContactFields on ContactType {
   status
 }`;
 
+export const CreateContractDocument = gql`
+mutation CreateContract($companyId: ID!, $name: String!, $startDate: Date!, $endDate: Date!, $value: Float, $autoRenew: Boolean!, $status: String!) {
+  createContract(
+    companyId: $companyId
+    name: $name
+    startDate: $startDate
+    endDate: $endDate
+    value: $value
+    autoRenew: $autoRenew
+    status: $status
+  ) {
+    ...ContractFields
+  }
+}
+fragment ContractFields on ContractType {
+  id
+  companyId
+  name
+  startDate
+  endDate
+  value
+  autoRenew
+  status
+}`;
+
+export const CreateInvoiceDocument = gql`
+mutation CreateInvoice($companyId: ID!, $amount: Float!, $dueDate: Date!, $projectId: ID, $invoiceNumber: String, $status: String!, $issuedAt: Date, $notes: String) {
+  createInvoice(
+    companyId: $companyId
+    amount: $amount
+    dueDate: $dueDate
+    projectId: $projectId
+    invoiceNumber: $invoiceNumber
+    status: $status
+    issuedAt: $issuedAt
+    notes: $notes
+  ) {
+    ...InvoiceFields
+  }
+}
+fragment InvoiceFields on InvoiceType {
+  id
+  companyId
+  projectId
+  invoiceNumber
+  amount
+  status
+  dueDate
+  issuedAt
+  paidAt
+  notes
+  createdAt
+}`;
+
 export const CreateMilestoneDocument = gql`
 mutation CreateMilestone($phaseId: ID!, $title: String!, $orderIndex: Int!, $status: String!) {
   createMilestone(
@@ -995,8 +1193,22 @@ fragment MilestoneFields on MilestoneType {
   id
   phaseId
   title
+  description
   status
   orderIndex
+  requiresClientApproval
+  dueDate
+  approvedAt
+  approvals {
+    id
+    approverType
+    status
+    approverName
+  }
+  tasks {
+    id
+    status
+  }
 }`;
 
 export const CreatePhaseDocument = gql`
@@ -1045,6 +1257,11 @@ fragment ProjectRow on ProjectType {
   currency
   companyId
   projectManagerId
+  projectManager {
+    id
+    name
+    avatarUrl
+  }
 }`;
 
 export const CreateRetentionSequenceDocument = gql`
@@ -1091,6 +1308,11 @@ fragment TaskFields on TaskType {
   title
   description
   assigneeId
+  assignee {
+    id
+    name
+    avatarUrl
+  }
   status
   priority
   estimatedHours
@@ -1100,6 +1322,11 @@ fragment TaskFields on TaskType {
     title
     status
     assigneeId
+    assignee {
+      id
+      name
+      avatarUrl
+    }
     parentTaskId
   }
   dependencies {
@@ -1157,6 +1384,16 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   isOverdue
 }`;
 
+export const DeleteContractDocument = gql`
+mutation DeleteContract($id: ID!) {
+  deleteContract(id: $id)
+}`;
+
+export const DeleteInvoiceDocument = gql`
+mutation DeleteInvoice($id: ID!) {
+  deleteInvoice(id: $id)
+}`;
+
 export const DeleteUserDocument = gql`
 mutation DeleteUser($id: ID!) {
   deleteUser(id: $id)
@@ -1212,6 +1449,35 @@ mutation Login($email: String!, $password: String!) {
 export const LogoutDocument = gql`
 mutation Logout {
   logout
+}`;
+
+export const LogTouchpointDocument = gql`
+mutation LogTouchpoint($companyId: ID!, $contactId: ID!, $type: String!, $outcome: String, $notes: String) {
+  logTouchpoint(
+    companyId: $companyId
+    contactId: $contactId
+    type: $type
+    outcome: $outcome
+    notes: $notes
+  ) {
+    id
+    type
+    status
+    outcome
+    notes
+    scheduledAt
+    completedAt
+    companyId
+    contactId
+  }
+}`;
+
+export const MarkMilestoneReadyForReviewDocument = gql`
+mutation MarkMilestoneReadyForReview($milestoneId: ID!) {
+  markMilestoneReadyForReview(milestoneId: $milestoneId) {
+    id
+    status
+  }
 }`;
 
 export const MeDocument = gql`
@@ -1566,6 +1832,11 @@ fragment TaskFields on TaskType {
   title
   description
   assigneeId
+  assignee {
+    id
+    name
+    avatarUrl
+  }
   status
   priority
   estimatedHours
@@ -1575,6 +1846,11 @@ fragment TaskFields on TaskType {
     title
     status
     assigneeId
+    assignee {
+      id
+      name
+      avatarUrl
+    }
     parentTaskId
   }
   dependencies {
@@ -1609,6 +1885,11 @@ fragment TaskFields on TaskType {
   title
   description
   assigneeId
+  assignee {
+    id
+    name
+    avatarUrl
+  }
   status
   priority
   estimatedHours
@@ -1618,6 +1899,11 @@ fragment TaskFields on TaskType {
     title
     status
     assigneeId
+    assignee {
+      id
+      name
+      avatarUrl
+    }
     parentTaskId
   }
   dependencies {
@@ -1664,6 +1950,11 @@ fragment ProjectHeader on ProjectType {
   currency
   companyId
   projectManagerId
+  projectManager {
+    id
+    name
+    avatarUrl
+  }
 }
 fragment UserSummaryFields on UserSummaryType {
   id
@@ -1671,6 +1962,18 @@ fragment UserSummaryFields on UserSummaryType {
   email
   role
   avatarUrl
+}`;
+
+export const ProjectDocumentsDocument = gql`
+query ProjectDocuments($projectId: ID!) {
+  documents(entityType: "project", entityId: $projectId) {
+    id
+    entityType
+    entityId
+    fileUrl
+    version
+    uploadedBy
+  }
 }`;
 
 export const ProjectForEditDocument = gql`
@@ -1691,6 +1994,11 @@ fragment ProjectHeader on ProjectType {
   currency
   companyId
   projectManagerId
+  projectManager {
+    id
+    name
+    avatarUrl
+  }
 }`;
 
 export const ProjectFormOptionsDocument = gql`
@@ -1733,8 +2041,22 @@ fragment MilestoneFields on MilestoneType {
   id
   phaseId
   title
+  description
   status
   orderIndex
+  requiresClientApproval
+  dueDate
+  approvedAt
+  approvals {
+    id
+    approverType
+    status
+    approverName
+  }
+  tasks {
+    id
+    status
+  }
 }
 fragment PhaseFields on PhaseType {
   id
@@ -1752,6 +2074,11 @@ fragment TaskFields on TaskType {
   title
   description
   assigneeId
+  assignee {
+    id
+    name
+    avatarUrl
+  }
   status
   priority
   estimatedHours
@@ -1761,6 +2088,11 @@ fragment TaskFields on TaskType {
     title
     status
     assigneeId
+    assignee {
+      id
+      name
+      avatarUrl
+    }
     parentTaskId
   }
   dependencies {
@@ -1801,6 +2133,11 @@ fragment ProjectRow on ProjectType {
   currency
   companyId
   projectManagerId
+  projectManager {
+    id
+    name
+    avatarUrl
+  }
 }
 fragment UserSummaryFields on UserSummaryType {
   id
@@ -1836,8 +2173,22 @@ fragment MilestoneFields on MilestoneType {
   id
   phaseId
   title
+  description
   status
   orderIndex
+  requiresClientApproval
+  dueDate
+  approvedAt
+  approvals {
+    id
+    approverType
+    status
+    approverName
+  }
+  tasks {
+    id
+    status
+  }
 }
 fragment PhaseFields on PhaseType {
   id
@@ -1855,6 +2206,11 @@ fragment TaskFields on TaskType {
   title
   description
   assigneeId
+  assignee {
+    id
+    name
+    avatarUrl
+  }
   status
   priority
   estimatedHours
@@ -1864,6 +2220,11 @@ fragment TaskFields on TaskType {
     title
     status
     assigneeId
+    assignee {
+      id
+      name
+      avatarUrl
+    }
     parentTaskId
   }
   dependencies {
@@ -1889,6 +2250,11 @@ mutation RefreshToken {
   }
 }`;
 
+export const RemoveSequenceStepDocument = gql`
+mutation RemoveSequenceStep($stepId: ID!) {
+  removeSequenceStep(stepId: $stepId)
+}`;
+
 export const RemoveTaskDependencyDocument = gql`
 mutation RemoveTaskDependency($id: ID!) {
   removeTaskDependency(id: $id)
@@ -1900,6 +2266,20 @@ mutation RequestMilestoneChanges($approvalId: ID!, $comment: String!) {
     id
     status
     comment
+  }
+}`;
+
+export const RequestProjectUploadUrlDocument = gql`
+mutation RequestProjectUploadUrl($entityId: ID!, $filename: String!, $contentType: String!) {
+  requestUploadUrl(
+    entityType: "project"
+    entityId: $entityId
+    filename: $filename
+    contentType: $contentType
+  ) {
+    uploadUrl
+    uploadToken
+    fileUrl
   }
 }`;
 
@@ -2221,6 +2601,60 @@ fragment ContactFields on ContactType {
   status
 }`;
 
+export const UpdateContractDocument = gql`
+mutation UpdateContract($id: ID!, $name: String, $startDate: Date, $endDate: Date, $value: Float, $autoRenew: Boolean, $status: String) {
+  updateContract(
+    id: $id
+    name: $name
+    startDate: $startDate
+    endDate: $endDate
+    value: $value
+    autoRenew: $autoRenew
+    status: $status
+  ) {
+    ...ContractFields
+  }
+}
+fragment ContractFields on ContractType {
+  id
+  companyId
+  name
+  startDate
+  endDate
+  value
+  autoRenew
+  status
+}`;
+
+export const UpdateInvoiceDocument = gql`
+mutation UpdateInvoice($id: ID!, $amount: Float, $dueDate: Date, $status: String, $invoiceNumber: String, $issuedAt: Date, $paidAt: Date, $notes: String) {
+  updateInvoice(
+    id: $id
+    amount: $amount
+    dueDate: $dueDate
+    status: $status
+    invoiceNumber: $invoiceNumber
+    issuedAt: $issuedAt
+    paidAt: $paidAt
+    notes: $notes
+  ) {
+    ...InvoiceFields
+  }
+}
+fragment InvoiceFields on InvoiceType {
+  id
+  companyId
+  projectId
+  invoiceNumber
+  amount
+  status
+  dueDate
+  issuedAt
+  paidAt
+  notes
+  createdAt
+}`;
+
 export const UpdateMilestoneDocument = gql`
 mutation UpdateMilestone($id: ID!, $title: String, $orderIndex: Int, $status: String) {
   updateMilestone(
@@ -2236,8 +2670,22 @@ fragment MilestoneFields on MilestoneType {
   id
   phaseId
   title
+  description
   status
   orderIndex
+  requiresClientApproval
+  dueDate
+  approvedAt
+  approvals {
+    id
+    approverType
+    status
+    approverName
+  }
+  tasks {
+    id
+    status
+  }
 }`;
 
 export const UpdateMyNotificationPreferencesDocument = gql`
@@ -2308,13 +2756,14 @@ fragment PhaseFields on PhaseType {
 }`;
 
 export const UpdateProjectDocument = gql`
-mutation UpdateProject($id: ID!, $name: String, $description: String, $status: String, $priority: String, $budget: Float, $currency: String, $health: String) {
+mutation UpdateProject($id: ID!, $name: String, $description: String, $status: String, $priority: String, $projectManagerId: ID, $budget: Float, $currency: String, $health: String) {
   updateProject(
     id: $id
     name: $name
     description: $description
     status: $status
     priority: $priority
+    projectManagerId: $projectManagerId
     budget: $budget
     currency: $currency
     health: $health
@@ -2334,15 +2783,41 @@ fragment ProjectHeader on ProjectType {
   currency
   companyId
   projectManagerId
+  projectManager {
+    id
+    name
+    avatarUrl
+  }
+}`;
+
+export const UpdateRetentionSequenceDocument = gql`
+mutation UpdateRetentionSequence($id: ID!, $name: String, $triggerType: String, $isActive: Boolean) {
+  updateRetentionSequence(
+    id: $id
+    name: $name
+    triggerType: $triggerType
+    isActive: $isActive
+  ) {
+    ...RetentionSequenceRow
+  }
+}
+fragment RetentionSequenceRow on RetentionSequenceType {
+  id
+  name
+  triggerType
+  isActive
+  isTemplate
+  activeEnrollmentCount
 }`;
 
 export const UpdateTaskDocument = gql`
-mutation UpdateTask($id: ID!, $title: String, $status: String, $priority: String, $estimatedHours: Float, $actualHours: Float) {
+mutation UpdateTask($id: ID!, $title: String, $status: String, $priority: String, $assigneeId: ID, $estimatedHours: Float, $actualHours: Float) {
   updateTask(
     id: $id
     title: $title
     status: $status
     priority: $priority
+    assigneeId: $assigneeId
     estimatedHours: $estimatedHours
     actualHours: $actualHours
   ) {
@@ -2358,6 +2833,11 @@ fragment TaskFields on TaskType {
   title
   description
   assigneeId
+  assignee {
+    id
+    name
+    avatarUrl
+  }
   status
   priority
   estimatedHours
@@ -2367,6 +2847,11 @@ fragment TaskFields on TaskType {
     title
     status
     assigneeId
+    assignee {
+      id
+      name
+      avatarUrl
+    }
     parentTaskId
   }
   dependencies {
@@ -2391,6 +2876,11 @@ fragment TaskFields on TaskType {
   title
   description
   assigneeId
+  assignee {
+    id
+    name
+    avatarUrl
+  }
   status
   priority
   estimatedHours
@@ -2400,6 +2890,11 @@ fragment TaskFields on TaskType {
     title
     status
     assigneeId
+    assignee {
+      id
+      name
+      avatarUrl
+    }
     parentTaskId
   }
   dependencies {

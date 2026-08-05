@@ -1,0 +1,136 @@
+fragment ContractFields on ContractType {
+  id
+  companyId
+  name
+  startDate
+  endDate
+  value
+  autoRenew
+  status
+}
+
+query CompanyContracts($companyId: ID!) {
+  contracts(companyId: $companyId) {
+    ...ContractFields
+  }
+}
+
+mutation CreateContract(
+  $companyId: ID!
+  $name: String!
+  $startDate: Date!
+  $endDate: Date!
+  $value: Float
+  $autoRenew: Boolean!
+  $status: String!
+) {
+  createContract(
+    companyId: $companyId
+    name: $name
+    startDate: $startDate
+    endDate: $endDate
+    value: $value
+    autoRenew: $autoRenew
+    status: $status
+  ) {
+    ...ContractFields
+  }
+}
+
+mutation UpdateContract(
+  $id: ID!
+  $name: String
+  $startDate: Date
+  $endDate: Date
+  $value: Float
+  $autoRenew: Boolean
+  $status: String
+) {
+  updateContract(
+    id: $id
+    name: $name
+    startDate: $startDate
+    endDate: $endDate
+    value: $value
+    autoRenew: $autoRenew
+    status: $status
+  ) {
+    ...ContractFields
+  }
+}
+
+mutation DeleteContract($id: ID!) {
+  deleteContract(id: $id)
+}
+
+fragment InvoiceFields on InvoiceType {
+  id
+  companyId
+  projectId
+  invoiceNumber
+  amount
+  status
+  dueDate
+  issuedAt
+  paidAt
+  notes
+  createdAt
+}
+
+query CompanyInvoices($companyId: ID!) {
+  invoices(companyId: $companyId) {
+    ...InvoiceFields
+  }
+}
+
+mutation CreateInvoice(
+  $companyId: ID!
+  $amount: Float!
+  $dueDate: Date!
+  $projectId: ID
+  $invoiceNumber: String
+  $status: String!
+  $issuedAt: Date
+  $notes: String
+) {
+  createInvoice(
+    companyId: $companyId
+    amount: $amount
+    dueDate: $dueDate
+    projectId: $projectId
+    invoiceNumber: $invoiceNumber
+    status: $status
+    issuedAt: $issuedAt
+    notes: $notes
+  ) {
+    ...InvoiceFields
+  }
+}
+
+mutation UpdateInvoice(
+  $id: ID!
+  $amount: Float
+  $dueDate: Date
+  $status: String
+  $invoiceNumber: String
+  $issuedAt: Date
+  $paidAt: Date
+  $notes: String
+) {
+  updateInvoice(
+    id: $id
+    amount: $amount
+    dueDate: $dueDate
+    status: $status
+    invoiceNumber: $invoiceNumber
+    issuedAt: $issuedAt
+    paidAt: $paidAt
+    notes: $notes
+  ) {
+    ...InvoiceFields
+  }
+}
+
+mutation DeleteInvoice($id: ID!) {
+  deleteInvoice(id: $id)
+}

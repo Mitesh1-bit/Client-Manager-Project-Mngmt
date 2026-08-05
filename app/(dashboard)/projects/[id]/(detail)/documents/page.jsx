@@ -1,43 +1,34 @@
 import { FileText } from "lucide-react";
 
-import { PageHeader } from "@/app/components/domain/page-header";
 import { EmptyState } from "@/app/components/domain/states";
+import { asArray } from "@/app/lib/api/safe-list";
 import { getClient } from "@/app/lib/graphql/apollo-client";
-import {
-  PortalDocumentsDocument,
-  PortalProjectsDocument,
-} from "@/app/lib/graphql/generated/documents";
-import { requireViewer } from "@/app/lib/graphql/viewer";
+import { ProjectDocumentsDocument } from "@/app/lib/graphql/generated/documents";
 
 import { DocumentUpload } from "./document-upload";
 
 export const metadata = { title: "Documents" };
 
-export default async function PortalDocumentsPage() {
-  await requireViewer("PORTAL");
-  const [{ data }, { data: projectsData }] = await Promise.all([
-    getClient().query({ query: PortalDocumentsDocument }),
-    getClient().query({ query: PortalProjectsDocument }),
-  ]);
-  const documents = data.portalDocuments ?? [];
-  const projects = projectsData.portalProjects ?? [];
+export default async function ProjectDocumentsPage({ params }) {
+  const { id } = await params;
+  const { data } = await getClient().query({
+    query: ProjectDocumentsDocument,
+    variables: { projectId: id },
+  });
+  const documents = asArray(data.documents);
 
   return (
-    <>
-      <PageHeader
-        title="Documents"
-        description="Deliverables, contracts and anything else we've shared with you."
-      />
-
-      <div className="mb-4">
-        <DocumentUpload projects={projects} />
+    <div data-tour="project-documents" className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-caption text-muted-foreground">{documents.length} file{documents.length === 1 ? "" : "s"}</p>
+        <DocumentUpload projectId={id} />
       </div>
 
       {documents.length === 0 ? (
         <EmptyState
           icon={FileText}
-          title="Nothing here yet"
-          description="Contracts and deliverables will appear here as we share them."
+          title="No documents yet"
+          description="Upload a file, or the client can upload one from their portal — either way it shows up here."
         />
       ) : (
         <ul className="space-y-2">
@@ -51,9 +42,11 @@ export default async function PortalDocumentsPage() {
                   <FileText aria-hidden="true" className="size-4.5" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-medium">{document.fileUrl.split("/").pop()}</span>
+                  <span className="block truncate font-medium">
+                    {document.fileUrl.split("/").pop()}
+                  </span>
                   <span className="block truncate text-caption text-muted-foreground">
-                    v{document.version} · {document.entityType}
+                    v{document.version}
                   </span>
                 </span>
               </a>
@@ -61,6 +54,6 @@ export default async function PortalDocumentsPage() {
           ))}
         </ul>
       )}
-    </>
+    </div>
   );
 }

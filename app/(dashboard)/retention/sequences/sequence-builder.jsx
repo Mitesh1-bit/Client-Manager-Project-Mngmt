@@ -39,7 +39,12 @@ import {
 } from "@/app/components/ui/select";
 import { Switch } from "@/app/components/ui/switch";
 import { Textarea } from "@/app/components/ui/textarea";
-import { CreateRetentionSequenceDocument } from "@/app/lib/graphql/generated/documents";
+import {
+  AddSequenceStepDocument,
+  CreateRetentionSequenceDocument,
+  RemoveSequenceStepDocument,
+  UpdateRetentionSequenceDocument,
+} from "@/app/lib/graphql/generated/documents";
 
 import { SequenceStepCard } from "./sequence-step-card";
 import {
@@ -61,6 +66,9 @@ export function SequenceBuilder({ mode, sequence }) {
   const router = useRouter();
   const [serverError, setServerError] = useState(null);
   const [createSequence] = useMutation(CreateRetentionSequenceDocument);
+  const [updateSequence] = useMutation(UpdateRetentionSequenceDocument);
+  const [addStep] = useMutation(AddSequenceStepDocument);
+  const [removeStep] = useMutation(RemoveSequenceStepDocument);
 
   const {
     register,
@@ -107,11 +115,63 @@ export function SequenceBuilder({ mode, sequence }) {
           },
           update: (cache) => cache.evict({ fieldName: "retentionSequences" }),
         });
+        const sequenceId = data.createRetentionSequence.id;
+
+        // Steps aren't part of createRetentionSequence — the API only lets
+        // you append them one at a time, so they're added here in order
+        // right after the sequence itself is created.
+        for (const step of input.steps) {
+          await addStep({
+            variables: {
+              sequenceId,
+              channel: step.channel.toLowerCase(),
+              offsetDays: Number(step.offsetDays),
+              templateId: step.templateId || null,
+              assigneeRole: step.assigneeRole ? step.assigneeRole.toLowerCase() : null,
+            },
+          });
+        }
+
         toast.success(`"${data.createRetentionSequence.name}" created`);
-        router.push(`/retention/sequences/${data.createRetentionSequence.id}`);
+        router.push(`/retention/sequences/${sequenceId}`);
       } else {
-        setServerError("Editing sequences is not exposed by the API yet.");
-        return;
+        await updateSequence({
+          variables: {
+            id: sequence.id,
+            name: input.name,
+            triggerType: input.triggerType?.toLowerCase() ?? null,
+            isActive: input.isActive,
+          },
+        });
+
+        // Steps that were on the sequence originally but aren't in the form
+        // anymore were removed in the builder — delete them on the server.
+        const remainingIds = new Set(input.steps.map((step) => step.id).filter(Boolean));
+        const removedIds = (sequence.steps ?? [])
+          .map((step) => step.id)
+          .filter((id) => !remainingIds.has(id));
+        for (const stepId of removedIds) {
+          await removeStep({ variables: { stepId } });
+        }
+
+        // Steps with no server id are new — the API only supports appending,
+        // not reordering or editing existing steps in place, so those are
+        // left as-is (still shown, still real, just not touched here).
+        const newSteps = input.steps.filter((step) => !step.id);
+        for (const step of newSteps) {
+          await addStep({
+            variables: {
+              sequenceId: sequence.id,
+              channel: step.channel.toLowerCase(),
+              offsetDays: Number(step.offsetDays),
+              templateId: step.templateId || null,
+              assigneeRole: step.assigneeRole ? step.assigneeRole.toLowerCase() : null,
+            },
+          });
+        }
+
+        toast.success(`"${input.name}" updated`);
+        router.push(`/retention/sequences/${sequence.id}`);
       }
       router.refresh();
     } catch (error) {

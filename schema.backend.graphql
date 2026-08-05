@@ -249,7 +249,7 @@ type Mutation {
   addTag(entityType: String!, entityId: ID!, tagId: ID!): Boolean!
   removeTag(entityType: String!, entityId: ID!, tagId: ID!): Boolean!
   createProject(companyId: ID!, name: String!, description: String = null, status: String! = "planning", priority: String = null, projectManagerId: ID = null, budget: Float = null, currency: String! = "GBP", health: String = "on_track"): ProjectType!
-  updateProject(id: ID!, name: String = null, description: String = null, status: String = null, priority: String = null, budget: Float = null, currency: String = null, health: String = null): ProjectType!
+  updateProject(id: ID!, name: String = null, description: String = null, status: String = null, priority: String = null, projectManagerId: ID = null, budget: Float = null, currency: String = null, health: String = null): ProjectType!
   deleteProject(id: ID!): Boolean!
   createPhase(projectId: ID!, name: String!, orderIndex: Int!, status: String! = "not_started"): PhaseType!
   updatePhase(id: ID!, name: String = null, orderIndex: Int = null, status: String = null): PhaseType!
@@ -260,7 +260,7 @@ type Mutation {
   deleteMilestone(id: ID!): Boolean!
   reorderMilestones(phaseId: ID!, orderedMilestoneIds: [ID!]!): [MilestoneType!]!
   createTask(projectId: ID!, phaseId: ID!, title: String!, milestoneId: ID = null, parentTaskId: ID = null, assigneeId: ID = null, status: String! = "todo", priority: String! = "medium", estimatedHours: Float = null): TaskType!
-  updateTask(id: ID!, title: String = null, status: String = null, priority: String = null, estimatedHours: Float = null, actualHours: Float = null): TaskType!
+  updateTask(id: ID!, title: String = null, status: String = null, priority: String = null, assigneeId: ID = null, estimatedHours: Float = null, actualHours: Float = null): TaskType!
   deleteTask(id: ID!): Boolean!
   addTaskDependency(projectId: ID!, taskId: ID!, dependsOnTaskId: ID!, type: String! = "finish_to_start"): TaskDependencyType!
   removeTaskDependency(id: ID!): Boolean!
@@ -280,11 +280,18 @@ type Mutation {
   resubmitChangeRequest(id: ID!): ChangeRequestType!
   createRetentionSequence(name: String!, triggerType: String! = "manual", isTemplate: Boolean! = false): RetentionSequenceType!
   duplicateRetentionSequence(sequenceId: ID!): RetentionSequenceType!
+  updateRetentionSequence(id: ID!, name: String = null, triggerType: String = null, isActive: Boolean = null): RetentionSequenceType!
+  removeSequenceStep(stepId: ID!): Boolean!
   addSequenceStep(sequenceId: ID!, channel: String!, offsetDays: Int!, templateId: ID = null, assigneeRole: String = null): SequenceStepType!
   enrollInSequence(sequenceId: ID!, companyId: ID!, contactId: ID!, projectId: ID = null): RetentionEnrollmentType!
   cancelEnrollment(enrollmentId: ID!): RetentionEnrollmentType!
   completeTouchpoint(id: ID!, outcome: String = null, notes: String = null): TouchpointType!
   skipTouchpoint(id: ID!, notes: String = null): TouchpointType!
+
+  """
+  Record a touchpoint that already happened — a call made, a meeting held.
+  """
+  logTouchpoint(companyId: ID!, contactId: ID!, type: String!, outcome: String = null, notes: String = null, projectId: ID = null, occurredAt: DateTime = null): TouchpointType!
   createContract(companyId: ID!, name: String!, startDate: Date!, endDate: Date!, value: Float = null, autoRenew: Boolean! = false, status: String! = "draft"): ContractType!
   updateContract(id: ID!, name: String = null, startDate: Date = null, endDate: Date = null, value: Float = null, autoRenew: Boolean = null, status: String = null): ContractType!
   deleteContract(id: ID!): Boolean!
@@ -395,6 +402,7 @@ type ProjectType {
   actualCost: Float
   currency: String!
   health: String
+  projectManager: UserSummaryType
   phases: [PhaseType!]!
   tasks: [TaskType!]!
 }
@@ -431,6 +439,11 @@ type Query {
   retentionSequences(activeOnly: Boolean! = false): [RetentionSequenceType!]!
   retentionSequence(id: ID!): RetentionSequenceType
   upcomingTouchpoints: [TouchpointType!]!
+
+  """
+  Full touchpoint history for a company — scheduled, completed and skipped.
+  """
+  companyTouchpoints(companyId: ID!): [TouchpointType!]!
 
   """One search across companies, contacts, projects and tasks."""
   search(query: String!): SearchResultsType!
@@ -517,6 +530,7 @@ type TaskType {
   priority: String!
   estimatedHours: Float
   actualHours: Float
+  assignee: UserSummaryType
   subtasks: [TaskType!]!
   dependencies: [TaskDependencyType!]!
 }
@@ -537,6 +551,7 @@ type TouchpointType {
   status: String!
   outcome: String
   notes: String
+  contact: ContactType
 }
 
 type UploadUrlPayload {

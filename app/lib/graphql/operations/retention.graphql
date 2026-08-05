@@ -170,3 +170,36 @@ mutation CreateRetentionSequence($name: String!, $triggerType: String!, $isTempl
     ...RetentionSequenceRow
   }
 }
+
+mutation UpdateRetentionSequence($id: ID!, $name: String, $triggerType: String, $isActive: Boolean) {
+  updateRetentionSequence(id: $id, name: $name, triggerType: $triggerType, isActive: $isActive) {
+    ...RetentionSequenceRow
+  }
+}
+
+mutation RemoveSequenceStep($stepId: ID!) {
+  removeSequenceStep(stepId: $stepId)
+}
+
+mutation AddSequenceStep(
+  $sequenceId: ID!
+  $channel: String!
+  $offsetDays: Int!
+  $templateId: ID
+  $assigneeRole: String
+) {
+  addSequenceStep(
+    sequenceId: $sequenceId
+    channel: $channel
+    offsetDays: $offsetDays
+    templateId: $templateId
+    assigneeRole: $assigneeRole
+  ) {
+    id
+    stepOrder
+    channel
+    offsetDays
+    templateId
+    assigneeRole
+  }
+}

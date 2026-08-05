@@ -8,8 +8,15 @@ import { TagList } from "@/app/components/domain/tag-list";
 import { Button } from "@/app/components/ui/button";
 import { displayUrl } from "@/app/lib/format";
 import { normalizeCompany } from "@/app/lib/api/normalize";
+import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { CompanyDetailHeaderDocument } from "@/app/lib/graphql/generated/documents";
+
+// Mirrors the backend's `invoices` query gate (require_role in
+// app/graphql/invoices/schema.py) — a role outside this list gets a clean
+// "Requires one of roles: ..." error, so the tab is hidden rather than
+// linking somewhere that always fails.
+const INVOICE_ROLES = ["admin", "finance_admin", "account_manager", "executive_viewer"];
 
 import { CompanyStatusMenu } from "./company-status-menu";
 
@@ -32,12 +39,17 @@ export default async function CompanyDetailLayout({ children, params }) {
   const company = normalizeCompany(data.company);
   if (!company) notFound();
 
+  const claims = await getSessionClaims();
+  const canViewInvoices = INVOICE_ROLES.includes(claims?.role);
+
   const tabs = [
     { href: `/companies/${id}`, label: "Overview" },
     { href: `/companies/${id}/contacts`, label: "Contacts" },
     { href: `/companies/${id}/projects`, label: "Projects" },
     { href: `/companies/${id}/touchpoints`, label: "Touchpoints" },
     { href: `/companies/${id}/docs`, label: "Documents" },
+    { href: `/companies/${id}/contracts`, label: "Contracts" },
+    ...(canViewInvoices ? [{ href: `/companies/${id}/invoices`, label: "Invoices" }] : []),
     { href: `/companies/${id}/change-log`, label: "Change log" },
   ];
 

@@ -48,7 +48,7 @@ export default async function CompanyDocsPage({ params }) {
           </div>
 
           <Button variant="outline" size="sm" asChild>
-            <a href={document.fileUrl} download>
+            <a href={`/api/backend/assets/download?path=${encodeURIComponent(document.fileUrl)}`}>
               <Download aria-hidden="true" />
               <span className="sr-only sm:not-sr-only">Download</span>
             </a>

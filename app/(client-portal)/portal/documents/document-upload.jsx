@@ -23,15 +23,17 @@ const MAX_BYTES = 25 * 1024 * 1024;
 
 /**
  * Two-step presigned upload: ask the API where to put the file, transfer it,
- * then tell the API the transfer finished.
+ * then tell the API the transfer finished. Documents attach to a project —
+ * the API has no company-level entity type for them, so a project must be
+ * picked (there's no "General" bucket to fall back to).
  *
- * @param {{ companyId: string, projects: Array<{ id: string, name: string }> }} props
+ * @param {{ projects: Array<{ id: string, name: string }> }} props
  */
-export function DocumentUpload({ companyId, projects }) {
+export function DocumentUpload({ projects }) {
   const router = useRouter();
   const inputRef = useRef(null);
 
-  const [target, setTarget] = useState("company");
+  const [target, setTarget] = useState(projects[0]?.id ?? "");
   const [busy, setBusy] = useState(false);
 
   const [requestUploadUrl] = useMutation(RequestUploadUrlDocument);
@@ -43,6 +45,11 @@ export function DocumentUpload({ companyId, projects }) {
     event.target.value = "";
     if (!file) return;
 
+    if (!target) {
+      toast.error("Choose a project first");
+      return;
+    }
+
     if (file.size > MAX_BYTES) {
       toast.error("That file is too big", {
         description: "The limit is 25 MB. Send us a link instead and we'll pull it in.",
@@ -51,42 +58,35 @@ export function DocumentUpload({ companyId, projects }) {
     }
 
     setBusy(true);
-    const scope = target === "company" ? { companyId } : { projectId: target };
+    const entityType = "project";
+    const entityId = target;
 
     try {
       const { data: ticketData } = await requestUploadUrl({
         variables: {
-          input: {
-            fileName: file.name,
-            mimeType: file.type || null,
-            sizeBytes: file.size,
-            ...scope,
-          },
+          entityType,
+          entityId,
+          filename: file.name,
+          contentType: file.type || "application/octet-stream",
         },
       });
       const ticket = ticketData.requestUploadUrl;
 
-      // Against the real backend this PUTs the bytes to object storage before
-      // confirming. The mock issues a URL that nothing is listening on, so the
-      // transfer is skipped rather than faked with a request that would 404.
-      if (!ticket.uploadUrl.startsWith("/mock-uploads/")) {
-        const response = await fetch(ticket.uploadUrl, { method: "PUT", body: file });
-        if (!response.ok) throw new Error("The file couldn't be uploaded. Please try again.");
-      }
+      // Against the real backend this PUTs the bytes straight to the backend's
+      // own /assets/upload endpoint (not object storage) — the token from
+      // requestUploadUrl is what authorizes writing to that exact path.
+      const response = await fetch(ticket.uploadUrl, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${ticket.uploadToken}` },
+        body: file,
+      });
+      if (!response.ok) throw new Error("The file couldn't be uploaded. Please try again.");
 
-      const { data } = await confirmUpload({
-        variables: {
-          input: {
-            uploadId: ticket.uploadId,
-            name: file.name,
-            mimeType: file.type || null,
-            sizeBytes: file.size,
-            ...scope,
-          },
-        },
+      await confirmUpload({
+        variables: { entityType, entityId, fileUrl: ticket.fileUrl },
       });
 
-      toast.success(`${data.confirmUpload.name} uploaded`, {
+      toast.success(`${file.name} uploaded`, {
         description: "Your team at Meridian can see it now.",
       });
       router.refresh();
@@ -101,12 +101,11 @@ export function DocumentUpload({ companyId, projects }) {
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-      <Select value={target} onValueChange={setTarget} disabled={busy}>
-        <SelectTrigger className="h-10 sm:w-56" aria-label="Where to file this upload">
-          <SelectValue />
+      <Select value={target} onValueChange={setTarget} disabled={busy || projects.length === 0}>
+        <SelectTrigger className="h-10 sm:w-56" aria-label="Which project this belongs to">
+          <SelectValue placeholder="Choose a project" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="company">General</SelectItem>
           {projects.map((project) => (
             <SelectItem key={project.id} value={project.id}>
               {project.name}

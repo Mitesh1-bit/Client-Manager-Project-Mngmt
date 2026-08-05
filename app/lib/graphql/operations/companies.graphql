@@ -127,6 +127,11 @@ query CompanyProjects($id: ID!) {
     actualCost
     currency
     projectManagerId
+    projectManager {
+      id
+      name
+      avatarUrl
+    }
   }
 }
 
@@ -329,8 +334,48 @@ query CompanyDocuments($companyId: ID!) {
   }
 }
 
-query CompanyTouchpoints {
-  upcomingTouchpoints {
+query CompanyTouchpoints($companyId: ID!) {
+  company(id: $companyId) {
+    id
+    contacts {
+      id
+      firstName
+      lastName
+      isPrimary
+    }
+  }
+  companyTouchpoints(companyId: $companyId) {
+    id
+    type
+    status
+    outcome
+    notes
+    scheduledAt
+    completedAt
+    companyId
+    contactId
+    contact {
+      id
+      firstName
+      lastName
+    }
+  }
+}
+
+mutation LogTouchpoint(
+  $companyId: ID!
+  $contactId: ID!
+  $type: String!
+  $outcome: String
+  $notes: String
+) {
+  logTouchpoint(
+    companyId: $companyId
+    contactId: $contactId
+    type: $type
+    outcome: $outcome
+    notes: $notes
+  ) {
     id
     type
     status

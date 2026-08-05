@@ -94,6 +94,21 @@ const ENROLLMENT_STATUS = {
   CANCELLED: { label: "Cancelled", tone: "neutral", icon: "cross" },
 };
 
+const CONTRACT_STATUS = {
+  DRAFT: { label: "Draft", tone: "neutral", icon: "draft" },
+  ACTIVE: { label: "Active", tone: "positive", icon: "play" },
+  EXPIRED: { label: "Expired", tone: "caution", icon: "clock-alert" },
+  CANCELLED: { label: "Cancelled", tone: "critical", icon: "cross" },
+};
+
+const INVOICE_STATUS = {
+  DRAFT: { label: "Draft", tone: "neutral", icon: "draft" },
+  SENT: { label: "Sent", tone: "info", icon: "inbox" },
+  PAID: { label: "Paid", tone: "positive", icon: "check" },
+  OVERDUE: { label: "Overdue", tone: "critical", icon: "clock-alert" },
+  CANCELLED: { label: "Cancelled", tone: "neutral", icon: "cross" },
+};
+
 const REGISTRY = {
   projectHealth: PROJECT_HEALTH,
   projectStatus: PROJECT_STATUS,
@@ -110,6 +125,8 @@ const REGISTRY = {
   touchpointOutcome: TOUCHPOINT_OUTCOME,
   priority: PRIORITY,
   enrollmentStatus: ENROLLMENT_STATUS,
+  contractStatus: CONTRACT_STATUS,
+  invoiceStatus: INVOICE_STATUS,
 };
 
 const UNKNOWN = { label: "Unknown", tone: "neutral", icon: "circle" };

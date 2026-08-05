@@ -77,7 +77,6 @@ export const SequenceStepCard = forwardRef(function SequenceStepCard(
           <FormField
             label="Step name"
             error={stepErrors?.name?.message}
-            required
             className="sm:col-span-5"
           >
             {(field) => (

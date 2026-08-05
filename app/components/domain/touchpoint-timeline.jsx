@@ -63,7 +63,7 @@ export function TouchpointTimeline({ touchpoints = [], className }) {
                 <span className="font-medium">{channelLabel(touchpoint.type)}</span>
                 {touchpoint.contact ? (
                   <span className="text-caption text-muted-foreground">
-                    with {touchpoint.contact.fullName}
+                    with {touchpoint.contact.firstName} {touchpoint.contact.lastName}
                   </span>
                 ) : null}
                 <StatusBadge kind="touchpointStatus" value={touchpoint.status} size="sm" />
@@ -108,7 +108,7 @@ function CompleteTouchpointAction({ touchpointId }) {
     event.preventDefault();
     try {
       await completeTouchpoint({
-        variables: { id: touchpointId, input: { outcome: outcome || null, notes: notes || null } },
+        variables: { id: touchpointId, outcome: outcome || null, notes: notes || null },
       });
       toast.success("Touchpoint marked complete");
       setOpen(false);

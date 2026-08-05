@@ -55,10 +55,10 @@ export function taskToFormValues(task, defaults = {}) {
     description: task?.description ?? "",
     status: task?.status ?? defaults.status ?? "TODO",
     priority: task?.priority ?? "MEDIUM",
-    assigneeId: task?.assignee?.id ?? "",
-    phaseId: task?.phase?.id ?? defaults.phaseId ?? "",
-    milestoneId: task?.milestone?.id ?? defaults.milestoneId ?? "",
-    parentTaskId: task?.parentTask?.id ?? defaults.parentTaskId ?? "",
+    assigneeId: task?.assigneeId ?? "",
+    phaseId: task?.phaseId ?? defaults.phaseId ?? "",
+    milestoneId: task?.milestoneId ?? defaults.milestoneId ?? "",
+    parentTaskId: task?.parentTaskId ?? defaults.parentTaskId ?? "",
     startDate: task?.startDate ?? "",
     dueDate: task?.dueDate ?? "",
     estimatedHours: task?.estimatedHours ?? "",
@@ -85,6 +85,7 @@ export function toUpdateTaskVariables(taskId, values) {
     title: values.title,
     status: mapTaskStatus(values.status),
     priority: mapPriority(values.priority),
+    assigneeId: values.assigneeId || undefined,
     estimatedHours: values.estimatedHours ?? undefined,
   };
 }

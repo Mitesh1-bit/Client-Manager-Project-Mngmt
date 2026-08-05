@@ -24,11 +24,16 @@ const stepSchema = z.object({
   // Present only in client-side form state, for dnd-kit and RHF field
   // identity — never sent to the server, which assigns its own step ids.
   clientId: z.string(),
+  // Set only for a step that already exists on the server (edit mode) — its
+  // absence is how the submit handler tells a new step from an existing one.
+  id: z.string().optional(),
+  // Display-only — the API doesn't persist a step name, so this never round-trips.
   name: z
     .string()
     .trim()
-    .min(2, "Give the step a name.")
-    .max(80, "Keep the name under 80 characters."),
+    .max(80, "Keep the name under 80 characters.")
+    .optional()
+    .transform((value) => value || ""),
   channel: z.enum(["EMAIL", "CALL", "MEETING", "INTERNAL_TASK"]),
   offsetDays: z
     .union([z.string(), z.number()])
@@ -87,7 +92,8 @@ export function sequenceToFormValues(sequence) {
           .sort((a, b) => a.stepOrder - b.stepOrder)
           .map((step) => ({
             clientId: nextClientId(),
-            name: step.name,
+            id: step.id,
+            name: step.name ?? "",
             channel: step.channel === "EMAIL" ? "CALL" : step.channel,
             offsetDays: step.offsetDays,
             assigneeRole: step.assigneeRole ?? "",

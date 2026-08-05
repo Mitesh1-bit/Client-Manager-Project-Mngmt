@@ -37,6 +37,19 @@ const TO_UI = {
     implemented: "IMPLEMENTED",
     closed: "CLOSED",
   },
+  contractStatus: {
+    draft: "DRAFT",
+    active: "ACTIVE",
+    expired: "EXPIRED",
+    cancelled: "CANCELLED",
+  },
+  invoiceStatus: {
+    draft: "DRAFT",
+    sent: "SENT",
+    paid: "PAID",
+    overdue: "OVERDUE",
+    cancelled: "CANCELLED",
+  },
 };
 
 const TO_API = Object.fromEntries(

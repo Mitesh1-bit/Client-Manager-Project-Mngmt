@@ -8,6 +8,7 @@ import { ChangeRequestTimeline } from "@/app/components/domain/change-request-ti
 import { CommentThread } from "@/app/components/domain/comment-thread";
 import { SectionCard } from "@/app/components/domain/states";
 import { formatBytes, formatDate, humanizeType } from "@/app/lib/format";
+import { normalizeChangeRequest } from "@/app/lib/api/normalize";
 import { pickList } from "@/app/lib/api/safe-list";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
@@ -21,10 +22,9 @@ import { ChangeRequestActions } from "./change-request-actions";
 export async function generateMetadata({ params }) {
   const { id } = await params;
   const { data } = await getClient().query({ query: ChangeRequestDetailDocument, variables: { id } });
-  const cr = data.changeRequest;
+  const cr = normalizeChangeRequest(data.changeRequest);
   if (!cr) return { title: "Change request" };
-  const reference = cr.reference ?? String(cr.id).slice(0, 8);
-  return { title: `${reference} · ${cr.title}` };
+  return { title: `${cr.reference} · ${cr.title}` };
 }
 
 export default async function ChangeRequestDetailPage({ params }) {
@@ -35,15 +35,12 @@ export default async function ChangeRequestDetailPage({ params }) {
     getClient().query({ query: ChangeRequestFormOptionsDocument }),
   ]);
 
-  const request = data.changeRequest;
+  const request = normalizeChangeRequest(data.changeRequest);
   if (!request) notFound();
 
   const threshold = data.me?.organization?.settings?.changeRequestInternalApprovalThresholdCost ?? 0;
   const company = data.companies?.find((candidate) => candidate.id === request.companyId);
   const project = data.projects?.find((candidate) => candidate.id === request.projectId);
-  const attachments = request.attachments ?? [];
-  // Real backend doesn't generate a human reference yet — see NEEDED_SCHEMA_CHANGES.md §8.
-  const reference = request.reference ?? String(request.id).slice(0, 8);
 
   return (
     <div className="mx-auto w-full max-w-4xl">
@@ -57,7 +54,7 @@ export default async function ChangeRequestDetailPage({ params }) {
 
       <header className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <p className="tabular text-caption text-muted-foreground">{reference}</p>
+          <p className="tabular text-caption text-muted-foreground">{request.reference}</p>
           <h1 className="mt-0.5 text-title text-balance">{request.title}</h1>
           <p className="mt-1.5 text-caption text-muted-foreground">
             {company ? (
@@ -115,10 +112,10 @@ export default async function ChangeRequestDetailPage({ params }) {
           <ChangeRequestDecisionPanel request={request} approverType="INTERNAL" />
         </div>
 
-        {attachments.length > 0 ? (
+        {request.attachments.length > 0 ? (
           <SectionCard data-tour="cr-attachments" title="Attachments">
             <ul className="space-y-1.5">
-              {attachments.map((attachment) => (
+              {request.attachments.map((attachment) => (
                 <li key={attachment.id}>
                   <a
                     href={attachment.fileUrl}

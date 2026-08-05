@@ -36,6 +36,7 @@ import { formatDate, formatDateTime } from "@/app/lib/format";
 import {
   CreateMilestoneDocument,
   CreatePhaseDocument,
+  MarkMilestoneReadyForReviewDocument,
   UpdateMilestoneDocument,
   UpdatePhaseDocument,
 } from "@/app/lib/graphql/generated/documents";
@@ -287,6 +288,9 @@ function MilestoneRow({ milestone, onEdit }) {
 
 /** Where the client sign-off has got to. Phase 4 owns actually deciding it. */
 function ApprovalState({ milestone }) {
+  const router = useRouter();
+  const [sendForReview, { loading }] = useMutation(MarkMilestoneReadyForReviewDocument);
+
   if (milestone.approvedAt) {
     return (
       <p className="mt-2.5 flex items-center gap-1.5 rounded-md bg-tone-positive-bg px-2.5 py-1.5 text-[0.75rem] text-tone-positive-fg">
@@ -298,13 +302,38 @@ function ApprovalState({ milestone }) {
 
   const pending = milestone.approvals.filter((approval) => approval.status === "PENDING");
 
+  async function handleSendForReview() {
+    try {
+      await sendForReview({ variables: { milestoneId: milestone.id } });
+      toast.success("Sent for client review");
+      router.refresh();
+    } catch (error) {
+      toast.error("Couldn't send this for review", { description: error?.message });
+    }
+  }
+
   return (
-    <p className="mt-2.5 flex items-center gap-1.5 rounded-md bg-tone-caution-bg px-2.5 py-1.5 text-[0.75rem] text-tone-caution-fg">
+    <div className="mt-2.5 flex flex-wrap items-center gap-2 rounded-md bg-tone-caution-bg px-2.5 py-1.5 text-[0.75rem] text-tone-caution-fg">
       <ShieldCheck aria-hidden="true" className="size-3.5 shrink-0" />
-      {pending.length > 0
-        ? `Waiting on ${pending.map((approval) => approval.approverName ?? "the client").join(", ")}`
-        : "Not yet sent for client approval"}
-    </p>
+      <span className="flex-1">
+        {pending.length > 0
+          ? `Waiting on ${pending.map((approval) => approval.approverName ?? "the client").join(", ")}`
+          : "Not yet sent for client approval"}
+      </span>
+      {pending.length === 0 ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-7 bg-background px-2.5 text-[0.75rem]"
+          disabled={loading}
+          onClick={handleSendForReview}
+        >
+          {loading ? <LoaderCircle aria-hidden="true" className="size-3.5 animate-spin" /> : null}
+          Send for review
+        </Button>
+      ) : null}
+    </div>
   );
 }
 

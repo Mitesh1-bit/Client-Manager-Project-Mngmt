@@ -22,6 +22,11 @@ fragment ProjectRow on ProjectType {
   currency
   companyId
   projectManagerId
+  projectManager {
+    id
+    name
+    avatarUrl
+  }
 }
 
 fragment ProjectHeader on ProjectType {
@@ -36,6 +41,11 @@ fragment ProjectHeader on ProjectType {
   currency
   companyId
   projectManagerId
+  projectManager {
+    id
+    name
+    avatarUrl
+  }
 }
 
 fragment PhaseFields on PhaseType {
@@ -50,8 +60,22 @@ fragment MilestoneFields on MilestoneType {
   id
   phaseId
   title
+  description
   status
   orderIndex
+  requiresClientApproval
+  dueDate
+  approvedAt
+  approvals {
+    id
+    approverType
+    status
+    approverName
+  }
+  tasks {
+    id
+    status
+  }
 }
 
 fragment TaskFields on TaskType {
@@ -63,6 +87,11 @@ fragment TaskFields on TaskType {
   title
   description
   assigneeId
+  assignee {
+    id
+    name
+    avatarUrl
+  }
   status
   priority
   estimatedHours
@@ -72,6 +101,11 @@ fragment TaskFields on TaskType {
     title
     status
     assigneeId
+    assignee {
+      id
+      name
+      avatarUrl
+    }
     parentTaskId
   }
   dependencies {
@@ -190,6 +224,7 @@ mutation UpdateProject(
   $description: String
   $status: String
   $priority: String
+  $projectManagerId: ID
   $budget: Float
   $currency: String
   $health: String
@@ -200,6 +235,7 @@ mutation UpdateProject(
     description: $description
     status: $status
     priority: $priority
+    projectManagerId: $projectManagerId
     budget: $budget
     currency: $currency
     health: $health
@@ -237,6 +273,13 @@ mutation UpdateMilestone($id: ID!, $title: String, $orderIndex: Int, $status: St
   }
 }
 
+mutation MarkMilestoneReadyForReview($milestoneId: ID!) {
+  markMilestoneReadyForReview(milestoneId: $milestoneId) {
+    id
+    status
+  }
+}
+
 mutation CreateTask(
   $projectId: ID!
   $phaseId: ID!
@@ -268,6 +311,7 @@ mutation UpdateTask(
   $title: String
   $status: String
   $priority: String
+  $assigneeId: ID
   $estimatedHours: Float
   $actualHours: Float
 ) {
@@ -276,6 +320,7 @@ mutation UpdateTask(
     title: $title
     status: $status
     priority: $priority
+    assigneeId: $assigneeId
     estimatedHours: $estimatedHours
     actualHours: $actualHours
   ) {
@@ -348,4 +393,36 @@ query ProjectGantt($id: ID!) {
 
 mutation RemoveTaskDependency($id: ID!) {
   removeTaskDependency(id: $id)
+}
+
+query ProjectDocuments($projectId: ID!) {
+  documents(entityType: "project", entityId: $projectId) {
+    id
+    entityType
+    entityId
+    fileUrl
+    version
+    uploadedBy
+  }
+}
+
+mutation RequestProjectUploadUrl($entityId: ID!, $filename: String!, $contentType: String!) {
+  requestUploadUrl(
+    entityType: "project"
+    entityId: $entityId
+    filename: $filename
+    contentType: $contentType
+  ) {
+    uploadUrl
+    uploadToken
+    fileUrl
+  }
+}
+
+mutation ConfirmProjectUpload($entityId: ID!, $fileUrl: String!) {
+  confirmUpload(entityType: "project", entityId: $entityId, fileUrl: $fileUrl) {
+    id
+    fileUrl
+    version
+  }
 }

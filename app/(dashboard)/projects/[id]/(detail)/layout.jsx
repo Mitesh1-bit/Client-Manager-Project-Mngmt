@@ -43,6 +43,7 @@ export default async function ProjectDetailLayout({ children, params }) {
     { href: `/projects/${id}/calendar`, label: "Calendar" },
     { href: `/projects/${id}/milestones`, label: "Milestones" },
     { href: `/projects/${id}/change-requests`, label: "Change requests" },
+    { href: `/projects/${id}/documents`, label: "Documents" },
   ];
 
   const overBudget = project.budget ? project.actualCost > project.budget : false;

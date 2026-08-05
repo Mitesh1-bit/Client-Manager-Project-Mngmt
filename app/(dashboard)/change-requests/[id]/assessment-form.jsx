@@ -98,7 +98,15 @@ export function AssessmentForm({ request, threshold, onDone }) {
   async function onSubmit(input) {
     setServerError(null);
     try {
-      await assess({ variables: { id: request.id, input } });
+      await assess({
+        variables: {
+          id: request.id,
+          impactHours: input.impactHours,
+          impactCost: input.impactCost,
+          impactTimelineDays: input.impactTimelineDays,
+          assessmentNotes: input.assessmentNotes,
+        },
+      });
       toast.success("Assessment recorded", {
         description:
           requiresInternal || requiresClient

@@ -114,6 +114,7 @@ export function toUpdateProjectVariables(id, values) {
     description: values.description,
     status: toApiStatus("projectStatus", values.status),
     priority: values.priority ? String(values.priority).toLowerCase() : null,
+    projectManagerId: values.projectManagerId || null,
     budget: values.budget,
     currency: values.currency,
     health: toApiStatus("projectHealth", "ON_TRACK"),
