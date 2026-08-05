@@ -19,7 +19,6 @@ import { CompanyDetailHeaderDocument } from "@/app/lib/graphql/generated/documen
 const INVOICE_ROLES = [
   "admin",
   "finance_admin",
-  "account_manager",
   "executive_viewer",
   "project_manager",
 ];

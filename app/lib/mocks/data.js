@@ -66,7 +66,7 @@ export const users = [
     id: "usr_3",
     name: "Tomas Lindqvist",
     email: "tomas@meridian.studio",
-    role: "ACCOUNT_MANAGER",
+    role: "PROJECT_MANAGER",
     status: "ACTIVE",
     avatarUrl: null,
     scope: "INTERNAL",
@@ -1029,10 +1029,10 @@ export const retentionSequences = [
     isActive: true,
     isTemplate: true,
     steps: [
-      { id: "stp_1", stepOrder: 0, name: "Welcome email", channel: "EMAIL", offsetDays: 0, assigneeRole: "ACCOUNT_MANAGER", templateId: "tpl_welcome" },
+      { id: "stp_1", stepOrder: 0, name: "Welcome email", channel: "EMAIL", offsetDays: 0, assigneeRole: "PROJECT_MANAGER", templateId: "tpl_welcome" },
       { id: "stp_2", stepOrder: 1, name: "Kickoff call", channel: "MEETING", offsetDays: 5, assigneeRole: "PROJECT_MANAGER", templateId: null },
-      { id: "stp_3", stepOrder: 2, name: "Portal walkthrough", channel: "MEETING", offsetDays: 14, assigneeRole: "ACCOUNT_MANAGER", templateId: null },
-      { id: "stp_4", stepOrder: 3, name: "30-day check-in", channel: "CALL", offsetDays: 30, assigneeRole: "ACCOUNT_MANAGER", templateId: null },
+      { id: "stp_3", stepOrder: 2, name: "Portal walkthrough", channel: "MEETING", offsetDays: 14, assigneeRole: "PROJECT_MANAGER", templateId: null },
+      { id: "stp_4", stepOrder: 3, name: "30-day check-in", channel: "CALL", offsetDays: 30, assigneeRole: "PROJECT_MANAGER", templateId: null },
     ],
   },
   {
@@ -1043,9 +1043,9 @@ export const retentionSequences = [
     isActive: true,
     isTemplate: true,
     steps: [
-      { id: "stp_5", stepOrder: 0, name: "QBR invitation", channel: "EMAIL", offsetDays: 0, assigneeRole: "ACCOUNT_MANAGER", templateId: "tpl_qbr_invite" },
-      { id: "stp_6", stepOrder: 1, name: "Prepare account pack", channel: "INTERNAL_TASK", offsetDays: 7, assigneeRole: "ACCOUNT_MANAGER", templateId: null },
-      { id: "stp_7", stepOrder: 2, name: "QBR session", channel: "MEETING", offsetDays: 14, assigneeRole: "ACCOUNT_MANAGER", templateId: null },
+      { id: "stp_5", stepOrder: 0, name: "QBR invitation", channel: "EMAIL", offsetDays: 0, assigneeRole: "PROJECT_MANAGER", templateId: "tpl_qbr_invite" },
+      { id: "stp_6", stepOrder: 1, name: "Prepare account pack", channel: "INTERNAL_TASK", offsetDays: 7, assigneeRole: "PROJECT_MANAGER", templateId: null },
+      { id: "stp_7", stepOrder: 2, name: "QBR session", channel: "MEETING", offsetDays: 14, assigneeRole: "PROJECT_MANAGER", templateId: null },
     ],
   },
   {
@@ -1056,9 +1056,9 @@ export const retentionSequences = [
     isActive: true,
     isTemplate: true,
     steps: [
-      { id: "stp_8", stepOrder: 0, name: "Internal renewal briefing", channel: "INTERNAL_TASK", offsetDays: 0, assigneeRole: "ACCOUNT_MANAGER", templateId: null },
-      { id: "stp_9", stepOrder: 1, name: "Value recap email", channel: "EMAIL", offsetDays: 10, assigneeRole: "ACCOUNT_MANAGER", templateId: "tpl_value_recap" },
-      { id: "stp_10", stepOrder: 2, name: "Renewal conversation", channel: "MEETING", offsetDays: 30, assigneeRole: "ACCOUNT_MANAGER", templateId: null },
+      { id: "stp_8", stepOrder: 0, name: "Internal renewal briefing", channel: "INTERNAL_TASK", offsetDays: 0, assigneeRole: "PROJECT_MANAGER", templateId: null },
+      { id: "stp_9", stepOrder: 1, name: "Value recap email", channel: "EMAIL", offsetDays: 10, assigneeRole: "PROJECT_MANAGER", templateId: "tpl_value_recap" },
+      { id: "stp_10", stepOrder: 2, name: "Renewal conversation", channel: "MEETING", offsetDays: 30, assigneeRole: "PROJECT_MANAGER", templateId: null },
     ],
   },
 ];

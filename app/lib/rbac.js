@@ -15,18 +15,6 @@ export const ROLE_CATALOG = [
     ],
   },
   {
-    value: "account_manager",
-    label: "Account manager",
-    summary: "Owns client relationships — companies, contacts, portal access, and retention.",
-    access: [
-      "Create and edit companies & contacts",
-      "Enable client portal access & passwords",
-      "Create projects for clients",
-      "Retention sequences and touchpoints",
-      "Contracts (read/write)",
-    ],
-  },
-  {
     value: "project_manager",
     label: "Project manager",
     summary: "Runs delivery — projects, tasks, milestones, change requests, and client records.",
@@ -69,7 +57,10 @@ export const INTERNAL_ROLES = ROLE_CATALOG.map((role) => role.value);
 
 /** @param {string} role */
 export function roleDefinition(role) {
-  return ROLE_CATALOG.find((entry) => entry.value === role) ?? ROLE_CATALOG[3];
+  return (
+    ROLE_CATALOG.find((entry) => entry.value === role) ??
+    ROLE_CATALOG.find((entry) => entry.value === "team_member")
+  );
 }
 
 /**
@@ -97,10 +88,10 @@ export function canManageTeam(role) {
 
 /** @param {string} role */
 export function canManageClients(role) {
-  return ["admin", "account_manager", "project_manager"].includes(role);
+  return ["admin", "project_manager"].includes(role);
 }
 
 /** @param {string} role */
 export function canManageProjects(role) {
-  return ["admin", "account_manager", "project_manager"].includes(role);
+  return ["admin", "project_manager"].includes(role);
 }

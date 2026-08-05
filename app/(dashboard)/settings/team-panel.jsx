@@ -47,7 +47,6 @@ const inviteSchema = z.object({
   password: z.string().min(12, "Password must be at least 12 characters."),
   role: z.enum([
     "admin",
-    "account_manager",
     "project_manager",
     "team_member",
     "finance_admin",

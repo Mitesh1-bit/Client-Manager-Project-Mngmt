@@ -4,7 +4,7 @@ export const DEMO_PASSWORD = "meridian";
 export const demoAccounts = [
   { email: "amara@meridian.studio", userId: "usr_1", scope: "INTERNAL", label: "Admin" },
   { email: "priya@meridian.studio", userId: "usr_2", scope: "INTERNAL", label: "Project manager" },
-  { email: "tomas@meridian.studio", userId: "usr_3", scope: "INTERNAL", label: "Account manager" },
+  { email: "tomas@meridian.studio", userId: "usr_3", scope: "INTERNAL", label: "Project manager" },
   {
     email: "marcus.bell@northwind.health",
     contactId: "con_1",

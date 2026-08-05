@@ -25,7 +25,6 @@ enum AuthScope {
 
 enum UserRole {
   ADMIN
-  ACCOUNT_MANAGER
   PROJECT_MANAGER
   TEAM_MEMBER
   FINANCE_ADMIN

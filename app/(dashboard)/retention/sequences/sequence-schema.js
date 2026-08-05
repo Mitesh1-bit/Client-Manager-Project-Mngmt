@@ -14,7 +14,6 @@ export const TRIGGER_TYPES = [
 ];
 
 export const ASSIGNEE_ROLES = [
-  { value: "ACCOUNT_MANAGER", label: "Account manager" },
   { value: "PROJECT_MANAGER", label: "Project manager" },
   { value: "ADMIN", label: "Admin" },
   { value: "TEAM_MEMBER", label: "Team member" },

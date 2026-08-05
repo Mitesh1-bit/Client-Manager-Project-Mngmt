@@ -1,10 +1,10 @@
 /** Shared role groups for internal tour steps. */
-export const R_ALL = ["admin", "account_manager", "project_manager", "team_member", "finance_admin", "executive_viewer"];
-export const R_CLIENT = ["admin", "account_manager"];
-export const R_DELIVERY = ["admin", "account_manager", "project_manager"];
-export const R_TASKS = ["admin", "account_manager", "project_manager", "team_member"];
-export const R_CHANGES = ["admin", "account_manager", "project_manager"];
-export const R_RETENTION = ["admin", "account_manager", "project_manager"];
+export const R_ALL = ["admin", "project_manager", "team_member", "finance_admin", "executive_viewer"];
+export const R_CLIENT = ["admin", "project_manager"];
+export const R_DELIVERY = ["admin", "project_manager"];
+export const R_TASKS = ["admin", "project_manager", "team_member"];
+export const R_CHANGES = ["admin", "project_manager"];
+export const R_RETENTION = ["admin", "project_manager"];
 export const R_ADMIN = ["admin"];
 
 /** @type {import('./tour-steps').TourStep[]} */
@@ -136,7 +136,7 @@ export const INTERNAL_TOUR_STEPS = [
     routes: ["/companies/new", "/companies/:id/edit"],
     target: "company-field-status",
     title: "Status & owner",
-    body: "Set Active for live clients. Assign an account owner — usually the account manager who owns the relationship.",
+    body: "Set Active for live clients. Assign an account owner — usually the project manager who owns the relationship.",
     placement: "right",
     roles: R_CLIENT,
     interactive: true,
@@ -693,7 +693,7 @@ export const INTERNAL_TOUR_STEPS = [
     order: 220,
     target: "nav-retention",
     title: "Client retention",
-    body: "Track at-risk accounts and log touchpoints so account managers stay ahead of churn.",
+    body: "Track at-risk accounts and log touchpoints so project managers stay ahead of churn.",
     placement: "right",
     roles: R_RETENTION,
   },
@@ -771,7 +771,7 @@ export const INTERNAL_TOUR_STEPS = [
     routes: ["/settings"],
     target: "settings-roles",
     title: "Roles & access",
-    body: "What each role can actually do in your workspace — admin, account manager, project manager, team member, and the read-only roles. Client portal access is separate, managed per contact.",
+    body: "What each role can actually do in your workspace — admin, project manager, team member, and the read-only roles. Client portal access is separate, managed per contact.",
     placement: "bottom",
     roles: R_ALL,
   },
@@ -782,7 +782,7 @@ export const INTERNAL_TOUR_STEPS = [
     routes: ["/settings"],
     target: "team-invite",
     title: "Invite your team",
-    body: "Admins add staff here — pick a role (account manager, PM, team member, etc.) and share login credentials securely.",
+    body: "Admins add staff here — pick a role (PM, team member, etc.) and share login credentials securely.",
     placement: "top",
     roles: R_ADMIN,
   },
