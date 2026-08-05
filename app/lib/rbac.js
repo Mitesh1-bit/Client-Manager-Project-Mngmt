@@ -29,13 +29,16 @@ export const ROLE_CATALOG = [
   {
     value: "project_manager",
     label: "Project manager",
-    summary: "Runs delivery — projects, tasks, milestones, and change-request workflow.",
+    summary: "Runs delivery — projects, tasks, milestones, change requests, and client records.",
     access: [
+      "Create and edit companies & contacts",
       "Create and manage projects",
       "Phases, tasks, milestones, and board",
       "Assess and decide change requests",
       "Mark milestones ready for client review",
-      "Retention touchpoints",
+      "Retention sequences and touchpoints",
+      "Invoices (view and create)",
+      "Add or remove team members (team member role only)",
     ],
   },
   {
@@ -79,14 +82,22 @@ export function filterNavItems(role, items) {
   return items.filter((item) => !item.roles || item.roles.includes(role));
 }
 
-/** @param {string} role */
+/**
+ * Whether a role can invite/delete team members at all. Note this is
+ * necessarily incomplete on its own: a project manager can only add or
+ * remove the "team_member" role specifically, not manage the team broadly
+ * the way an admin can — see the create/delete role checks in
+ * backend/app/graphql/users/service.py for the actual scoped rule.
+ *
+ * @param {string} role
+ */
 export function canManageTeam(role) {
-  return role === "admin";
+  return role === "admin" || role === "project_manager";
 }
 
 /** @param {string} role */
 export function canManageClients(role) {
-  return ["admin", "account_manager"].includes(role);
+  return ["admin", "account_manager", "project_manager"].includes(role);
 }
 
 /** @param {string} role */

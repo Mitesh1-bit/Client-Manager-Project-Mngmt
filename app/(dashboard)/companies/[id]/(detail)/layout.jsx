@@ -16,7 +16,13 @@ import { CompanyDetailHeaderDocument } from "@/app/lib/graphql/generated/documen
 // app/graphql/invoices/schema.py) — a role outside this list gets a clean
 // "Requires one of roles: ..." error, so the tab is hidden rather than
 // linking somewhere that always fails.
-const INVOICE_ROLES = ["admin", "finance_admin", "account_manager", "executive_viewer"];
+const INVOICE_ROLES = [
+  "admin",
+  "finance_admin",
+  "account_manager",
+  "executive_viewer",
+  "project_manager",
+];
 
 import { CompanyStatusMenu } from "./company-status-menu";
 

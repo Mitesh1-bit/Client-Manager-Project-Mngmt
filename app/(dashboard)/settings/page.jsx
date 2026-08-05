@@ -16,6 +16,7 @@ export default async function SettingsPage() {
   const { data } = await getClient().query({ query: TeamListDocument });
   const users = pickList(data, "users");
   const isAdmin = viewer.role === "admin";
+  const isProjectManager = viewer.role === "project_manager";
 
   return (
     <>
@@ -34,7 +35,12 @@ export default async function SettingsPage() {
           </div>
         }
       />
-      <TeamPanel users={users} currentUserId={viewer.id} isAdmin={isAdmin} />
+      <TeamPanel
+        users={users}
+        currentUserId={viewer.id}
+        isAdmin={isAdmin}
+        isProjectManager={isProjectManager}
+      />
     </>
   );
 }

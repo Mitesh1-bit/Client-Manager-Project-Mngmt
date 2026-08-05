@@ -299,13 +299,17 @@ type Mutation {
   updateInvoice(id: ID!, amount: Float = null, dueDate: Date = null, status: String = null, invoiceNumber: String = null, issuedAt: Date = null, paidAt: Date = null, notes: String = null): InvoiceType!
   deleteInvoice(id: ID!): Boolean!
 
-  """Invite a team member (admin only)."""
+  """
+  Invite a team member. Admins can invite any role; project managers can only invite a team member.
+  """
   createUser(name: String!, email: String!, password: String!, role: String!): UserSummaryType!
 
   """Update a team member role or status (admin only)."""
   updateUser(id: ID!, name: String = null, role: String = null, status: String = null): UserSummaryType!
 
-  """Permanently delete a team member (admin only). Cannot be undone."""
+  """
+  Permanently delete a team member. Admins can delete anyone; project managers can only delete a team member. Cannot be undone.
+  """
   deleteUser(id: ID!): Boolean!
 
   """Update the signed-in user's display profile."""

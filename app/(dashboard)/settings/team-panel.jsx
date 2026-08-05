@@ -55,13 +55,27 @@ const inviteSchema = z.object({
   ]),
 });
 
-export function TeamPanel({ users, currentUserId, isAdmin }) {
+export function TeamPanel({ users, currentUserId, isAdmin, isProjectManager = false }) {
   const router = useRouter();
   const [serverError, setServerError] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [createUser] = useMutation(CreateUserDocument);
   const [updateUser] = useMutation(UpdateUserDocument);
   const [deleteUser, { loading: deleting }] = useMutation(DeleteUserDocument);
+
+  // Admins can invite/delete any role. Project managers can only bring on
+  // (or remove) team members — everything else about the team stays admin-only.
+  const canManageTeam = isAdmin || isProjectManager;
+  const inviteRoleOptions = isAdmin
+    ? ROLE_CATALOG
+    : ROLE_CATALOG.filter((role) => role.value === "team_member");
+  const defaultInviteRole = isAdmin ? "project_manager" : "team_member";
+
+  function canDeleteUser(user) {
+    if (user.id === currentUserId) return false;
+    if (isAdmin) return true;
+    return isProjectManager && user.role === "team_member";
+  }
 
   const {
     register,
@@ -71,14 +85,14 @@ export function TeamPanel({ users, currentUserId, isAdmin }) {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(inviteSchema),
-    defaultValues: { name: "", email: "", password: "", role: "project_manager" },
+    defaultValues: { name: "", email: "", password: "", role: defaultInviteRole },
   });
 
   const selectedRole = useWatch({ control, name: "role" });
   const selectedRoleInfo = useMemo(() => roleDefinition(selectedRole), [selectedRole]);
 
   async function onInvite(values) {
-    if (!isAdmin) return;
+    if (!canManageTeam) return;
     setServerError(null);
     try {
       await createUser({
@@ -86,7 +100,7 @@ export function TeamPanel({ users, currentUserId, isAdmin }) {
         refetchQueries: [{ query: TeamListDocument }],
       });
       toast.success(`${values.name} added to your team`);
-      reset({ name: "", email: "", password: "", role: "project_manager" });
+      reset({ name: "", email: "", password: "", role: defaultInviteRole });
       router.refresh();
     } catch (error) {
       setServerError(error?.message ?? "Could not add this team member.");
@@ -122,7 +136,7 @@ export function TeamPanel({ users, currentUserId, isAdmin }) {
   }
 
   async function confirmDelete() {
-    if (!isAdmin || !deleteTarget || deleteTarget.id === currentUserId) return;
+    if (!deleteTarget || !canDeleteUser(deleteTarget)) return;
     try {
       await deleteUser({
         variables: { id: deleteTarget.id },
@@ -161,11 +175,15 @@ export function TeamPanel({ users, currentUserId, isAdmin }) {
         </div>
       </SectionCard>
 
-      {isAdmin ? (
+      {canManageTeam ? (
         <div data-tour="team-invite">
         <SectionCard
           title="Add team member"
-          description="Create a dashboard account with a temporary password. Share login credentials securely — email invites are not enabled yet."
+          description={
+            isAdmin
+              ? "Create a dashboard account with a temporary password. Share login credentials securely — email invites are not enabled yet."
+              : "As a project manager you can add team members to grow delivery capacity — other roles need an admin."
+          }
         >
           <form noValidate onSubmit={handleSubmit(onInvite)} className="space-y-4">
             {serverError ? (
@@ -205,7 +223,7 @@ export function TeamPanel({ users, currentUserId, isAdmin }) {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {ROLE_CATALOG.map((role) => (
+                          {inviteRoleOptions.map((role) => (
                             <SelectItem key={role.value} value={role.value}>
                               {role.label}
                             </SelectItem>
@@ -217,6 +235,11 @@ export function TeamPanel({ users, currentUserId, isAdmin }) {
                 )}
               </FormField>
             </div>
+            {!isAdmin ? (
+              <p className="text-caption text-muted-foreground">
+                Only &quot;Team member&quot; is available here — inviting any other role needs an admin.
+              </p>
+            ) : null}
             {selectedRoleInfo ? (
               <p className="rounded-lg border bg-muted/40 px-3 py-2 text-caption text-muted-foreground">
                 <span className="font-medium text-foreground">{selectedRoleInfo.label}</span>
@@ -238,10 +261,10 @@ export function TeamPanel({ users, currentUserId, isAdmin }) {
         </SectionCard>
         </div>
       ) : (
-        <SectionCard title="Team management" description="Only admins can invite or change roles.">
+        <SectionCard title="Team management" description="Only admins and project managers can add team members.">
           <p className="text-caption text-muted-foreground">
-            You can view the team list below. Ask an admin if you need a role change or a new
-            colleague added.
+            You can view the team list below. Ask an admin if you need a role change, or an admin
+            or project manager for a new colleague added.
           </p>
         </SectionCard>
       )}
@@ -292,9 +315,6 @@ export function TeamPanel({ users, currentUserId, isAdmin }) {
                       >
                         {inactive ? "Reactivate" : "Deactivate"}
                       </Button>
-                      <Button variant="destructive" size="sm" onClick={() => setDeleteTarget(user)}>
-                        Delete
-                      </Button>
                     </>
                   ) : (
                     <span className="text-caption text-muted-foreground">
@@ -302,6 +322,14 @@ export function TeamPanel({ users, currentUserId, isAdmin }) {
                       {inactive ? " · inactive" : ""}
                     </span>
                   )}
+                  {/* Role change and deactivate stay admin-only above — a PM's
+                      reach into team management is deliberately narrower:
+                      they can only remove a team member, nothing else. */}
+                  {canDeleteUser(user) ? (
+                    <Button variant="destructive" size="sm" onClick={() => setDeleteTarget(user)}>
+                      Delete
+                    </Button>
+                  ) : null}
                 </div>
               </li>
             );
