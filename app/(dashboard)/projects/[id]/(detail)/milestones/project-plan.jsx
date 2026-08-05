@@ -63,7 +63,7 @@ const PHASE_STATUS_OPTIONS = listStatuses("phaseStatus");
  * roll up to them. Client sign-off state is shown but not actioned here — the
  * approval flow itself belongs to the client portal in Phase 4.
  */
-export function ProjectPlan({ projectId, phases = [], milestones = [] }) {
+export function ProjectPlan({ projectId, phases = [], milestones = [], canManage = false }) {
   const [panel, setPanel] = useState(null);
   const close = () => setPanel(null);
 
@@ -77,19 +77,23 @@ export function ProjectPlan({ projectId, phases = [], milestones = [] }) {
           title="No phases yet"
           description="Phases group milestones and tasks into stages of delivery — discovery, build, launch."
           action={
-            <Button onClick={() => setPanel({ mode: "phase-create" })}>
-              <Plus aria-hidden="true" />
-              Add phase
-            </Button>
+            canManage ? (
+              <Button onClick={() => setPanel({ mode: "phase-create" })}>
+                <Plus aria-hidden="true" />
+                Add phase
+              </Button>
+            ) : null
           }
         />
-        <PlanSheet
-          projectId={projectId}
-          panel={panel}
-          phases={phases}
-          milestones={milestones}
-          onClose={close}
-        />
+        {canManage ? (
+          <PlanSheet
+            projectId={projectId}
+            panel={panel}
+            phases={phases}
+            milestones={milestones}
+            onClose={close}
+          />
+        ) : null}
       </>
     );
   }
@@ -100,16 +104,18 @@ export function ProjectPlan({ projectId, phases = [], milestones = [] }) {
         <p className="text-caption text-muted-foreground">
           {phases.length} phases · {milestones.length} milestones
         </p>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setPanel({ mode: "phase-create" })}>
-            <Plus aria-hidden="true" />
-            Add phase
-          </Button>
-          <Button size="sm" onClick={() => setPanel({ mode: "milestone-create" })}>
-            <Plus aria-hidden="true" />
-            Add milestone
-          </Button>
-        </div>
+        {canManage ? (
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setPanel({ mode: "phase-create" })}>
+              <Plus aria-hidden="true" />
+              Add phase
+            </Button>
+            <Button size="sm" onClick={() => setPanel({ mode: "milestone-create" })}>
+              <Plus aria-hidden="true" />
+              Add milestone
+            </Button>
+          </div>
+        ) : null}
       </div>
 
       <div data-tour="project-milestones-list" className="space-y-4">
@@ -117,6 +123,7 @@ export function ProjectPlan({ projectId, phases = [], milestones = [] }) {
           <PhaseSection
             key={phase.id}
             phase={phase}
+            canManage={canManage}
             onEditPhase={() => setPanel({ mode: "phase-edit", phaseId: phase.id })}
             onAddMilestone={() =>
               setPanel({ mode: "milestone-create", defaults: { phaseId: phase.id } })
@@ -135,6 +142,7 @@ export function ProjectPlan({ projectId, phases = [], milestones = [] }) {
                 <MilestoneRow
                   key={milestone.id}
                   milestone={milestone}
+                  canManage={canManage}
                   onEdit={() => setPanel({ mode: "milestone-edit", milestoneId: milestone.id })}
                 />
               ))}
@@ -143,18 +151,20 @@ export function ProjectPlan({ projectId, phases = [], milestones = [] }) {
         ) : null}
       </div>
 
-      <PlanSheet
-        projectId={projectId}
-        panel={panel}
-        phases={phases}
-        milestones={milestones}
-        onClose={close}
-      />
+      {canManage ? (
+        <PlanSheet
+          projectId={projectId}
+          panel={panel}
+          phases={phases}
+          milestones={milestones}
+          onClose={close}
+        />
+      ) : null}
     </>
   );
 }
 
-function PhaseSection({ phase, onEditPhase, onAddMilestone, onEditMilestone }) {
+function PhaseSection({ phase, canManage, onEditPhase, onAddMilestone, onEditMilestone }) {
   const tasks = phase.tasks.filter((task) => !task.parentTask);
   const done = tasks.filter((task) => task.status === "DONE").length;
   const percent = tasks.length === 0 ? 0 : Math.round((done / tasks.length) * 100);
@@ -191,10 +201,12 @@ function PhaseSection({ phase, onEditPhase, onAddMilestone, onEditMilestone }) {
             </div>
             <Progress value={percent} aria-label={`${phase.name} is ${percent}% complete`} />
           </div>
-          <Button variant="ghost" size="icon-sm" onClick={onEditPhase}>
-            <Pencil aria-hidden="true" />
-            <span className="sr-only">Edit {phase.name}</span>
-          </Button>
+          {canManage ? (
+            <Button variant="ghost" size="icon-sm" onClick={onEditPhase}>
+              <Pencil aria-hidden="true" />
+              <span className="sr-only">Edit {phase.name}</span>
+            </Button>
+          ) : null}
         </div>
       </div>
 
@@ -204,10 +216,12 @@ function PhaseSection({ phase, onEditPhase, onAddMilestone, onEditMilestone }) {
             <p className="text-caption text-muted-foreground">
               No milestones in this phase yet.
             </p>
-            <Button variant="outline" size="sm" onClick={onAddMilestone}>
-              <Plus aria-hidden="true" />
-              Add milestone
-            </Button>
+            {canManage ? (
+              <Button variant="outline" size="sm" onClick={onAddMilestone}>
+                <Plus aria-hidden="true" />
+                Add milestone
+              </Button>
+            ) : null}
           </div>
         ) : (
           <>
@@ -216,14 +230,17 @@ function PhaseSection({ phase, onEditPhase, onAddMilestone, onEditMilestone }) {
                 <MilestoneRow
                   key={milestone.id}
                   milestone={milestone}
+                  canManage={canManage}
                   onEdit={() => onEditMilestone(milestone.id)}
                 />
               ))}
             </ul>
-            <Button variant="ghost" size="sm" className="mt-3" onClick={onAddMilestone}>
-              <Plus aria-hidden="true" />
-              Add milestone to {phase.name}
-            </Button>
+            {canManage ? (
+              <Button variant="ghost" size="sm" className="mt-3" onClick={onAddMilestone}>
+                <Plus aria-hidden="true" />
+                Add milestone to {phase.name}
+              </Button>
+            ) : null}
           </>
         )}
       </div>
@@ -231,7 +248,7 @@ function PhaseSection({ phase, onEditPhase, onAddMilestone, onEditMilestone }) {
   );
 }
 
-function MilestoneRow({ milestone, onEdit }) {
+function MilestoneRow({ milestone, canManage, onEdit }) {
   const done = milestone.tasks.filter((task) => task.status === "DONE").length;
   const dueDate = parseDay(milestone.dueDate);
   const overdue =
@@ -273,10 +290,12 @@ function MilestoneRow({ milestone, onEdit }) {
           </div>
         </div>
 
-        <Button variant="ghost" size="icon-sm" onClick={onEdit}>
-          <Pencil aria-hidden="true" />
-          <span className="sr-only">Edit {milestone.title}</span>
-        </Button>
+        {canManage ? (
+          <Button variant="ghost" size="icon-sm" onClick={onEdit}>
+            <Pencil aria-hidden="true" />
+            <span className="sr-only">Edit {milestone.title}</span>
+          </Button>
+        ) : null}
       </div>
 
       {milestone.requiresClientApproval ? (

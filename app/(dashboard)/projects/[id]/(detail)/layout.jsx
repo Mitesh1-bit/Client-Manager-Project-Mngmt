@@ -8,12 +8,17 @@ import { TagList } from "@/app/components/domain/tag-list";
 import { Button } from "@/app/components/ui/button";
 import { Progress } from "@/app/components/ui/progress";
 import { formatCurrency, formatDate, initials } from "@/app/lib/format";
+import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { normalizeProject } from "@/app/lib/api/normalize";
 import { pickList } from "@/app/lib/api/safe-list";
 import { ProjectDetailHeaderDocument } from "@/app/lib/graphql/generated/documents";
 import { parseDay, startOfDay } from "@/app/lib/project";
 import { cn } from "@/app/lib/utils";
+
+// Mirrors the backend's updateProject gate (require_role in
+// app/graphql/projects/schema.py).
+const PROJECT_EDIT_ROLES = ["admin", "project_manager"];
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
@@ -35,6 +40,9 @@ export default async function ProjectDetailLayout({ children, params }) {
   const usersById = new Map(pickList(data, "users").map((user) => [user.id, user]));
   const project = normalizeProject(data.project, usersById, companiesById);
   if (!project) notFound();
+
+  const claims = await getSessionClaims();
+  const canEdit = PROJECT_EDIT_ROLES.includes(claims?.role);
 
   const tabs = [
     { href: `/projects/${id}/board`, label: "Board" },
@@ -91,14 +99,16 @@ export default async function ProjectDetailLayout({ children, params }) {
             {(project.tags?.length ?? 0) > 0 ? <TagList tags={project.tags} className="mt-2.5" /> : null}
           </div>
 
-          <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:shrink-0">
-            <Button variant="outline" asChild>
-              <Link href={`/projects/${id}/edit`}>
-                <Pencil aria-hidden="true" />
-                Edit
-              </Link>
-            </Button>
-          </div>
+          {canEdit ? (
+            <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:shrink-0">
+              <Button variant="outline" asChild>
+                <Link href={`/projects/${id}/edit`}>
+                  <Pencil aria-hidden="true" />
+                  Edit
+                </Link>
+              </Button>
+            </div>
+          ) : null}
         </div>
 
         {/* The at-a-glance strip: progress, dates, budget, who's on it. */}

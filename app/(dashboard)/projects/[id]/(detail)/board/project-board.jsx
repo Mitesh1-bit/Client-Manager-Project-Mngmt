@@ -44,7 +44,14 @@ const screenReaderInstructions = {
     "To pick up a task, press space or enter. While dragging, use the arrow keys to move it between positions and columns. Press space or enter again to drop, or escape to cancel.",
 };
 
-export function ProjectBoard({ projectId, tasks = [], phases = [], milestones = [], users = [] }) {
+export function ProjectBoard({
+  projectId,
+  tasks = [],
+  phases = [],
+  milestones = [],
+  users = [],
+  canManage = false,
+}) {
   const router = useRouter();
   const [updateTaskStatus] = useMutation(UpdateTaskStatusDocument);
 
@@ -167,10 +174,12 @@ export function ProjectBoard({ projectId, tasks = [], phases = [], milestones = 
         <p className="text-caption text-muted-foreground">
           Drag a card, or use its menu, to move it between columns.
         </p>
-        <Button size="sm" onClick={() => setPanel({ mode: "create" })} data-tour="board-add-task">
-          <Plus aria-hidden="true" />
-          Add task
-        </Button>
+        {canManage ? (
+          <Button size="sm" onClick={() => setPanel({ mode: "create" })} data-tour="board-add-task">
+            <Plus aria-hidden="true" />
+            Add task
+          </Button>
+        ) : null}
       </div>
 
       <DndContext
@@ -197,7 +206,7 @@ export function ProjectBoard({ projectId, tasks = [], phases = [], milestones = 
               tasks={columns[column.status]}
               onOpen={openTask}
               onMove={moveVia}
-              onAdd={() => setPanel({ mode: "create", defaults: { status: column.status } })}
+              onAdd={canManage ? () => setPanel({ mode: "create", defaults: { status: column.status } }) : null}
               columnSizes={Object.fromEntries(
                 TASK_STATUSES.map((status) => [status, columns[status].length]),
               )}
@@ -238,10 +247,12 @@ function BoardColumn({ column, tasks, onOpen, onMove, onAdd, columnSizes }) {
             {tasks.length}
           </span>
         </h2>
-        <Button variant="ghost" size="icon-sm" onClick={onAdd}>
-          <Plus aria-hidden="true" />
-          <span className="sr-only">Add a task to {column.label}</span>
-        </Button>
+        {onAdd ? (
+          <Button variant="ghost" size="icon-sm" onClick={onAdd}>
+            <Plus aria-hidden="true" />
+            <span className="sr-only">Add a task to {column.label}</span>
+          </Button>
+        ) : null}
       </header>
 
       <div

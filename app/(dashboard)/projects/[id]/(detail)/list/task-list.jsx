@@ -30,7 +30,14 @@ const STATUS_OPTIONS = listStatuses("taskStatus");
  * The flat, scannable counterpart to the board: every task grouped by phase,
  * with subtasks nested under their parent and status editable inline.
  */
-export function TaskList({ projectId, tasks = [], phases = [], milestones = [], users = [] }) {
+export function TaskList({
+  projectId,
+  tasks = [],
+  phases = [],
+  milestones = [],
+  users = [],
+  canManage = false,
+}) {
   const router = useRouter();
   const [updateTaskStatus] = useMutation(UpdateTaskStatusDocument);
 
@@ -76,10 +83,12 @@ export function TaskList({ projectId, tasks = [], phases = [], milestones = [], 
           title="No tasks yet"
           description="Break the work down into tasks and they'll show up here, grouped by phase."
           action={
-            <Button onClick={() => setPanel({ mode: "create" })}>
-              <Plus aria-hidden="true" />
-              Add task
-            </Button>
+            canManage ? (
+              <Button onClick={() => setPanel({ mode: "create" })}>
+                <Plus aria-hidden="true" />
+                Add task
+              </Button>
+            ) : null
           }
         />
         <TaskSheet
@@ -102,10 +111,12 @@ export function TaskList({ projectId, tasks = [], phases = [], milestones = [], 
           {tasks.filter((task) => !task.parentTask).length} tasks ·{" "}
           {tasks.filter((task) => task.parentTask).length} subtasks
         </p>
-        <Button size="sm" onClick={() => setPanel({ mode: "create" })}>
-          <Plus aria-hidden="true" />
-          Add task
-        </Button>
+        {canManage ? (
+          <Button size="sm" onClick={() => setPanel({ mode: "create" })}>
+            <Plus aria-hidden="true" />
+            Add task
+          </Button>
+        ) : null}
       </div>
 
       <div data-tour="project-task-list" className="space-y-4">
