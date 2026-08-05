@@ -85,7 +85,7 @@ export function LoginForm() {
       } catch (portalError) {
         setSubmitError(
           formatGraphqlError(portalError, "Invalid credentials") +
-            " Client contacts need the portal password from Companies → Contacts.",
+            " Client contacts need the portal password from Clients → Contacts.",
         );
       }
     }

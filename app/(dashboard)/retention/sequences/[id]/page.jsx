@@ -26,7 +26,7 @@ export async function generateMetadata({ params }) {
 
 const TRIGGER_LABELS = {
   MANUAL: "Started manually",
-  ON_COMPANY_CREATED: "Starts when a company is created",
+  ON_COMPANY_CREATED: "Starts when a client is created",
   ON_PROJECT_COMPLETED: "Starts when a project completes",
   ON_RENEWAL_APPROACHING: "Starts as a renewal approaches",
 };
@@ -99,7 +99,7 @@ export default async function SequenceDetailPage({ params }) {
             trigger={
               <Button disabled={!sequence.isActive}>
                 <UserPlus aria-hidden="true" />
-                Enroll a company
+                Enroll a client
               </Button>
             }
           />
@@ -126,7 +126,7 @@ export default async function SequenceDetailPage({ params }) {
             <EmptyState
               icon={Users}
               title="Nobody enrolled yet"
-              description="Enroll a company to start scheduling this sequence's touchpoints for them."
+              description="Enroll a client to start scheduling this sequence's touchpoints for them."
               className="border-0 bg-transparent py-6"
             />
           ) : (

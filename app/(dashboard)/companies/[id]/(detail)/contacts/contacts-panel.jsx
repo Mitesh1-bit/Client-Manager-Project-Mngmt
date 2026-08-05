@@ -265,7 +265,7 @@ export function ContactsPanel({ companyId, companyName, contacts = [] }) {
           <EmptyState
             icon={UserRound}
             title="No contacts yet"
-            description="Add the people you work with at this company so touchpoints and portal access have somewhere to hang."
+            description="Add the people you work with at this client so touchpoints and portal access have somewhere to hang."
             action={
               <Button onClick={() => setPanel({ mode: "create" })}>
                 <Plus aria-hidden="true" />

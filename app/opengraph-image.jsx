@@ -8,6 +8,6 @@ export const contentType = ogImageContentType;
 export default function Image() {
   return renderOgImage({
     title: SITE_TAGLINE,
-    subtitle: "Companies, projects, change requests, portal approvals, and retention in one platform.",
+    subtitle: "Clients, projects, change requests, portal approvals, and retention in one platform.",
   });
 }

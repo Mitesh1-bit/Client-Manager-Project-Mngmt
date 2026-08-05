@@ -17,7 +17,7 @@ export async function generateMetadata({ params }) {
     query: CompanyForEditDocument,
     variables: { id },
   });
-  return { title: data.company ? `Edit ${data.company.name}` : "Edit company" };
+  return { title: data.company ? `Edit ${data.company.name}` : "Edit client" };
 }
 
 export default async function EditCompanyPage({ params }) {

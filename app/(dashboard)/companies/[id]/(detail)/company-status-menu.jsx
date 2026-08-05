@@ -68,7 +68,7 @@ export function CompanyStatusMenu({ companyId, companyName, status }) {
         <Button variant="outline">
           <StatusBadge kind="companyStatus" value={shownStatus} size="sm" />
           <ChevronDown aria-hidden="true" />
-          <span className="sr-only">Change company status</span>
+          <span className="sr-only">Change client status</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">

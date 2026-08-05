@@ -7,7 +7,7 @@ import { cn } from "@/app/lib/utils";
 
 const TRIGGER_LABELS = {
   MANUAL: "Started manually",
-  ON_COMPANY_CREATED: "Starts when a company is created",
+  ON_COMPANY_CREATED: "Starts when a client is created",
   ON_PROJECT_COMPLETED: "Starts when a project completes",
   ON_RENEWAL_APPROACHING: "Starts as a renewal approaches",
 };

@@ -8,11 +8,11 @@ export default function CompanyNotFound() {
   return (
     <EmptyState
       icon={Building2}
-      title="Company not found"
+      title="Client not found"
       description="It may have been deleted, or you may not have access to it."
       action={
         <Button asChild>
-          <Link href="/companies">Back to companies</Link>
+          <Link href="/companies">Back to clients</Link>
         </Button>
       }
     />

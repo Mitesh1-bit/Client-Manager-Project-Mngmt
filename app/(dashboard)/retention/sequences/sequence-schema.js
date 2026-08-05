@@ -7,8 +7,8 @@ import { z } from "zod";
  */
 
 export const TRIGGER_TYPES = [
-  { value: "MANUAL", label: "Manual — start it yourself for a company" },
-  { value: "ON_COMPANY_CREATED", label: "When a new company is created" },
+  { value: "MANUAL", label: "Manual — start it yourself for a client" },
+  { value: "ON_COMPANY_CREATED", label: "When a new client is created" },
   { value: "ON_PROJECT_COMPLETED", label: "When a project completes" },
   { value: "ON_RENEWAL_APPROACHING", label: "As a renewal approaches" },
 ];

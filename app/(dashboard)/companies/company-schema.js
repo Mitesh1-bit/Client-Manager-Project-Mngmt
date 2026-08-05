@@ -50,7 +50,7 @@ export const companySchema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, "Give the company a name of at least 2 characters.")
+    .min(2, "Give the client a name of at least 2 characters.")
     .max(120, "Keep the name under 120 characters."),
   industry: optionalText(80, "Keep this under 80 characters."),
   website: websiteField,

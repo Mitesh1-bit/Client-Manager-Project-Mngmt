@@ -96,16 +96,16 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
       }
       router.refresh();
     } catch (error) {
-      setServerError(error?.message ?? "We couldn't save this company. Try again.");
+      setServerError(error?.message ?? "We couldn't save this client. Try again.");
     }
   }
 
   return (
     <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-5" data-tour="company-form">
-      <SectionCard title="Identity" description="How this company appears everywhere in the app.">
+      <SectionCard title="Identity" description="How this client appears everywhere in the app.">
         <div className="grid gap-5 sm:grid-cols-2">
           <div data-tour="company-field-name" className="sm:col-span-2">
-          <FormField label="Company name" error={errors.name?.message} required className="sm:col-span-2">
+          <FormField label="Client name" error={errors.name?.message} required className="sm:col-span-2">
             {(field) => (
               <Input {...field} {...register("name")} className="h-10" placeholder="Northwind Health" autoFocus />
             )}
@@ -149,7 +149,7 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
           </FormField>
           </div>
 
-          <FormField label="Company size" error={errors.size?.message}>
+          <FormField label="Client size" error={errors.size?.message}>
             {(field) => (
               <Controller
                 control={control}
@@ -324,7 +324,7 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
                 Saving…
               </>
             ) : mode === "create" ? (
-              "Create company"
+              "Create client"
             ) : (
               "Save changes"
             )}

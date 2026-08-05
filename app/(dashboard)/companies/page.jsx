@@ -17,7 +17,7 @@ import { hasActiveFilters, parseListParams, readList, readString } from "@/app/l
 import { CompaniesTable } from "./companies-table";
 import { CompaniesToolbar } from "./companies-toolbar";
 
-export const metadata = { title: "Companies" };
+export const metadata = { title: "Clients" };
 
 const SORTABLE = ["name", "status", "healthScore", "updatedAt"];
 const FILTER_KEYS = ["q", "status", "tag", "owner"];
@@ -40,13 +40,13 @@ export default async function CompaniesPage({ searchParams }) {
     <>
       <PageHeader
         eyebrow="Clients"
-        title="Companies"
+        title="Clients"
         description="Every account you work with, their contacts, health score and open work."
         actions={
           <Button asChild data-tour="companies-new-btn">
             <Link href="/companies/new">
               <Plus aria-hidden="true" />
-              New company
+              New client
             </Link>
           </Button>
         }
@@ -104,7 +104,7 @@ function NoMatches() {
   return (
     <EmptyState
       icon={SearchX}
-      title="No companies match these filters"
+      title="No clients match these filters"
       description="Try loosening a filter or clearing the search to see more."
       action={
         <Button variant="outline" asChild>
@@ -119,13 +119,13 @@ function NoCompanies() {
   return (
     <EmptyState
       icon={Building2}
-      title="No companies yet"
-      description="Add your first client company to start tracking contacts, projects and touchpoints against it."
+      title="No clients yet"
+      description="Add your first client to start tracking contacts, projects and touchpoints against it."
       action={
         <Button asChild>
           <Link href="/companies/new">
             <Plus aria-hidden="true" />
-            New company
+            New client
           </Link>
         </Button>
       }

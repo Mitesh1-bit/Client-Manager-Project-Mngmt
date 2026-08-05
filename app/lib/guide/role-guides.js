@@ -28,18 +28,18 @@ export const INTERNAL_ROLE_GUIDES = {
       },
       {
         id: "company",
-        title: "Add a client company",
-        body: "Companies are your clients. Create one with name, industry, and status before adding contacts or projects.",
+        title: "Add a client",
+        body: "Clients are the customer organizations you work with. Create one with name, industry, and status before adding contacts or projects.",
         href: "/companies/new",
-        action: "Add company",
+        action: "Add client",
         icon: "Building2",
       },
       {
         id: "contact",
         title: "Enable the client portal",
-        body: "Under the company → Contacts, add a person and turn on portal access with a password. They log in at Client portal login.",
+        body: "Under the client → Contacts, add a person and turn on portal access with a password. They log in at Client portal login.",
         href: "/companies",
-        action: "View companies",
+        action: "View clients",
         icon: "UserPlus",
       },
       {
@@ -111,7 +111,7 @@ export const INTERNAL_ROLE_GUIDES = {
       {
         id: "welcome",
         title: "Your focus: assigned work",
-        body: "You can view companies and projects, and update tasks on the board. You won't manage clients or decide change requests.",
+        body: "You can view clients and projects, and update tasks on the board. You won't manage clients or decide change requests.",
         icon: "CheckSquare",
       },
       {
@@ -147,7 +147,7 @@ export const INTERNAL_ROLE_GUIDES = {
       {
         id: "welcome",
         title: "Your focus: finance",
-        body: "You have read-only access to companies and projects, with emphasis on contracts and invoices.",
+        body: "You have read-only access to clients and projects, with emphasis on contracts and invoices.",
         icon: "Receipt",
       },
       {
@@ -161,9 +161,9 @@ export const INTERNAL_ROLE_GUIDES = {
       {
         id: "clients",
         title: "Review client records",
-        body: "Browse Companies to see who you bill and project context. You cannot edit delivery tasks.",
+        body: "Browse Clients to see who you bill and project context. You cannot edit delivery tasks.",
         href: "/companies",
-        action: "Companies",
+        action: "Clients",
         icon: "Building2",
       },
       {
@@ -189,7 +189,7 @@ export const INTERNAL_ROLE_GUIDES = {
       {
         id: "dashboard",
         title: "Start on the dashboard",
-        body: "Company count, active projects, and change-request queue summarize what's happening.",
+        body: "Client count, active projects, and change-request queue summarize what's happening.",
         href: "/dashboard",
         action: "Dashboard",
         icon: "LayoutDashboard",
@@ -205,9 +205,9 @@ export const INTERNAL_ROLE_GUIDES = {
       {
         id: "drill",
         title: "Drill into clients",
-        body: "Open Companies or Projects for detail. You cannot edit — use this for status meetings.",
+        body: "Open Clients or Projects for detail. You cannot edit — use this for status meetings.",
         href: "/companies",
-        action: "Companies",
+        action: "Clients",
         icon: "Building2",
       },
     ],

@@ -20,13 +20,13 @@ export default async function SearchPage({ searchParams }) {
       <PageHeader
         eyebrow="Workspace"
         title="Search"
-        description="One search across companies, contacts, projects and tasks."
+        description="One search across clients, contacts, projects and tasks."
       />
 
       <div className="space-y-4" data-tour="search-page">
         <ListToolbar
           searchKey="q"
-          searchPlaceholder="Search companies, contacts, projects, tasks…"
+          searchPlaceholder="Search clients, contacts, projects, tasks…"
           searchLabel="Search the workspace"
         />
 
@@ -42,7 +42,7 @@ export default async function SearchPage({ searchParams }) {
               description={
                 query
                   ? "Enter at least 2 characters to search."
-                  : "Find a company, contact, project, or task by name."
+                  : "Find a client, contact, project, or task by name."
               }
             />
             <RecentSearches />

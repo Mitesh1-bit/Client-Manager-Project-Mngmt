@@ -28,7 +28,7 @@ export default async function CompanyProjectsPage({ params }) {
       <EmptyState
         icon={FolderKanban}
         title="No projects yet"
-        description={`Nothing is in flight for ${data.company.name}. Projects created for this company will appear here.`}
+        description={`Nothing is in flight for ${data.company.name}. Projects created for this client will appear here.`}
       />
     );
   }

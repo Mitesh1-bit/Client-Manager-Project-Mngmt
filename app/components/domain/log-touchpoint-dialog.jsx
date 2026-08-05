@@ -111,7 +111,7 @@ export function LogTouchpointDialog({ companyId, contacts = [] }) {
               <SelectContent>
                 {contacts.length === 0 ? (
                   <p className="px-2 py-1.5 text-caption text-muted-foreground">
-                    No contacts on file for this company
+                    No contacts on file for this client
                   </p>
                 ) : (
                   contacts.map((contact) => (

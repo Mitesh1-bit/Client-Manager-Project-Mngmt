@@ -11,8 +11,8 @@ const STATUS_OPTIONS = listStatuses("companyStatus").map((status) => ({
 export function CompaniesToolbar({ owners = [], tags = [] }) {
   return (
     <ListToolbar
-      searchPlaceholder="Search companies…"
-      searchLabel="Search companies by name or industry"
+      searchPlaceholder="Search clients…"
+      searchLabel="Search clients by name or industry"
       filters={[
         { key: "status", label: "Status", options: STATUS_OPTIONS },
         {

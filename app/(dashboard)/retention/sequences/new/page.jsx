@@ -20,7 +20,7 @@ export default function NewSequencePage() {
 
       <PageHeader
         title="New sequence"
-        description="Define the steps, then enroll companies once you're happy with the timing."
+        description="Define the steps, then enroll clients once you're happy with the timing."
       />
 
       <SequenceBuilder mode="create" />

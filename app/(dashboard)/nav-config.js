@@ -14,7 +14,7 @@ export const NAV_GROUPS = [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true, tourId: "nav-dashboard" },
       {
         href: "/companies",
-        label: "Companies",
+        label: "Clients",
         icon: Building2,
         tourId: "nav-companies",
         roles: ["admin", "project_manager", "team_member", "finance_admin", "executive_viewer"],

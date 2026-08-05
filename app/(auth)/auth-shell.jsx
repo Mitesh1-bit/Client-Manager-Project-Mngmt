@@ -10,7 +10,7 @@ import { LOGIN_URL, SIGNUP_URL } from "@/app/lib/marketing/site";
 import { MKT_EASE } from "@/app/components/marketing/motion";
 
 const PIPELINE = [
-  { label: "Company", color: "bg-mkt-lime" },
+  { label: "Client", color: "bg-mkt-lime" },
   { label: "Project", color: "bg-mkt-sky" },
   { label: "Change req", color: "bg-mkt-coral" },
   { label: "Portal", color: "bg-mkt-pink" },
@@ -120,7 +120,7 @@ function AuthBrandPanel() {
           <span className="text-mkt-lime"> one operating system.</span>
         </motion.h2>
         <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/60">
-          Companies, projects, change requests, and portal approvals — connected on one graph.
+          Clients, projects, change requests, and portal approvals — connected on one graph.
         </p>
       </div>
 

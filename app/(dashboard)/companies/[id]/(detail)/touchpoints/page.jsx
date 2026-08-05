@@ -38,7 +38,7 @@ export default async function CompanyTouchpointsPage({ params }) {
         <EmptyState
           icon={CalendarClock}
           title="No touchpoints yet"
-          description="Enrol this company in a retention sequence, or log a call or meeting, and the history builds up here."
+          description="Enrol this client in a retention sequence, or log a call or meeting, and the history builds up here."
         />
       </div>
     );

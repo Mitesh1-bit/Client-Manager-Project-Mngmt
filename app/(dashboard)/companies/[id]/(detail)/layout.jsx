@@ -31,7 +31,7 @@ export async function generateMetadata({ params }) {
     query: CompanyDetailHeaderDocument,
     variables: { id },
   });
-  return { title: data.company?.name ?? "Company" };
+  return { title: data.company?.name ?? "Client" };
 }
 
 export default async function CompanyDetailLayout({ children, params }) {
@@ -66,7 +66,7 @@ export default async function CompanyDetailLayout({ children, params }) {
           className="mb-4 inline-flex items-center gap-1 rounded-sm text-caption text-muted-foreground hover:text-foreground focus-ring"
         >
           <ChevronLeft aria-hidden="true" className="size-4" />
-          Companies
+          Clients
         </Link>
 
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">

@@ -27,7 +27,7 @@ export default async function CompanyDocsPage({ params }) {
       <EmptyState
         icon={FileText}
         title="No documents yet"
-        description="Contracts, briefs and deliverables attached to this company will be listed here."
+        description="Contracts, briefs and deliverables attached to this client will be listed here."
       />
     );
   }

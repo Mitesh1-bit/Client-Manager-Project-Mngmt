@@ -42,7 +42,7 @@ export default async function RetentionSequencesPage() {
           <EmptyState
             icon={Workflow}
             title="No sequences yet"
-            description="A sequence is a set of touchpoints that fire automatically after a company enrolls — onboarding, quarterly reviews, renewal outreach."
+            description="A sequence is a set of touchpoints that fire automatically after a client enrolls — onboarding, quarterly reviews, renewal outreach."
             action={
               <Button asChild>
                 <Link href="/retention/sequences/new">

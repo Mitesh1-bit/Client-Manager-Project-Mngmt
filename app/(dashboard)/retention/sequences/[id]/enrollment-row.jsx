@@ -31,7 +31,7 @@ export function EnrollmentRow({ enrollment, totalSteps }) {
   async function cancel() {
     try {
       await cancelEnrollment({ variables: { enrollmentId: enrollment.id } });
-      toast.success(`Cancelled for ${enrollment.company?.name ?? "company"}`);
+      toast.success(`Cancelled for ${enrollment.company?.name ?? "client"}`);
       setConfirmingCancel(false);
       router.refresh();
     } catch (error) {

@@ -69,7 +69,7 @@ export function EnrollInSequenceDialog({
     const finalContactId =
       selectedContactId || availableContacts.find((contact) => contact.isPrimary)?.id || "";
     if (!finalCompanyId || !finalSequenceId) {
-      setError(companyId ? "Choose a sequence." : "Choose a company.");
+      setError(companyId ? "Choose a sequence." : "Choose a client.");
       return;
     }
     if (!finalContactId) {
@@ -85,7 +85,7 @@ export function EnrollInSequenceDialog({
       const enrolledSequenceName =
         sequenceName ?? sequences?.find((s) => s.id === finalSequenceId)?.name ?? "the sequence";
       const enrolledCompanyName =
-        companyName ?? companies?.find((c) => c.id === finalCompanyId)?.name ?? "the company";
+        companyName ?? companies?.find((c) => c.id === finalCompanyId)?.name ?? "the client";
       toast.success(`${enrolledCompanyName} enrolled`, {
         description: `Touchpoints for "${enrolledSequenceName}" are now scheduled.`,
       });
@@ -112,23 +112,23 @@ export function EnrollInSequenceDialog({
             {companyName
               ? `Schedules ${companyName}'s touchpoints for whichever sequence you choose.`
               : sequenceName
-                ? `Schedules "${sequenceName}"'s touchpoints for whichever company you choose.`
+                ? `Schedules "${sequenceName}"'s touchpoints for whichever client you choose.`
                 : "Schedules the sequence's touchpoints starting today."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           {companyName ? (
-            <Field label="Company">
+            <Field label="Client">
               <p className="flex h-10 items-center rounded-lg border bg-muted px-3 text-caption font-medium">
                 {companyName}
               </p>
             </Field>
           ) : (
-            <Field label="Company" required>
+            <Field label="Client" required>
               <Select value={selectedCompanyId} onValueChange={setSelectedCompanyId}>
                 <SelectTrigger className="h-10 w-full">
-                  <SelectValue placeholder="Choose a company" />
+                  <SelectValue placeholder="Choose a client" />
                 </SelectTrigger>
                 <SelectContent>
                   {companies?.map((company) => (
@@ -187,7 +187,7 @@ export function EnrollInSequenceDialog({
               <SelectContent>
                 {availableContacts.length === 0 ? (
                   <p className="px-2 py-1.5 text-caption text-muted-foreground">
-                    No contacts on file for this company
+                    No contacts on file for this client
                   </p>
                 ) : (
                   availableContacts.map((contact) => (

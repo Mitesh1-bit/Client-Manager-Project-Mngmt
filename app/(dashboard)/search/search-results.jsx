@@ -32,7 +32,7 @@ export async function SearchResults({ query }) {
         <EmptyState
           icon={SearchX}
           title={`No matches for "${query}"`}
-          description="Try a different spelling, or search by company, contact, project, or task name."
+          description="Try a different spelling, or search by client, contact, project, or task name."
         />
       </>
     );
@@ -44,7 +44,7 @@ export async function SearchResults({ query }) {
       <div className="space-y-6">
         <ResultGroup
           icon={Building2}
-          title="Companies"
+          title="Clients"
           count={results.companiesCount}
           rows={companies.map((company) => ({
             key: company.id,

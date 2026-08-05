@@ -7,7 +7,7 @@ import { CompanyFormOptionsDocument } from "@/app/lib/graphql/generated/document
 
 import { CompanyForm } from "../company-form";
 
-export const metadata = { title: "New company" };
+export const metadata = { title: "New client" };
 
 export default async function NewCompanyPage() {
   let owners = [];
@@ -35,11 +35,11 @@ export default async function NewCompanyPage() {
         className="mb-4 inline-flex items-center gap-1 rounded-sm text-caption text-muted-foreground hover:text-foreground focus-ring"
       >
         <ChevronLeft aria-hidden="true" className="size-4" />
-        Back to companies
+        Back to clients
       </Link>
 
       <PageHeader
-        title="New company"
+        title="New client"
         description="Start with the essentials — you can fill in the rest once the relationship is underway."
       />
 

@@ -22,7 +22,7 @@ export function CompaniesTable({ connection, sort, emptyState }) {
     () => [
       {
         id: "name",
-        header: "Company",
+        header: "Client",
         meta: { width: "26rem" },
         cell: ({ row }) => (
           <div className="flex items-center gap-3">
@@ -154,12 +154,12 @@ export function CompaniesTable({ connection, sort, emptyState }) {
         getRowId={(row) => row.id}
         getRowHref={(row) => `/companies/${row.id}`}
         emptyState={emptyState}
-        caption="Companies"
+        caption="Clients"
       />
       <PaginationBar
         pageInfo={connection.pageInfo}
         totalCount={connection.totalCount}
-        itemLabel="companies"
+        itemLabel="clients"
       />
     </>
   );

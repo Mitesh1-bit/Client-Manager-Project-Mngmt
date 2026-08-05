@@ -54,7 +54,7 @@ export function ClientLoginForm() {
       const message = formatGraphqlError(error, "Something went wrong. Try again.");
       const hint =
         message === "Invalid credentials"
-          ? " Use the contact email exactly as saved under Companies → Contacts, with the portal password set there (not your staff login). If portal access was just enabled, open the contact, set a new portal password, and save again."
+          ? " Use the contact email exactly as saved under Clients → Contacts, with the portal password set there (not your staff login). If portal access was just enabled, open the contact, set a new portal password, and save again."
           : "";
       setSubmitError(message + hint);
     }

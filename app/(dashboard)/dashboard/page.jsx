@@ -37,7 +37,7 @@ export default async function DashboardPage() {
       <PageHeader
         eyebrow={viewer.organization.name}
         title={`Good to see you, ${viewer.name.split(" ")[0]}`}
-        description="Your workspace overview — companies, projects, and change requests at a glance."
+        description="Your workspace overview — clients, projects, and change requests at a glance."
       />
 
       {summary ? (
@@ -60,7 +60,7 @@ function SummaryGrid({ summary }) {
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       <SummaryCard
         icon={Building2}
-        label="Companies"
+        label="Clients"
         value={summary.companies.totalCount}
         detail={`${summary.companies.nodes.filter((c) => c.status === "ACTIVE").length} active`}
       />

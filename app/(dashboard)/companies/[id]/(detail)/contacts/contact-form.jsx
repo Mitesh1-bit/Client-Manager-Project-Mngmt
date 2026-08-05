@@ -194,7 +194,7 @@ export function ContactForm({ companyId, contact, onDone, onCancel }) {
             control={control}
             name="isPrimary"
             label="Primary contact"
-            description="The main spokesperson. Only one per company — setting this unsets the current one."
+            description="The main spokesperson. Only one per client — setting this unsets the current one."
             error={errors.isPrimary?.message}
           />
           <ToggleRow

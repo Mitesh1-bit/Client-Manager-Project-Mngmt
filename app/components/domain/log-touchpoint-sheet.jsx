@@ -36,7 +36,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 const touchpointSchema = z
   .object({
-    companyId: z.string().min(1, "Choose a company."),
+    companyId: z.string().min(1, "Choose a client."),
     contactId: z.string().optional().transform((value) => value || null),
     projectId: z.string().optional().transform((value) => value || null),
     type: z.enum(["EMAIL", "CALL", "MEETING", "INTERNAL_TASK"]),
@@ -130,7 +130,7 @@ export function LogTouchpointSheet({ trigger, companyId, companyName, companies 
             ) : null}
 
             {companyId ? null : (
-              <FormField label="Company" error={errors.companyId?.message} required>
+              <FormField label="Client" error={errors.companyId?.message} required>
                 {(field) => (
                   <Controller
                     control={control}
@@ -138,7 +138,7 @@ export function LogTouchpointSheet({ trigger, companyId, companyName, companies 
                     render={({ field: control_ }) => (
                       <Select value={control_.value} onValueChange={control_.onChange}>
                         <SelectTrigger {...field} className="h-10 w-full">
-                          <SelectValue placeholder="Choose a company" />
+                          <SelectValue placeholder="Choose a client" />
                         </SelectTrigger>
                         <SelectContent>
                           {companies?.map((company) => (
