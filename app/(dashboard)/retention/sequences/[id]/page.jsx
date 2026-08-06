@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Pencil, UserPlus, Users } from "lucide-react";
+import { Pencil, UserPlus, Users } from "lucide-react";
+
+import { BackLink } from "@/app/components/domain/back-link";
 
 import { EnrollInSequenceDialog } from "@/app/components/domain/enroll-in-sequence-dialog";
 import { SectionCard, EmptyState } from "@/app/components/domain/states";
@@ -53,13 +55,7 @@ export default async function SequenceDetailPage({ params }) {
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <Link
-        href="/retention/sequences"
-        className="mb-4 inline-flex items-center gap-1 rounded-sm text-caption text-muted-foreground hover:text-foreground focus-ring"
-      >
-        <ChevronLeft aria-hidden="true" className="size-4" />
-        Sequences
-      </Link>
+      <BackLink href="/retention/sequences">Sequences</BackLink>
 
       <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">

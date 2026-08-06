@@ -1,3 +1,4 @@
+import { BackLink } from "@/app/components/domain/back-link";
 import { PageHeader } from "@/app/components/domain/page-header";
 import { CrmRoleGuide } from "@/app/components/domain/crm-role-guide";
 import { requireViewer } from "@/app/lib/graphql/viewer";
@@ -9,6 +10,7 @@ export default async function GuidePage() {
 
   return (
     <>
+      <BackLink href="/dashboard">Back to dashboard</BackLink>
       <PageHeader
         eyebrow="Help"
         title="Product guide"

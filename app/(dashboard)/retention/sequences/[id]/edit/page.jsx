@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
 
+import { BackLink } from "@/app/components/domain/back-link";
 import { PageHeader } from "@/app/components/domain/page-header";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { RetentionSequenceDetailDocument } from "@/app/lib/graphql/generated/documents";
@@ -28,13 +27,7 @@ export default async function EditSequencePage({ params }) {
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <Link
-        href={`/retention/sequences/${id}`}
-        className="mb-4 inline-flex items-center gap-1 rounded-sm text-caption text-muted-foreground hover:text-foreground focus-ring"
-      >
-        <ChevronLeft aria-hidden="true" className="size-4" />
-        Back to {data.retentionSequence.name}
-      </Link>
+      <BackLink href={`/retention/sequences/${id}`}>Back to {data.retentionSequence.name}</BackLink>
 
       <PageHeader title={`Edit ${data.retentionSequence.name}`} />
 

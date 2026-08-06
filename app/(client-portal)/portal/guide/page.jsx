@@ -1,7 +1,7 @@
 import { CrmRoleGuide } from "@/app/components/domain/crm-role-guide";
 import { requireViewer } from "@/app/lib/graphql/viewer";
 
-import { PortalPageHeader } from "../portal-ui";
+import { PortalBackLink, PortalPageHeader } from "../portal-ui";
 
 export const metadata = { title: "Portal guide" };
 
@@ -10,6 +10,7 @@ export default async function PortalGuidePage() {
 
   return (
     <>
+      <PortalBackLink href="/portal">Back to overview</PortalBackLink>
       <PortalPageHeader
         eyebrow="Help"
         title="Portal guide"

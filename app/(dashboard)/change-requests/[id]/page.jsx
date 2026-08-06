@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Download, FileText, XCircle } from "lucide-react";
+import { Download, FileText, XCircle } from "lucide-react";
+
+import { BackLink } from "@/app/components/domain/back-link";
 
 import { ChangeRequestDecisionPanel } from "@/app/components/domain/change-request-decision-panel";
 import { ChangeRequestStatusPanel } from "@/app/components/domain/change-request-status-panel";
@@ -44,13 +46,7 @@ export default async function ChangeRequestDetailPage({ params }) {
 
   return (
     <div className="mx-auto w-full max-w-4xl">
-      <Link
-        href="/change-requests"
-        className="mb-4 inline-flex items-center gap-1 rounded-sm text-caption text-muted-foreground hover:text-foreground focus-ring"
-      >
-        <ChevronLeft aria-hidden="true" className="size-4" />
-        Change requests
-      </Link>
+      <BackLink href="/change-requests">Change requests</BackLink>
 
       <header className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">

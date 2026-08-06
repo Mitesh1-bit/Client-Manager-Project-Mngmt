@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
+import { BackLink } from "@/app/components/domain/back-link";
 import { cn } from "@/app/lib/utils";
 
 /** Page heading tuned for the client portal — friendly, spacious, clear hierarchy. */
@@ -170,10 +171,9 @@ export function PortalWelcomeHero({ firstName, companyName, awaitingCount }) {
 /** Styled back navigation pill. */
 export function PortalBackLink({ href, children, className }) {
   return (
-    <Link href={href} className={cn("portal-back-link", className)}>
-      <ChevronLeft aria-hidden="true" className="size-4 shrink-0" />
+    <BackLink href={href} variant="portal" className={className}>
       {children}
-    </Link>
+    </BackLink>
   );
 }
 

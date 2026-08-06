@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Pencil } from "lucide-react";
+import { Pencil } from "lucide-react";
+
+import { BackLink } from "@/app/components/domain/back-link";
 
 import { DetailTabs } from "@/app/components/domain/detail-tabs";
 import { StatusBadge } from "@/app/components/domain/status-badge";
@@ -64,13 +66,9 @@ export default async function ProjectDetailLayout({ children, params }) {
     <div className="min-w-0 space-y-6">
       <div>
         <div className="mb-4 flex items-center gap-1.5 text-caption text-muted-foreground">
-          <Link
-            href="/projects"
-            className="inline-flex items-center gap-1 rounded-sm hover:text-foreground focus-ring"
-          >
-            <ChevronLeft aria-hidden="true" className="size-4" />
+          <BackLink href="/projects" inline>
             Projects
-          </Link>
+          </BackLink>
             {project.company ? (
               <>
                 <span aria-hidden="true">/</span>

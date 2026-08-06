@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, ExternalLink, Pencil } from "lucide-react";
+import { ExternalLink, Pencil } from "lucide-react";
+
+import { BackLink } from "@/app/components/domain/back-link";
 
 import { DetailTabs } from "@/app/components/domain/detail-tabs";
 import { EntityAvatar } from "@/app/components/domain/entity-avatar";
@@ -56,13 +58,7 @@ export default async function CompanyDetailLayout({ children, params }) {
   return (
     <div className="min-w-0 space-y-6">
       <div>
-        <Link
-          href="/companies"
-          className="mb-4 inline-flex items-center gap-1 rounded-sm text-caption text-muted-foreground hover:text-foreground focus-ring"
-        >
-          <ChevronLeft aria-hidden="true" className="size-4" />
-          Clients
-        </Link>
+        <BackLink href="/companies">Clients</BackLink>
 
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="flex min-w-0 items-start gap-4">
