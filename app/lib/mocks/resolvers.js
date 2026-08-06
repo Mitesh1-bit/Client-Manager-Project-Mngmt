@@ -280,6 +280,24 @@ function demotePrimaryContacts(companyId, keepId) {
   }
 }
 
+function filteredActivityLogs(ctx, { entityType, actorId, startAt, endAt }) {
+  const viewerId = ctx.claims?.sub ?? db.users[0]?.id;
+  let rows = db.activity.map((entry) => ({
+    id: entry.id,
+    actorId: viewerId,
+    action: entry.action,
+    entityType: entry.entityType,
+    entityId: entry.entityId,
+    diff: entry.diff,
+    createdAt: entry.createdAt,
+  }));
+  if (entityType) rows = rows.filter((row) => row.entityType === entityType);
+  if (actorId) rows = rows.filter((row) => row.actorId === actorId);
+  if (startAt) rows = rows.filter((row) => row.createdAt >= startAt);
+  if (endAt) rows = rows.filter((row) => row.createdAt <= endAt);
+  return rows;
+}
+
 function logActivity(entityType, entityId, action, summary, diff = null) {
   db.activity.unshift({
     id: nextId("act"),
@@ -431,22 +449,12 @@ export const resolvers = {
     // Mock activity entries don't track a real actor per row (they're all
     // logged as "You"), so every row is attributed to the signed-in viewer.
     activityLogs: (_parent, { entityType, actorId, startAt, endAt, limit = 100, offset = 0 }, ctx) => {
-      const viewerId = ctx.claims?.sub ?? db.users[0]?.id;
-      let rows = db.activity.map((entry) => ({
-        id: entry.id,
-        actorId: viewerId,
-        action: entry.action,
-        entityType: entry.entityType,
-        entityId: entry.entityId,
-        diff: entry.diff,
-        createdAt: entry.createdAt,
-      }));
-      if (entityType) rows = rows.filter((row) => row.entityType === entityType);
-      if (actorId) rows = rows.filter((row) => row.actorId === actorId);
-      if (startAt) rows = rows.filter((row) => row.createdAt >= startAt);
-      if (endAt) rows = rows.filter((row) => row.createdAt <= endAt);
+      const rows = filteredActivityLogs(ctx, { entityType, actorId, startAt, endAt });
       return rows.slice(offset, offset + limit);
     },
+
+    activityLogsCount: (_parent, { entityType, actorId, startAt, endAt }, ctx) =>
+      filteredActivityLogs(ctx, { entityType, actorId, startAt, endAt }).length,
 
     company: (_parent, { id }, ctx) => {
       const company = byId(db.companies, id);

@@ -613,6 +613,12 @@ query AuditLog($entityType: String, $actorId: ID, $startAt: DateTime, $endAt: Da
     diff
     createdAt
   }
+  activityLogsCount(
+    entityType: $entityType
+    actorId: $actorId
+    startAt: $startAt
+    endAt: $endAt
+  )
   users {
     ...UserSummaryFields
   }

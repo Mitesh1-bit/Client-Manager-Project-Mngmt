@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useLazyQuery } from "@apollo/client/react";
-import { Download, History, LoaderCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, History, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { DataTable } from "@/app/components/domain/data-table";
@@ -123,51 +123,46 @@ function downloadCsv(rows, usersById) {
   URL.revokeObjectURL(url);
 }
 
-export function AuditLogPanel({ initialEntries, users, pageSize }) {
+export function AuditLogPanel({ initialEntries, initialTotalCount, users, pageSize }) {
   const [entries, setEntries] = useState(initialEntries);
+  const [totalCount, setTotalCount] = useState(initialTotalCount);
+  const [page, setPage] = useState(1);
   const [entityType, setEntityType] = useState("");
   const [actorId, setActorId] = useState("");
   const [startAt, setStartAt] = useState("");
   const [endAt, setEndAt] = useState("");
-  const [hasMore, setHasMore] = useState(initialEntries.length === pageSize);
 
   const usersById = useMemo(() => new Map(users.map((user) => [user.id, user])), [users]);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   const [runQuery, { loading }] = useLazyQuery(AuditLogDocument, {
     fetchPolicy: "network-only",
   });
 
-  function buildVariables(offset) {
+  function buildVariables(targetPage) {
     return {
       entityType: entityType || null,
       actorId: actorId || null,
       startAt: startAt ? new Date(startAt).toISOString() : null,
       endAt: endAt ? new Date(`${endAt}T23:59:59`).toISOString() : null,
       limit: pageSize,
-      offset,
+      offset: (targetPage - 1) * pageSize,
     };
   }
 
-  async function applyFilters() {
+  async function goToPage(targetPage) {
     try {
-      const { data } = await runQuery({ variables: buildVariables(0) });
-      const rows = pickList(data, "activityLogs");
-      setEntries(rows);
-      setHasMore(rows.length === pageSize);
+      const { data } = await runQuery({ variables: buildVariables(targetPage) });
+      setEntries(pickList(data, "activityLogs"));
+      setTotalCount(data?.activityLogsCount ?? 0);
+      setPage(targetPage);
     } catch (error) {
       toast.error("Couldn't load the audit log", { description: error?.message });
     }
   }
 
-  async function loadMore() {
-    try {
-      const { data } = await runQuery({ variables: buildVariables(entries.length) });
-      const rows = pickList(data, "activityLogs");
-      setEntries((current) => [...current, ...rows]);
-      setHasMore(rows.length === pageSize);
-    } catch (error) {
-      toast.error("Couldn't load more entries", { description: error?.message });
-    }
+  function applyFilters() {
+    goToPage(1);
   }
 
   function handleExport() {
@@ -249,7 +244,7 @@ export function AuditLogPanel({ initialEntries, users, pageSize }) {
   return (
     <SectionCard
       title="Activity"
-      description={`${entries.length} entr${entries.length === 1 ? "y" : "ies"} loaded`}
+      description={`${totalCount} entr${totalCount === 1 ? "y" : "ies"} total`}
       actions={
         <Button variant="outline" size="sm" onClick={handleExport} disabled={entries.length === 0}>
           <Download aria-hidden="true" />
@@ -325,12 +320,45 @@ export function AuditLogPanel({ initialEntries, users, pageSize }) {
         }
       />
 
-      {hasMore ? (
-        <div className="mt-4 flex justify-center">
-          <Button variant="outline" onClick={loadMore} disabled={loading}>
-            {loading ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : null}
-            Load more
-          </Button>
+      {totalCount > 0 ? (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-caption text-muted-foreground" aria-live="polite">
+            Showing{" "}
+            <span className="tabular font-medium text-foreground">
+              {(page - 1) * pageSize + 1}
+            </span>
+            –
+            <span className="tabular font-medium text-foreground">
+              {Math.min(page * pageSize, totalCount)}
+            </span>{" "}
+            of <span className="tabular font-medium text-foreground">{totalCount}</span>
+          </p>
+
+          {totalPages > 1 ? (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1 || loading}
+                onClick={() => goToPage(page - 1)}
+              >
+                <ChevronLeft aria-hidden="true" />
+                Previous
+              </Button>
+              <span className="tabular px-1 text-caption text-muted-foreground">
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages || loading}
+                onClick={() => goToPage(page + 1)}
+              >
+                Next
+                <ChevronRight aria-hidden="true" />
+              </Button>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </SectionCard>

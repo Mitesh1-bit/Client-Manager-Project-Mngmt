@@ -867,6 +867,7 @@ type Query {
     limit: Int
     offset: Int
   ): [ActivityLog!]!
+  activityLogsCount(entityType: String, actorId: ID, startAt: DateTime, endAt: DateTime): Int!
   company(id: ID!): Company
   companies(filter: CompanyFilter, page: PageInput): CompanyConnection!
   project(id: ID!): Project

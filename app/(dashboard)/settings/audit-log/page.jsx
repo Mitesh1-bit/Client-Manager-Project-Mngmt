@@ -12,7 +12,7 @@ import { SettingsTabs } from "../settings-tabs";
 // Mirrors the backend's activityLogs gate (require_role in
 // app/graphql/audit/schema.py).
 const AUDIT_LOG_ROLES = ["admin", "project_manager"];
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 15;
 
 export const metadata = { title: "Audit log" };
 
@@ -37,6 +37,7 @@ export default async function AuditLogPage() {
         <SettingsTabs role={viewer.role} />
         <AuditLogPanel
           initialEntries={pickList(data, "activityLogs")}
+          initialTotalCount={data.activityLogsCount ?? 0}
           users={pickList(data, "users")}
           pageSize={PAGE_SIZE}
         />

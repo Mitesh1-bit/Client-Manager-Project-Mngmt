@@ -476,6 +476,7 @@ type Query {
   invoices(companyId: ID = null, projectId: ID = null, status: String = null): [InvoiceType!]!
   invoice(id: ID!): InvoiceType
   activityLogs(entityType: String = null, actorId: ID = null, startAt: DateTime = null, endAt: DateTime = null, limit: Int! = 100, offset: Int! = 0): [ActivityLogType!]!
+  activityLogsCount(entityType: String = null, actorId: ID = null, startAt: DateTime = null, endAt: DateTime = null): Int!
 
   """Signed-in internal user or portal contact."""
   me: ViewerType
