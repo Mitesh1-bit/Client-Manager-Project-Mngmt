@@ -45,6 +45,52 @@ const ENTITY_HREF = {
   project: (id) => `/projects/${id}`,
 };
 
+// Fields that resolve to a user — shown by name instead of a raw ID.
+const USER_ID_FIELDS = new Set(["assignee_id", "project_manager_id", "account_owner_id"]);
+
+function humanizeDiffValue(key, value, usersById) {
+  if (value === null || value === undefined || value === "") return "—";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (USER_ID_FIELDS.has(key)) return usersById.get(value)?.name ?? value;
+  if (key.endsWith("_id")) return value;
+  return humanize(String(value));
+}
+
+/**
+ * Activity diffs come in two shapes: `{before, after}` field snapshots from
+ * a create/update/delete, or a flat one-off note like `{member_added: "X"}`
+ * from actions that aren't a simple field change. Either way, turn it into
+ * readable "Field: old -> new" rows instead of a raw JSON dump.
+ */
+function diffRows(diff, usersById) {
+  if (!diff) return [];
+  const { before, after, ...rest } = diff;
+  if (before || after) {
+    const keys = new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})]);
+    keys.delete("id");
+    const rows = [];
+    for (const key of keys) {
+      const oldValue = before?.[key];
+      const newValue = after?.[key];
+      const label = humanize(key);
+      if (before && after) {
+        if (oldValue === newValue) continue;
+        rows.push({
+          label,
+          text: `${humanizeDiffValue(key, oldValue, usersById)} → ${humanizeDiffValue(key, newValue, usersById)}`,
+        });
+      } else {
+        rows.push({ label, text: humanizeDiffValue(key, after ? newValue : oldValue, usersById) });
+      }
+    }
+    return rows;
+  }
+  return Object.entries(rest).map(([key, value]) => ({
+    label: humanize(key),
+    text: humanizeDiffValue(key, value, usersById),
+  }));
+}
+
 function csvEscape(value) {
   const text = value === null || value === undefined ? "" : String(value);
   return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
@@ -176,19 +222,25 @@ export function AuditLogPanel({ initialEntries, users, pageSize }) {
         id: "details",
         header: "Details",
         enableSorting: false,
-        cell: ({ row }) =>
-          row.original.diff ? (
+        cell: ({ row }) => {
+          const rows = diffRows(row.original.diff, usersById);
+          if (rows.length === 0) return <span className="text-muted-foreground">—</span>;
+          return (
             <details>
               <summary className="cursor-pointer text-caption text-muted-foreground hover:text-foreground">
-                View
+                {rows.length} change{rows.length === 1 ? "" : "s"}
               </summary>
-              <pre className="mt-1.5 max-w-md overflow-x-auto rounded-md bg-muted p-2 text-[0.6875rem]">
-                {JSON.stringify(row.original.diff, null, 2)}
-              </pre>
+              <dl className="mt-1.5 max-w-md space-y-1">
+                {rows.map((entry) => (
+                  <div key={entry.label} className="flex gap-1.5 text-caption">
+                    <dt className="shrink-0 font-medium">{entry.label}:</dt>
+                    <dd className="truncate text-muted-foreground">{entry.text}</dd>
+                  </div>
+                ))}
+              </dl>
             </details>
-          ) : (
-            <span className="text-muted-foreground">—</span>
-          ),
+          );
+        },
       },
     ],
     [usersById],
