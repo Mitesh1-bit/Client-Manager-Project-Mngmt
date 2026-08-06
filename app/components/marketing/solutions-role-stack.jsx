@@ -338,7 +338,7 @@ export function SolutionsRoleStack() {
   }, [count]);
 
   return (
-    <section className="mkt-role-stack-section relative overflow-x-clip border-y border-mkt-navy/8 py-16 md:py-20 lg:py-24">
+    <section className="mkt-role-stack-section relative overflow-x-clip border-y border-mkt-navy/8 py-14 sm:py-16 md:py-20 lg:py-24">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-30"
@@ -353,7 +353,7 @@ export function SolutionsRoleStack() {
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div
-          className="grid min-w-0 items-start gap-12 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:gap-12 xl:gap-16"
+          className="grid min-w-0 items-start gap-10 sm:gap-12 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:gap-12 xl:gap-16"
           onMouseEnter={() => {
             pausedRef.current = true;
           }}
@@ -362,16 +362,18 @@ export function SolutionsRoleStack() {
           }}
         >
           {/* Left — page-level copy only */}
-          <div className="max-w-lg lg:max-w-none">
+          <div className="order-2 max-w-lg lg:order-1 lg:max-w-none">
             <Reveal>
-              <p className="font-mono text-[0.65rem] uppercase tracking-[0.35em] text-mkt-navy/45">{copy.eyebrow}</p>
-              <h2 className="mt-3 font-mkt-display text-3xl text-mkt-navy md:text-4xl lg:text-[2.75rem] lg:leading-tight">
+              <p className="font-mono text-[0.65rem] uppercase tracking-[0.28em] text-mkt-navy/45 sm:tracking-[0.35em]">
+                {copy.eyebrow}
+              </p>
+              <h2 className="mt-3 font-mkt-display text-[clamp(1.65rem,5vw,2.75rem)] text-mkt-navy lg:text-[2.75rem] lg:leading-tight">
                 {copy.title}
               </h2>
-              <p className="mt-4 text-base leading-relaxed text-mkt-navy/60">{copy.subtitle}</p>
+              <p className="mt-3 text-sm leading-relaxed text-mkt-navy/60 sm:mt-4 sm:text-base">{copy.subtitle}</p>
             </Reveal>
 
-            <ul className="mt-10 space-y-6 border-t border-mkt-navy/10 pt-10">
+            <ul className="mt-8 space-y-5 border-t border-mkt-navy/10 pt-8 sm:mt-10 sm:space-y-6 sm:pt-10">
               {copy.points.map((point) => (
                 <li key={point.title}>
                   <p className="font-mkt-display text-lg text-mkt-navy">{point.title}</p>
@@ -380,28 +382,30 @@ export function SolutionsRoleStack() {
               ))}
             </ul>
 
-            <div className="mt-10 flex flex-wrap gap-2">
+            <div className="mt-8 flex flex-wrap gap-2 sm:mt-10">
               {roles.map((role, i) => (
                 <button
                   key={role.id}
                   type="button"
                   onClick={() => goTo(i)}
                   className={cn(
-                    "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[0.68rem] font-semibold shadow-sm transition",
+                    "inline-flex max-w-full items-center gap-2 rounded-full border px-3 py-2 text-[0.625rem] font-semibold shadow-sm transition sm:px-4 sm:text-[0.68rem]",
                     i === active
                       ? "border-mkt-navy/25 bg-mkt-navy text-white shadow-md"
                       : "border-mkt-navy/12 bg-white text-mkt-navy hover:border-mkt-navy/22 hover:shadow-md",
                   )}
                 >
-                  <span className={cn("size-1.5 rounded-full", ROLE_ACCENT[role.id])} />
-                  {String(i + 1).padStart(2, "0")} {role.label}
+                  <span className={cn("size-1.5 shrink-0 rounded-full", ROLE_ACCENT[role.id])} />
+                  <span className="truncate">
+                    {String(i + 1).padStart(2, "0")} {role.label}
+                  </span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Right — full data cards */}
-          <div className="mkt-role-stack-wrap mx-auto w-full min-w-0 lg:mx-0">
+          {/* Right — full data cards (shown first on mobile) */}
+          <div className="order-1 mkt-role-stack-wrap mx-auto w-full min-w-0 lg:order-2 lg:mx-0">
             <MktScaleViewport
               designWidth={768}
               designHeight={440}

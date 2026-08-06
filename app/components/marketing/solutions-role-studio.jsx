@@ -71,11 +71,11 @@ export function SolutionsRoleStudio() {
   }, [roles]);
 
   return (
-    <section id="role-studio" className="scroll-mt-20 border-y border-mkt-navy/8 bg-white py-20 md:py-28">
+    <section id="role-studio" className="scroll-mt-20 border-y border-mkt-navy/8 bg-white py-14 sm:py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="font-mkt-display text-3xl text-mkt-navy md:text-5xl">One tool. Your workflow.</h2>
-          <p className="mt-4 text-base text-mkt-navy/65 md:text-lg">
+          <h2 className="font-mkt-display text-[clamp(1.65rem,5vw,3rem)] text-mkt-navy">One tool. Your workflow.</h2>
+          <p className="mt-3 text-sm text-mkt-navy/65 sm:mt-4 sm:text-base md:text-lg">
             Select a role — the preview updates like switching apps, not scrolling another product tour.
           </p>
         </Reveal>
@@ -84,7 +84,7 @@ export function SolutionsRoleStudio() {
           <div
             role="tablist"
             aria-label="Roles"
-            className="relative z-20 mt-12 flex flex-wrap justify-center gap-2"
+            className="mkt-sol-role-tabs relative z-20 mt-10 sm:mt-12"
           >
             {roles.map((role, i) => {
               const selected = i === active;
@@ -116,7 +116,7 @@ export function SolutionsRoleStudio() {
           </div>
         </LayoutGroup>
 
-        <div className="mt-14 grid items-start gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-14">
+        <div className="mt-10 grid items-start gap-8 sm:mt-14 sm:gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-14">
           <AnimatePresence mode="wait">
             <motion.div
               key={current.id}
@@ -130,7 +130,7 @@ export function SolutionsRoleStudio() {
               <p className="font-mono text-[0.62rem] uppercase tracking-wider text-mkt-navy/40">
                 meridian.app/solutions#{current.id}
               </p>
-              <h3 className="mt-4 font-mkt-display text-2xl text-mkt-navy md:text-4xl">
+              <h3 className="mt-3 font-mkt-display text-[clamp(1.35rem,4.5vw,2.25rem)] text-mkt-navy md:text-4xl">
                 Meridian for{" "}
                 <em className={cn("not-italic", ROLE_ACCENTS[current.id])}>{current.label.toLowerCase()}</em>
               </h3>

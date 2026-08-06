@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
 import {
   Archive,
@@ -19,6 +19,8 @@ import { toast } from "sonner";
 
 import { ActivityTimeline } from "@/app/components/domain/activity-timeline";
 import { DataTable } from "@/app/components/domain/data-table";
+import { ListToolbar } from "@/app/components/domain/list-toolbar";
+import { PaginationBar } from "@/app/components/domain/pagination-bar";
 import { EntityAvatar } from "@/app/components/domain/entity-avatar";
 import { EmptyState } from "@/app/components/domain/states";
 import { StatusBadge } from "@/app/components/domain/status-badge";
@@ -49,8 +51,10 @@ import {
   SheetTitle,
 } from "@/app/components/ui/sheet";
 import { displayUrl, formatRelativeDays } from "@/app/lib/format";
+import { matchesSearch, paginateList } from "@/app/lib/api/connection";
 import { normalizeContact } from "@/app/lib/api/normalize";
 import { asArray } from "@/app/lib/api/safe-list";
+import { parseListParams, readList, readString } from "@/app/lib/list-params";
 import { cn } from "@/app/lib/utils";
 import {
   ArchiveContactDocument,
@@ -68,12 +72,35 @@ const CHANNEL_LABELS = { EMAIL: "Email", PHONE: "Phone", MEETING: "Meeting" };
  */
 export function ContactsPanel({ companyId, companyName, contacts = [] }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [panel, setPanel] = useState(null); // { mode: 'view' | 'edit' | 'create', contactId? }
   const [archiveTarget, setArchiveTarget] = useState(null);
 
   const rows = useMemo(
     () => asArray(contacts).map((contact) => normalizeContact(contact)),
     [contacts],
+  );
+
+  const query = readString(searchParams, "q");
+  const statusFilter = readList(searchParams, "status");
+  const { pageInput } = parseListParams(searchParams, { sortable: [], pageSize: 10 });
+
+  const filteredRows = useMemo(() => {
+    let list = rows;
+    if (query) {
+      list = list.filter((contact) =>
+        matchesSearch(contact, query, ["fullName", "email", "title", "department"]),
+      );
+    }
+    if (statusFilter.length > 0) {
+      list = list.filter((contact) => statusFilter.includes(contact.status));
+    }
+    return list;
+  }, [rows, query, statusFilter]);
+
+  const { nodes: visibleRows, pageInfo, totalCount } = useMemo(
+    () => paginateList(filteredRows, pageInput),
+    [filteredRows, pageInput],
   );
 
   const [updateContact] = useMutation(UpdateContactDocument);
@@ -245,18 +272,34 @@ export function ContactsPanel({ companyId, companyName, contacts = [] }) {
 
   return (
     <div data-tour="contacts-panel">
-      <div className="mb-4 toolbar-row">
-        <p className="text-caption text-muted-foreground" aria-live="polite">
-          {rows.length} {rows.length === 1 ? "contact" : "contacts"} at {companyName}
-        </p>
-        <Button size="sm" onClick={() => setPanel({ mode: "create" })}>
-          <Plus aria-hidden="true" />
-          Add contact
-        </Button>
+      <div className="mb-4 space-y-3">
+        <div className="toolbar-row">
+          <p className="text-caption text-muted-foreground" aria-live="polite">
+            {totalCount} {totalCount === 1 ? "contact" : "contacts"} at {companyName}
+          </p>
+          <Button size="sm" onClick={() => setPanel({ mode: "create" })}>
+            <Plus aria-hidden="true" />
+            Add contact
+          </Button>
+        </div>
+        <ListToolbar
+          searchPlaceholder="Search contacts…"
+          searchLabel="Search contacts"
+          filters={[
+            {
+              key: "status",
+              label: "Status",
+              options: [
+                { value: "ACTIVE", label: "Active" },
+                { value: "INACTIVE", label: "Inactive" },
+              ],
+            },
+          ]}
+        />
       </div>
 
       <DataTable
-        data={rows}
+        data={visibleRows}
         columns={columns}
         getRowId={(row) => row.id}
         onRowClick={(row) => setPanel({ mode: "view", contactId: row.id })}
@@ -275,6 +318,8 @@ export function ContactsPanel({ companyId, companyName, contacts = [] }) {
           />
         }
       />
+
+      <PaginationBar pageInfo={pageInfo} totalCount={totalCount} itemLabel="contacts" />
 
       <Sheet open={Boolean(panel)} onOpenChange={(open) => !open && setPanel(null)}>
         <SheetContent className="flex h-svh max-h-svh w-full max-w-[min(100vw,42rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">

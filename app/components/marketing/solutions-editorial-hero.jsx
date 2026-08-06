@@ -14,7 +14,7 @@ const ROLE_BADGES = [
     label: "Account managers",
     fill: "bg-mkt-lime shadow-mkt-lime/35",
     glow: "bg-mkt-lime/25",
-    style: { top: "8%", left: "0%" },
+    style: { top: "6%", left: "2%" },
     delay: 0,
   },
   {
@@ -22,7 +22,7 @@ const ROLE_BADGES = [
     label: "Project managers",
     fill: "bg-mkt-sky shadow-mkt-sky/35",
     glow: "bg-mkt-sky/25",
-    style: { top: "8%", right: "0%" },
+    style: { top: "6%", right: "2%" },
     delay: 0.12,
   },
   {
@@ -30,7 +30,7 @@ const ROLE_BADGES = [
     label: "Leadership",
     fill: "bg-mkt-sun shadow-mkt-sun/40",
     glow: "bg-mkt-sun/30",
-    style: { bottom: "14%", left: "2%" },
+    style: { bottom: "10%", left: "4%" },
     delay: 0.24,
   },
   {
@@ -38,17 +38,17 @@ const ROLE_BADGES = [
     label: "Client partners",
     fill: "bg-[#b8f0a8] shadow-mkt-lime/25",
     glow: "bg-mkt-lime/15",
-    style: { bottom: "14%", right: "2%" },
+    style: { bottom: "10%", right: "4%" },
     delay: 0.36,
   },
 ];
 
-function RoleBadge({ badge, mounted, className }) {
+function DesktopRoleBadge({ badge, mounted, className }) {
   return (
     <motion.a
       href={`#${badge.id}`}
       {...getMktEntrance(mounted, { y: 12, scale: 0.94, delay: 0.15 + badge.delay, duration: 0.55 })}
-      className={cn("group absolute", className)}
+      className={cn("group absolute hidden md:inline-flex", className)}
       style={badge.style}
     >
       <span
@@ -65,9 +65,30 @@ function RoleBadge({ badge, mounted, className }) {
         )}
       >
         {badge.label}
-        <span className="text-mkt-navy/40 transition group-hover:translate-x-0.5 group-hover:text-mkt-navy/70" aria-hidden>
+        <span
+          className="text-mkt-navy/40 transition group-hover:translate-x-0.5 group-hover:text-mkt-navy/70"
+          aria-hidden
+        >
           →
         </span>
+      </span>
+    </motion.a>
+  );
+}
+
+function MobileRoleChip({ badge, mounted }) {
+  return (
+    <motion.a
+      href={`#${badge.id}`}
+      {...getMktEntrance(mounted, { y: 8, delay: 0.18 + badge.delay, duration: 0.45 })}
+      className={cn(
+        "inline-flex w-full items-center justify-center gap-1.5 rounded-full px-3 py-2.5 text-[0.6875rem] font-bold text-mkt-navy shadow-md transition active:scale-[0.98] sm:text-xs",
+        badge.fill,
+      )}
+    >
+      <span className="text-center leading-tight">{badge.label}</span>
+      <span className="shrink-0 text-mkt-navy/45" aria-hidden>
+        →
       </span>
     </motion.a>
   );
@@ -77,7 +98,7 @@ export function SolutionsEditorialHero() {
   const { mounted } = useMktMotion();
 
   return (
-    <header className="relative overflow-hidden bg-[#faf9f6] pb-20 pt-10 md:pb-28 md:pt-14">
+    <header className="relative overflow-hidden bg-[#faf9f6] pb-12 pt-8 sm:pb-16 sm:pt-10 md:pb-28 md:pt-14">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
@@ -106,24 +127,25 @@ export function SolutionsEditorialHero() {
           <span className="text-mkt-navy/65">Solutions</span>
         </nav>
 
-        <div className="mkt-sol-hero-viewport relative mx-auto mt-14 max-w-5xl md:mt-20">
-          <div className="mkt-sol-badge-scaler pointer-events-none absolute inset-0">
+        <div className="mkt-sol-hero-viewport relative mx-auto mt-8 max-w-5xl sm:mt-10 md:mt-20">
+          {/* Desktop only — floating orbit badges */}
+          <div className="mkt-sol-badge-scaler pointer-events-none absolute inset-0 hidden md:block">
             {ROLE_BADGES.map((badge) => (
-              <RoleBadge key={badge.id} badge={badge} mounted={mounted} className="pointer-events-auto" />
+              <DesktopRoleBadge key={badge.id} badge={badge} mounted={mounted} className="pointer-events-auto" />
             ))}
           </div>
 
-          <div className="relative z-10 mx-auto max-w-3xl px-2 text-center md:px-20 lg:px-24">
+          <div className="relative z-10 mx-auto max-w-3xl px-1 text-center sm:px-2 md:px-20 lg:px-24">
             <motion.p
               {...getMktEntrance(mounted, { y: 10, duration: 0.5 })}
-              className="font-mono text-[0.65rem] uppercase tracking-[0.35em] text-mkt-navy/45"
+              className="font-mono text-[0.65rem] uppercase tracking-[0.28em] text-mkt-navy/45 sm:tracking-[0.35em]"
             >
               Solutions by role
             </motion.p>
 
             <motion.h1
               {...getMktEntrance(mounted, { y: 20, delay: 0.08, duration: 0.65 })}
-              className="mt-6 font-mkt-display text-[clamp(2.35rem,5.5vw,4.5rem)] leading-[1.08] tracking-tight text-mkt-navy"
+              className="mt-4 font-mkt-display text-[clamp(1.85rem,7.5vw,4.5rem)] leading-[1.1] tracking-tight text-mkt-navy sm:mt-6 sm:leading-[1.08]"
             >
               Agency solutions{" "}
               <span className="relative inline-block">
@@ -141,19 +163,26 @@ export function SolutionsEditorialHero() {
 
             <motion.p
               {...getMktEntrance(mounted, { y: 14, delay: 0.16, duration: 0.55 })}
-              className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-mkt-navy/58 md:text-[1.05rem]"
+              className="mx-auto mt-4 max-w-xl px-1 text-[0.9375rem] leading-relaxed text-mkt-navy/58 sm:mt-6 sm:px-0 sm:text-base md:text-[1.05rem]"
             >
               Pick a role — see the exact workflow, permissions, and screen your team uses. Same company
               record, scoped for internal delivery or client portal.
             </motion.p>
 
+            {/* Mobile / tablet — tappable chips in a grid (no overlap) */}
+            <div className="mt-6 grid grid-cols-2 gap-2 sm:mt-8 sm:gap-3 md:hidden">
+              {ROLE_BADGES.map((badge) => (
+                <MobileRoleChip key={badge.id} badge={badge} mounted={mounted} />
+              ))}
+            </div>
+
             <motion.div
               {...getMktEntrance(mounted, { y: 12, delay: 0.28, duration: 0.5 })}
-              className="mt-10 flex flex-wrap items-center justify-center gap-3"
+              className="mt-8 flex flex-col items-stretch gap-2.5 sm:mt-10 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-3"
             >
               <a
                 href="#role-studio"
-                className="inline-flex items-center gap-2 rounded-full bg-mkt-navy px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-mkt-navy/15 transition hover:bg-mkt-navy/92"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-mkt-navy px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-mkt-navy/15 transition hover:bg-mkt-navy/92 sm:px-7"
               >
                 Explore roles
                 <span className="text-white/70" aria-hidden>
@@ -162,7 +191,7 @@ export function SolutionsEditorialHero() {
               </a>
               <Link
                 href="/product"
-                className="inline-flex items-center gap-2 rounded-full border-2 border-mkt-sky/40 bg-white px-7 py-3.5 text-sm font-semibold text-mkt-navy shadow-sm transition hover:border-mkt-sky hover:shadow-md"
+                className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-mkt-sky/40 bg-white px-6 py-3.5 text-sm font-semibold text-mkt-navy shadow-sm transition hover:border-mkt-sky hover:shadow-md sm:px-7"
               >
                 Product modules
               </Link>

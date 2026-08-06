@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
@@ -11,6 +11,10 @@ import { toast } from "sonner";
 
 import { FormField } from "@/app/components/domain/form-field";
 import { MultiSelect, SelectedChips } from "@/app/components/domain/multi-select";
+import {
+  SearchableSelect,
+  shouldUseSearchableSelect,
+} from "@/app/components/domain/searchable-select";
 import { SectionCard } from "@/app/components/domain/states";
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
 import { Button } from "@/app/components/ui/button";
@@ -30,7 +34,6 @@ import {
 import { listStatuses } from "@/app/lib/status";
 
 import {
-  TIMEZONES,
   companySchema,
   companyToFormValues,
   toCompanyInput,
@@ -51,6 +54,26 @@ const STATUS_OPTIONS = listStatuses("companyStatus");
 export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [], industries = [] }) {
   const router = useRouter();
   const [serverError, setServerError] = useState(null);
+  const [timezoneOptions, setTimezoneOptions] = useState([]);
+  const [countryOptions, setCountryOptions] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    import("@/app/lib/geo-options")
+      .then((mod) => {
+        if (!active) return;
+        setTimezoneOptions(mod.getTimezoneOptions());
+        setCountryOptions(mod.getCountryOptions());
+      })
+      .catch(() => {
+        if (!active) return;
+        setTimezoneOptions([]);
+        setCountryOptions([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const [createCompany] = useMutation(CreateCompanyDocument);
   const [updateCompany] = useMutation(UpdateCompanyDocument);
@@ -68,6 +91,7 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
   });
 
   const tagOptions = tagList.map((tag) => ({ value: tag.id, label: tag.name }));
+  const ownerOptions = owners.map((owner) => ({ value: owner.id, label: owner.name }));
   const cancelHref = mode === "edit" ? `/companies/${company.id}` : "/companies";
 
   async function handleCreateTag(name) {
@@ -178,18 +202,16 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
                 control={control}
                 name="timezone"
                 render={({ field: control_ }) => (
-                  <Select value={control_.value} onValueChange={control_.onChange}>
-                    <SelectTrigger {...field} className="h-10 w-full">
-                      <SelectValue placeholder="Not set" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TIMEZONES.map((zone) => (
-                        <SelectItem key={zone} value={zone}>
-                          {zone.replace(/_/g, " ")}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <SearchableSelect
+                    {...field}
+                    options={timezoneOptions}
+                    value={control_.value ?? ""}
+                    onChange={control_.onChange}
+                    placeholder="Search timezones…"
+                    emptyText="No timezone matches."
+                    allowClear
+                    clearLabel="Not set"
+                  />
                 )}
               />
             )}
@@ -230,20 +252,33 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
               <Controller
                 control={control}
                 name="accountOwnerId"
-                render={({ field: control_ }) => (
-                  <Select value={control_.value} onValueChange={control_.onChange}>
-                    <SelectTrigger {...field} className="h-10 w-full">
-                      <SelectValue placeholder="Unassigned" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {owners.map((owner) => (
-                        <SelectItem key={owner.id} value={owner.id}>
-                          {owner.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                render={({ field: control_ }) =>
+                  shouldUseSearchableSelect(ownerOptions) ? (
+                    <SearchableSelect
+                      {...field}
+                      options={ownerOptions}
+                      value={control_.value ?? ""}
+                      onChange={control_.onChange}
+                      placeholder="Search team members…"
+                      emptyText="No team member matches."
+                      allowClear
+                      clearLabel="Unassigned"
+                    />
+                  ) : (
+                    <Select value={control_.value} onValueChange={control_.onChange}>
+                      <SelectTrigger {...field} className="h-10 w-full">
+                        <SelectValue placeholder="Unassigned" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {owners.map((owner) => (
+                          <SelectItem key={owner.id} value={owner.id}>
+                            {owner.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )
+                }
               />
             )}
           </FormField>
@@ -297,7 +332,24 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
             {(field) => <Input {...field} {...register("address.postalCode")} className="h-10" />}
           </FormField>
           <FormField label="Country" error={errors.address?.country?.message}>
-            {(field) => <Input {...field} {...register("address.country")} className="h-10" />}
+            {(field) => (
+              <Controller
+                control={control}
+                name="address.country"
+                render={({ field: control_ }) => (
+                  <SearchableSelect
+                    {...field}
+                    options={countryOptions}
+                    value={control_.value ?? ""}
+                    onChange={control_.onChange}
+                    placeholder="Search countries…"
+                    emptyText="No country matches."
+                    allowClear
+                    clearLabel="Not set"
+                  />
+                )}
+              />
+            )}
           </FormField>
         </div>
       </SectionCard>

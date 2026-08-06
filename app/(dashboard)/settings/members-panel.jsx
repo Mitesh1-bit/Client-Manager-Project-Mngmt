@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { FormField } from "@/app/components/domain/form-field";
+import { ListToolbar } from "@/app/components/domain/list-toolbar";
+import { PaginationBar } from "@/app/components/domain/pagination-bar";
 import { SectionCard } from "@/app/components/domain/states";
 import {
   AlertDialog,
@@ -39,6 +41,8 @@ import {
   UpdateUserDocument,
 } from "@/app/lib/graphql/generated/documents";
 import { ROLE_CATALOG, roleDefinition } from "@/app/lib/rbac";
+import { matchesSearch, paginateList } from "@/app/lib/api/connection";
+import { parseListParams, readString } from "@/app/lib/list-params";
 import { humanize } from "@/app/lib/status";
 import { cn } from "@/app/lib/utils";
 
@@ -51,6 +55,7 @@ const inviteSchema = z.object({
 
 export function MembersPanel({ users, currentUserId, isAdmin, isProjectManager = false }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [serverError, setServerError] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [createUser] = useMutation(CreateUserDocument);
@@ -82,6 +87,31 @@ export function MembersPanel({ users, currentUserId, isAdmin, isProjectManager =
 
   const selectedRole = useWatch({ control, name: "role" });
   const selectedRoleInfo = useMemo(() => roleDefinition(selectedRole), [selectedRole]);
+
+  const query = readString(searchParams, "q");
+  const roleFilter = readString(searchParams, "role");
+  const { pageInput } = parseListParams(searchParams, { sortable: [], pageSize: 10 });
+
+  const roleFilterOptions = ROLE_CATALOG.map((role) => ({
+    value: role.value,
+    label: role.label,
+  }));
+
+  const filteredUsers = useMemo(() => {
+    let list = users;
+    if (query) {
+      list = list.filter((user) => matchesSearch(user, query, ["name", "email"]));
+    }
+    if (roleFilter) {
+      list = list.filter((user) => user.role === roleFilter);
+    }
+    return list;
+  }, [users, query, roleFilter]);
+
+  const { nodes: visibleUsers, pageInfo, totalCount } = useMemo(
+    () => paginateList(filteredUsers, pageInput),
+    [filteredUsers, pageInput],
+  );
 
   async function onInvite(values) {
     if (!canManageTeam) return;
@@ -242,8 +272,24 @@ export function MembersPanel({ users, currentUserId, isAdmin, isProjectManager =
         title="Team"
         description="Everyone with dashboard access in your organization."
       >
+        <div className="mb-4">
+          <ListToolbar
+            searchPlaceholder="Search by name or email…"
+            searchLabel="Search team members"
+            filters={[
+              {
+                key: "role",
+                label: "Role",
+                multi: false,
+                allLabel: "All roles",
+                options: roleFilterOptions,
+              },
+            ]}
+          />
+        </div>
+
         <ul className="divide-y rounded-xl border">
-          {users.map((user) => {
+          {visibleUsers.map((user) => {
             const inactive = user.status === "inactive";
             return (
               <li
@@ -300,6 +346,8 @@ export function MembersPanel({ users, currentUserId, isAdmin, isProjectManager =
             );
           })}
         </ul>
+
+        <PaginationBar pageInfo={pageInfo} totalCount={totalCount} itemLabel="members" />
       </SectionCard>
 
       <AlertDialog open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)}>

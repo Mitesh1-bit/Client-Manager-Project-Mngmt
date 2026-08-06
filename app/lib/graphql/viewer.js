@@ -1,22 +1,37 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
+import {
+  CLIENT_LOGIN_PATH,
+  DASHBOARD_HOME,
+  LOGIN_PATH,
+  PORTAL_HOME,
+} from "@/app/lib/auth/routes";
 import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { MeDocument } from "@/app/lib/graphql/generated/documents";
 import { humanize } from "@/app/lib/status";
 
+function loginPath(expectedScope, returnPath) {
+  const base = expectedScope === "PORTAL" ? CLIENT_LOGIN_PATH : LOGIN_PATH;
+  if (returnPath && returnPath !== base && !returnPath.startsWith(`${base}?`)) {
+    return `${base}?next=${encodeURIComponent(returnPath)}`;
+  }
+  return base;
+}
+
 /**
  * Loads the signed-in viewer server-side for the app shells.
- *
- * Middleware has already bounced anonymous requests, so reaching here without a
- * viewer means the session went stale between the two — send them back to login
- * rather than rendering a shell with no identity.
  *
  * @param {'INTERNAL' | 'PORTAL'} expectedScope
  */
 export async function requireViewer(expectedScope) {
   const claims = await getSessionClaims();
-  if (!claims) redirect(expectedScope === "PORTAL" ? "/client-login" : "/login");
+  const headerStore = await headers();
+  const returnPath = headerStore.get("x-pathname") ?? null;
+
+  if (!claims) redirect(loginPath(expectedScope, returnPath));
 
   let me = null;
   try {
@@ -26,8 +41,10 @@ export async function requireViewer(expectedScope) {
     me = null;
   }
 
-  if (!me) redirect(expectedScope === "PORTAL" ? "/client-login" : "/login");
-  if (me.scope !== expectedScope) redirect(me.scope === "PORTAL" ? "/portal" : "/");
+  if (!me) redirect(loginPath(expectedScope, returnPath));
+  if (me.scope !== expectedScope) {
+    redirect(me.scope === "PORTAL" ? PORTAL_HOME : DASHBOARD_HOME);
+  }
 
   return {
     ...me,

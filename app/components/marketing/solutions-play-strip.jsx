@@ -333,7 +333,7 @@ export function SolutionsPlayStrip() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-mkt-navy py-20 text-white md:py-28">
+    <section className="relative overflow-hidden bg-mkt-navy py-14 text-white sm:py-20 md:py-28">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-40"
@@ -350,21 +350,25 @@ export function SolutionsPlayStrip() {
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="font-mono text-[0.65rem] uppercase tracking-[0.35em] text-white/40">Workflow graph</p>
-          <h2 className="mt-3 font-mkt-display text-3xl md:text-5xl">Learn by running the workflow</h2>
-          <p className="mt-4 text-base text-white/65 md:text-lg">
+          <p className="font-mono text-[0.65rem] uppercase tracking-[0.28em] text-white/40 sm:tracking-[0.35em]">
+            Workflow graph
+          </p>
+          <h2 className="mt-3 font-mkt-display text-[clamp(1.65rem,5vw,3rem)] md:text-5xl">
+            Learn by running the workflow
+          </h2>
+          <p className="mt-3 text-sm text-white/65 sm:mt-4 sm:text-base md:text-lg">
             Tap each step — see how roles hand off on the same graph, Tinker-style experimentation.
           </p>
         </Reveal>
 
-        <div className="mt-10 flex flex-wrap justify-center gap-2">
+        <div className="mt-8 flex flex-wrap justify-center gap-2 sm:mt-10">
           {STEPS.map((s, i) => (
             <button
               key={s.id}
               type="button"
               onClick={() => goTo(i)}
               className={cn(
-                "rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider transition",
+                "rounded-full px-3 py-2 text-[0.625rem] font-bold uppercase tracking-wider transition sm:px-4 sm:text-xs",
                 i === active ? "bg-white text-mkt-navy shadow-md" : "bg-white/10 text-white/55 hover:bg-white/15 hover:text-white/80",
               )}
             >
@@ -451,24 +455,26 @@ export function SolutionsPlayStrip() {
 
 export function SolutionsTinkerCta() {
   return (
-    <section className="mx-auto max-w-6xl px-4 py-20 md:px-6 md:py-24">
+    <section className="mx-auto max-w-6xl px-4 py-14 sm:py-20 md:px-6 md:py-24">
       <Reveal>
-        <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-mkt-lime via-[#d4f55a] to-mkt-sun p-10 text-center md:p-16">
+        <div className="relative overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-mkt-lime via-[#d4f55a] to-mkt-sun p-8 text-center sm:rounded-[2rem] sm:p-10 md:p-16">
           <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-white/30 blur-2xl" />
-          <h2 className="relative font-mkt-display text-3xl text-mkt-navy md:text-5xl">Start with your role</h2>
-          <p className="relative mx-auto mt-4 max-w-lg text-mkt-navy/70">
+          <h2 className="relative font-mkt-display text-[clamp(1.65rem,5vw,3rem)] text-mkt-navy md:text-5xl">
+            Start with your role
+          </h2>
+          <p className="relative mx-auto mt-3 max-w-lg text-sm text-mkt-navy/70 sm:mt-4 sm:text-base">
             Internal dashboard for delivery teams. Client portal for approvals. One platform — pick where you begin.
           </p>
-          <div className="relative mt-8 flex flex-wrap justify-center gap-3">
+          <div className="relative mt-6 flex flex-col items-stretch gap-2.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-3">
             <Link
               href="/signup"
-              className="rounded-full bg-mkt-navy px-8 py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-mkt-navy/90"
+              className="rounded-full bg-mkt-navy px-6 py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-mkt-navy/90 sm:px-8"
             >
               Get started free
             </Link>
             <Link
               href="/product"
-              className="rounded-full border border-mkt-navy/20 bg-white/80 px-8 py-3.5 text-sm font-bold text-mkt-navy transition hover:bg-white"
+              className="rounded-full border border-mkt-navy/20 bg-white/80 px-6 py-3.5 text-sm font-bold text-mkt-navy transition hover:bg-white sm:px-8"
             >
               View product
             </Link>

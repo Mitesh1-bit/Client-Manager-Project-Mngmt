@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,6 +9,7 @@ import { LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { FormField } from "@/app/components/domain/form-field";
+import { SearchableSelect } from "@/app/components/domain/searchable-select";
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -27,7 +28,6 @@ import {
   UpdateContactDocument,
 } from "@/app/lib/graphql/generated/documents";
 
-import { TIMEZONES } from "../../../company-schema";
 import {
   contactEditFormSchema,
   contactFormSchema,
@@ -42,6 +42,23 @@ export function ContactForm({ companyId, contact, onDone, onCancel }) {
   const router = useRouter();
   const mode = contact ? "edit" : "create";
   const [serverError, setServerError] = useState(null);
+  const [timezoneOptions, setTimezoneOptions] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    import("@/app/lib/geo-options")
+      .then((mod) => {
+        if (!active) return;
+        setTimezoneOptions(mod.getTimezoneOptions());
+      })
+      .catch(() => {
+        if (!active) return;
+        setTimezoneOptions([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const [createContact] = useMutation(CreateContactDocument);
   const [updateContact] = useMutation(UpdateContactDocument);
@@ -155,18 +172,16 @@ export function ContactForm({ companyId, contact, onDone, onCancel }) {
                 control={control}
                 name="timezone"
                 render={({ field: control_ }) => (
-                  <Select value={control_.value} onValueChange={control_.onChange}>
-                    <SelectTrigger {...field} className="h-10 w-full">
-                      <SelectValue placeholder="Not set" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TIMEZONES.map((zone) => (
-                        <SelectItem key={zone} value={zone}>
-                          {zone.replace(/_/g, " ")}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <SearchableSelect
+                    {...field}
+                    options={timezoneOptions}
+                    value={control_.value ?? ""}
+                    onChange={control_.onChange}
+                    placeholder="Search timezones…"
+                    emptyText="No timezone matches."
+                    allowClear
+                    clearLabel="Not set"
+                  />
                 )}
               />
             )}

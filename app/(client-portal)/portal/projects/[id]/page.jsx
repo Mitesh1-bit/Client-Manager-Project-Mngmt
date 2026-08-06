@@ -1,22 +1,29 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, FileText, GitPullRequestArrow, Mail } from "lucide-react";
+import { FileText, GitPullRequestArrow, Mail, Plus, ShieldCheck } from "lucide-react";
 
-import {
-  AwaitingYouBanner,
-  MilestoneApprovalPanel,
-} from "@/app/components/domain/milestone-approval-panel";
-import { EmptyState } from "@/app/components/domain/states";
+import { MilestoneApprovalPanel } from "@/app/components/domain/milestone-approval-panel";
 import { StatusBadge } from "@/app/components/domain/status-badge";
 import { Button } from "@/app/components/ui/button";
 import { Progress } from "@/app/components/ui/progress";
 import { APPROVAL_STATE, getMilestoneApprovalState } from "@/app/lib/approvals";
 import { normalizePortalProject, portalContactName } from "@/app/lib/api/portal";
+import { portalDocumentHref, portalDocumentName } from "@/app/lib/api/portal-ui";
 import { formatDate, formatRelativeDays, initials } from "@/app/lib/format";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { PortalProjectDocument } from "@/app/lib/graphql/generated/documents";
 import { parseDay, startOfDay } from "@/app/lib/project";
 import { cn } from "@/app/lib/utils";
+
+import {
+  PortalActionBanner,
+  PortalBackLink,
+  PortalCard,
+  PortalEmptyPanel,
+  PortalLinkRow,
+  PortalPageHeader,
+  PortalSectionHeader,
+} from "../../portal-ui";
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
@@ -52,76 +59,96 @@ export default async function PortalProjectPage({ params }) {
 
   return (
     <>
-      <Link
-        href="/portal/projects"
-        className="mb-4 inline-flex items-center gap-1 rounded-sm text-caption text-muted-foreground hover:text-foreground focus-ring"
-      >
-        <ChevronLeft aria-hidden="true" className="size-4" />
-        All projects
-      </Link>
+      <PortalBackLink href="/portal/projects">All projects</PortalBackLink>
 
-      <header className="mb-6">
-        <h1 className="text-title text-balance">{project.name}</h1>
-        <div className="mt-2.5 flex flex-wrap items-center gap-2">
+      <div className="mb-6">
+        <PortalPageHeader
+          title={project.name}
+          description={project.description ?? undefined}
+          actions={
+            <Button variant="outline" size="sm" className="shrink-0" asChild>
+              <Link href={`/portal/change-requests/new?projectId=${project.id}`}>
+                <Plus aria-hidden="true" />
+                Request a change
+              </Link>
+            </Button>
+          }
+          className="!pb-4"
+        />
+        <div className="flex flex-wrap items-center gap-2">
           <StatusBadge kind="projectStatus" value={project.status} />
           <StatusBadge kind="projectHealth" value={project.health} />
         </div>
-        {project.description ? (
-          <p className="mt-3 max-w-2xl text-pretty text-muted-foreground">{project.description}</p>
-        ) : null}
-      </header>
+      </div>
 
       <div className="space-y-6">
-        {awaitingYou.length > 0 ? <AwaitingYouBanner count={awaitingYou.length} /> : null}
+        {awaitingYou.length > 0 ? (
+          <PortalActionBanner
+            icon={ShieldCheck}
+            title={
+              awaitingYou.length === 1
+                ? "1 milestone needs your approval"
+                : `${awaitingYou.length} milestones need your approval`
+            }
+            description="Review and sign off below, or request changes if something isn't right."
+            action={
+              <Button size="sm" className="bg-[#0a1550] hover:bg-[#1e3a8a]" asChild>
+                <Link href="/portal/approvals">Open approvals inbox</Link>
+              </Button>
+            }
+          />
+        ) : null}
 
-        <section className="rounded-2xl border bg-card p-4 sm:p-5">
-          <h2 className="text-subheading">Where we&apos;ve got to</h2>
-
-          <div className="mt-4">
-            <div className="flex items-end justify-between gap-3">
-              <span className="text-caption text-muted-foreground">Overall progress</span>
-              <span className="tabular text-heading font-semibold">
-                {project.completionPercent}%
-              </span>
+        <PortalCard>
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+            <div
+              className="portal-progress-ring mx-auto shrink-0 sm:mx-0"
+              style={{ "--progress": project.completionPercent }}
+              role="img"
+              aria-label={`${project.completionPercent}% complete`}
+            >
+              <span>{project.completionPercent}%</span>
             </div>
-            <Progress
-              value={project.completionPercent}
-              aria-label={`${project.name} is ${project.completionPercent}% complete`}
-              className="mt-2 h-2.5"
-            />
+            <div className="min-w-0 flex-1">
+              <PortalSectionHeader title="Where we've got to" />
+              <Progress
+                value={project.completionPercent}
+                aria-label={`${project.name} is ${project.completionPercent}% complete`}
+                className="h-2.5"
+              />
+              <dl className="mt-5 grid gap-4 sm:grid-cols-3">
+                <div>
+                  <dt className="text-xs font-medium text-muted-foreground">Started</dt>
+                  <dd className="mt-0.5 font-medium">{formatDate(project.startDate)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium text-muted-foreground">Target finish</dt>
+                  <dd className={cn("mt-0.5 font-medium", overdue && "text-tone-critical-fg")}>
+                    {formatDate(project.endDate)}
+                    {overdue ? <span className="ml-1.5 font-normal">(running late)</span> : null}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium text-muted-foreground">Milestones done</dt>
+                  <dd className="tabular mt-0.5 font-medium">
+                    {completed.length} of {project.milestones.length}
+                  </dd>
+                </div>
+              </dl>
+            </div>
           </div>
 
-          <dl className="mt-5 grid gap-4 sm:grid-cols-3">
-            <div>
-              <dt className="text-caption text-muted-foreground">Started</dt>
-              <dd className="mt-0.5 font-medium">{formatDate(project.startDate)}</dd>
-            </div>
-            <div>
-              <dt className="text-caption text-muted-foreground">Target finish</dt>
-              <dd className={cn("mt-0.5 font-medium", overdue && "text-tone-critical-fg")}>
-                {formatDate(project.endDate)}
-                {overdue ? <span className="ml-1.5 font-normal">(running late)</span> : null}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-caption text-muted-foreground">Milestones done</dt>
-              <dd className="tabular mt-0.5 font-medium">
-                {completed.length} of {project.milestones.length}
-              </dd>
-            </div>
-          </dl>
-
           {project.projectManager ? (
-            <div className="mt-5 flex flex-wrap items-center gap-3 border-t pt-4">
+            <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-[oklch(0.93_0.01_255)] pt-5">
               <span
                 aria-hidden="true"
-                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-caption font-medium"
+                className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[oklch(0.96_0.015_255)] text-xs font-semibold text-[#1e3a8a]"
               >
                 {initials(project.projectManager.name)}
               </span>
               <div className="min-w-0">
-                <p className="text-caption font-medium">{project.projectManager.name}</p>
-                <p className="text-[0.75rem] text-muted-foreground">Your project manager</p>
+                <p className="text-sm font-medium">{project.projectManager.name}</p>
+                <p className="text-xs text-muted-foreground">Your project manager</p>
               </div>
               <Button variant="outline" size="sm" className="ml-auto" asChild>
                 <a href={`mailto:${project.projectManager.email}`}>
@@ -131,35 +158,38 @@ export default async function PortalProjectPage({ params }) {
               </Button>
             </div>
           ) : null}
-        </section>
+        </PortalCard>
 
         {awaitingYou.length > 0 ? (
           <section aria-labelledby="awaiting-you" className="space-y-4">
-            <h2 id="awaiting-you" className="text-subheading">
-              Waiting on you
-            </h2>
+            <PortalSectionHeader
+              id="awaiting-you"
+              title="Waiting on you"
+              action={
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/portal/approvals">View all approvals</Link>
+                </Button>
+              }
+            />
             {awaitingYou.map(({ milestone }) => (
-              <MilestoneApprovalPanel
-                key={milestone.id}
-                milestone={milestone}
-                viewerName={viewerName}
-              />
+              <div key={milestone.id} id={`milestone-${milestone.id}`}>
+                <MilestoneApprovalPanel milestone={milestone} viewerName={viewerName} />
+              </div>
             ))}
           </section>
         ) : null}
 
-        <section aria-labelledby="plan" className="space-y-4">
-          <h2 id="plan" className="text-subheading">
-            The plan
-          </h2>
+        <section aria-labelledby="plan">
+          <PortalSectionHeader id="plan" title="The plan" />
 
           {project.milestones.length === 0 ? (
-            <EmptyState
-              title="No milestones yet"
-              description="We're still shaping the plan. It'll appear here as soon as it's agreed."
-            />
+            <PortalEmptyPanel>
+              <p className="text-sm text-muted-foreground">
+                We&apos;re still shaping the plan. It&apos;ll appear here as soon as it&apos;s agreed.
+              </p>
+            </PortalEmptyPanel>
           ) : (
-            <ol className="space-y-3">
+            <ol className="space-y-2">
               {[...upcoming, ...completed].map(({ milestone, approvalState }) => (
                 <MilestoneRow
                   key={milestone.id}
@@ -171,84 +201,60 @@ export default async function PortalProjectPage({ params }) {
           )}
         </section>
 
-        <div className="grid gap-4 lg:grid-cols-2">
-          <section
-            aria-labelledby="deliverables"
-            className="min-w-0 rounded-2xl border bg-card p-4 sm:p-5"
-          >
-            <h2 id="deliverables" className="text-subheading">
-              Files for this project
-            </h2>
+        <div className="grid gap-5 lg:grid-cols-2">
+          <PortalCard>
+            <PortalSectionHeader id="deliverables" title="Files for this project" />
             {project.documents.length === 0 ? (
-              <p className="mt-3 text-caption text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Nothing shared yet. Deliverables will show up here as we finish them.
               </p>
             ) : (
-              <ul className="mt-3 space-y-1.5">
+              <ul className="space-y-2">
                 {project.documents.map((document) => (
                   <li key={document.id}>
                     <a
-                      href={document.fileUrl}
+                      href={portalDocumentHref(document.fileUrl)}
                       download
-                      className="flex items-center gap-2.5 rounded-lg border px-3 py-2.5 transition-colors hover:bg-accent focus-ring"
+                      className="portal-link-row group"
                     >
-                      <FileText
-                        aria-hidden="true"
-                        className="size-4 shrink-0 text-muted-foreground"
-                      />
+                      <span className="portal-link-row__icon">
+                        <FileText className="size-4" />
+                      </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-caption font-medium">
-                          {document.name}
+                        <span className="block truncate font-medium">
+                          {document.name ?? portalDocumentName(document.fileUrl)}
                         </span>
-                        <span className="block text-[0.75rem] text-muted-foreground">
-                          v{document.version}
-                        </span>
+                        <span className="block text-sm text-muted-foreground">v{document.version}</span>
                       </span>
                     </a>
                   </li>
                 ))}
               </ul>
             )}
-          </section>
+          </PortalCard>
 
-          <section
-            aria-labelledby="requests"
-            className="min-w-0 rounded-2xl border bg-card p-4 sm:p-5"
-          >
-            <h2 id="requests" className="text-subheading">
-              Change requests
-            </h2>
+          <PortalCard>
+            <PortalSectionHeader id="requests" title="Change requests" />
             {project.changeRequests.length === 0 ? (
-              <p className="mt-3 text-caption text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 No changes have been requested on this project.
               </p>
             ) : (
-              <ul className="mt-3 space-y-2">
+              <ul className="space-y-2">
                 {project.changeRequests.map((request) => (
                   <li key={request.id}>
-                    <Link
+                    <PortalLinkRow
                       href={`/portal/change-requests/${request.id}`}
-                      className="flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2.5 transition-colors hover:bg-accent focus-ring"
-                    >
-                      <GitPullRequestArrow
-                        aria-hidden="true"
-                        className="size-4 shrink-0 text-muted-foreground"
-                      />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-caption font-medium">
-                          {request.title}
-                        </span>
-                        <span className="tabular block text-[0.75rem] text-muted-foreground">
-                          {request.reference} · updated {formatRelativeDays(request.updatedAt)}
-                        </span>
-                      </span>
-                      <StatusBadge kind="changeRequestStatus" value={request.status} size="sm" />
-                    </Link>
+                      title={request.title}
+                      meta={`${request.reference} · updated ${formatRelativeDays(request.updatedAt)}`}
+                      icon={GitPullRequestArrow}
+                      trailing={<StatusBadge kind="changeRequestStatus" value={request.status} size="sm" />}
+                    />
                   </li>
                 ))}
               </ul>
             )}
-          </section>
+          </PortalCard>
         </div>
       </div>
     </>
@@ -261,55 +267,51 @@ function MilestoneRow({ milestone, approvalState }) {
   const overdue = dueDate && !done && dueDate < startOfDay(new Date());
 
   return (
-    <li className="rounded-2xl border bg-card p-4">
-      <div className="flex items-start gap-3">
-        <span
-          aria-hidden="true"
-          className={cn(
-            "mt-0.5 size-2.5 shrink-0 rounded-full",
-            done
-              ? "bg-tone-positive"
-              : approvalState.state === APPROVAL_STATE.CHANGES_REQUESTED
+    <li className="portal-link-row !cursor-default !hover:shadow-none">
+      <span
+        aria-hidden="true"
+        className={cn(
+          "mt-1 size-2.5 shrink-0 rounded-full",
+          done
+            ? "bg-tone-positive"
+            : approvalState.state === APPROVAL_STATE.CHANGES_REQUESTED
+              ? "bg-tone-critical"
+              : overdue
                 ? "bg-tone-critical"
-                : overdue
-                  ? "bg-tone-critical"
-                  : "bg-muted-foreground/40",
+                : "bg-muted-foreground/40",
+        )}
+      />
+      <span className="min-w-0 flex-1">
+        <span className="flex flex-wrap items-center gap-2">
+          <span className={cn("font-medium text-pretty", done && "text-muted-foreground")}>
+            {milestone.title}
+          </span>
+          <StatusBadge kind="milestoneStatus" value={milestone.status} size="sm" />
+        </span>
+
+        {milestone.description ? (
+          <p className="mt-1 text-sm text-pretty text-muted-foreground">{milestone.description}</p>
+        ) : null}
+
+        <p
+          className={cn(
+            "mt-1.5 text-xs",
+            overdue ? "font-medium text-tone-critical-fg" : "text-muted-foreground",
           )}
-        />
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className={cn("font-medium text-pretty", done && "text-muted-foreground")}>
-              {milestone.title}
-            </h3>
-            <StatusBadge kind="milestoneStatus" value={milestone.status} size="sm" />
-          </div>
+        >
+          {done && milestone.approvedAt
+            ? `Signed off ${formatDate(milestone.approvedAt)}`
+            : `Due ${formatDate(milestone.dueDate)}${overdue ? " · running late" : ""}`}
+        </p>
 
-          {milestone.description ? (
-            <p className="mt-1 text-caption text-pretty text-muted-foreground">
-              {milestone.description}
-            </p>
-          ) : null}
-
-          <p
-            className={cn(
-              "mt-1.5 text-[0.75rem]",
-              overdue ? "font-medium text-tone-critical-fg" : "text-muted-foreground",
-            )}
-          >
-            {done && milestone.approvedAt
-              ? `Signed off ${formatDate(milestone.approvedAt)}`
-              : `Due ${formatDate(milestone.dueDate)}${overdue ? " · running late" : ""}`}
+        {milestone.requiresClientApproval &&
+        approvalState.state !== APPROVAL_STATE.NOT_REQUIRED ? (
+          <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[oklch(0.96_0.015_255)] px-2.5 py-0.5 text-xs text-muted-foreground">
+            {approvalState.label}
+            {approvalState.waitingOn ? ` · ${approvalState.waitingOn}` : ""}
           </p>
-
-          {milestone.requiresClientApproval &&
-          approvalState.state !== APPROVAL_STATE.NOT_REQUIRED ? (
-            <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-[0.75rem] text-muted-foreground">
-              {approvalState.label}
-              {approvalState.waitingOn ? ` · ${approvalState.waitingOn}` : ""}
-            </p>
-          ) : null}
-        </div>
-      </div>
+        ) : null}
+      </span>
     </li>
   );
 }

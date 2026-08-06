@@ -1,5 +1,14 @@
+import { pickList } from "@/app/lib/api/safe-list";
+import {
+  buildApprovalQueue,
+  countAwaitingViewer,
+} from "@/app/lib/approvals";
+import {
+  normalizePortalProjects,
+  portalContactName,
+} from "@/app/lib/api/portal";
 import { getClient } from "@/app/lib/graphql/apollo-client";
-import { PortalApprovalsDocument } from "@/app/lib/graphql/generated/documents";
+import { PortalApprovalsInboxDocument } from "@/app/lib/graphql/generated/documents";
 import { requireViewer } from "@/app/lib/graphql/viewer";
 import { mktFontClassName } from "@/app/lib/marketing/fonts";
 import { privateAppMetadata } from "@/app/lib/marketing/seo";
@@ -17,8 +26,10 @@ export default async function ClientPortalLayout({ children }) {
 
   let awaitingCount = 0;
   try {
-    const { data } = await getClient().query({ query: PortalApprovalsDocument });
-    awaitingCount = (data.portalPendingApprovals ?? []).length;
+    const { data } = await getClient().query({ query: PortalApprovalsInboxDocument });
+    const projects = normalizePortalProjects(pickList(data, "portalProjects"));
+    const viewerName = portalContactName(data.me?.contact);
+    awaitingCount = countAwaitingViewer(buildApprovalQueue(projects, viewerName));
   } catch {
     awaitingCount = 0;
   }

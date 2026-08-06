@@ -252,13 +252,15 @@ export function MarketingNavbar() {
       >
         <nav
           aria-label="Primary"
-          className="mx-auto grid max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-3 px-4 py-3 sm:px-6 lg:gap-6 lg:py-3.5"
+          className="mx-auto grid max-w-7xl grid-cols-[minmax(0,auto)_1fr_auto] items-center gap-2 px-4 py-3 sm:gap-3 sm:px-6 lg:gap-6 lg:py-3.5"
         >
-          <Link href="/" className="group inline-flex items-center gap-2.5">
-            <span className="relative flex size-8 items-center justify-center rounded-xl bg-mkt-navy shadow-sm transition group-hover:shadow-md">
-              <span className="size-2.5 rounded-full bg-mkt-lime" />
+          <Link href="/" className="group inline-flex shrink-0 items-center gap-2.5 min-w-0">
+            <span className="relative flex size-8 shrink-0 items-center justify-center rounded-xl bg-mkt-navy shadow-sm transition group-hover:shadow-md">
+              <span className="size-2.5 shrink-0 rounded-full bg-mkt-lime" />
             </span>
-            <span className="font-mkt-display text-xl font-bold tracking-tight text-mkt-navy">{SITE_NAME}</span>
+            <span className="truncate font-mkt-display text-lg font-bold tracking-tight text-mkt-navy sm:text-xl">
+              {SITE_NAME}
+            </span>
           </Link>
 
           <div className="hidden justify-center lg:flex">

@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { UserMenu } from "@/app/components/domain/user-menu";
 import { CrmProductTour } from "@/app/components/domain/crm-product-tour";
 import { CrmTourProvider } from "@/app/components/domain/crm-tour-context";
@@ -18,29 +20,31 @@ import { PortalNavBar, PortalTabBar } from "./portal-nav";
 export function PortalAppShell({ viewer, companyName, badges, children }) {
   return (
     <CrmTourProvider scope="PORTAL" role="contact">
-      <div data-surface="app" className="flex min-h-svh flex-1 flex-col bg-background">
-        <header className="border-b bg-card/70 backdrop-blur">
-          <div className="page-shell flex h-16 items-center gap-4">
-            <div className="flex min-w-0 items-center gap-3">
-              <span
-                aria-hidden="true"
-                className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/12 font-semibold text-primary"
-              >
-                {companyName.charAt(0)}
+      <div data-surface="portal" className="flex min-h-svh flex-1 flex-col">
+        <header className="portal-shell-header">
+          <div className="page-shell flex h-[4.25rem] items-center gap-4 sm:h-[4.5rem]">
+            <div className="portal-company-badge min-w-0 flex-1 md:flex-none">
+              <span className="portal-brand-mark shrink-0" aria-hidden="true">
+                {companyName.charAt(0).toUpperCase()}
               </span>
-              <span className="flex min-w-0 flex-col leading-tight">
-                <span className="truncate font-semibold tracking-tight">{companyName}</span>
-                <span className="truncate text-[0.6875rem] text-muted-foreground">
-                  Client portal · delivered by Meridian
+              <span className="min-w-0 leading-tight">
+                <span className="block truncate text-sm font-semibold tracking-tight text-[#0a1550]">
+                  {companyName}
+                </span>
+                <span className="block truncate text-[0.6875rem] text-muted-foreground">
+                  Powered by{" "}
+                  <Link href="/" className="font-medium text-[#1e3a8a] hover:underline">
+                    Meridian
+                  </Link>
                 </span>
               </span>
             </div>
 
-            <div className="mx-auto hidden md:block">
+            <div className="mx-auto hidden lg:block">
               <PortalNavBar badges={badges} />
             </div>
 
-            <div className="ml-auto flex items-center gap-1 md:ml-0">
+            <div className="ml-auto flex items-center gap-1">
               <CrmTourTrigger />
               <span data-tour="portal-account">
                 <UserMenu
@@ -56,7 +60,11 @@ export function PortalAppShell({ viewer, companyName, badges, children }) {
           </div>
         </header>
 
-        <main id="main" className="page-shell min-w-0 w-full flex-1 pt-8 pb-24 md:pb-14">
+        <main
+          id="main"
+          data-tour="main-content"
+          className="page-shell min-w-0 w-full flex-1 py-6 pb-28 md:py-8 md:pb-16 lg:pb-10"
+        >
           {children}
         </main>
 

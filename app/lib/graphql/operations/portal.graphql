@@ -89,19 +89,28 @@ query PortalChangeRequestDetail($id: ID!) {
   }
 }
 
-query PortalApprovals {
-  portalPendingApprovals {
-    id
-    entityType
-    entityId
-    approverType
-    status
-    comment
-    decidedAt
-  }
+query PortalApprovalsInbox {
   portalProjects {
     id
     name
+    milestones {
+      ...PortalMilestoneFields
+    }
+  }
+  portalChangeRequests {
+    id
+    title
+    type
+    status
+    updatedAt
+    createdAt
+    projectId
+  }
+  me {
+    contact {
+      firstName
+      lastName
+    }
   }
 }
 

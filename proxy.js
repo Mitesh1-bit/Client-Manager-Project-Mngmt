@@ -21,7 +21,11 @@ export default function proxy(request) {
     session,
   });
 
-  if (!target) return NextResponse.next();
+  if (!target) {
+    const response = NextResponse.next();
+    response.headers.set("x-pathname", `${request.nextUrl.pathname}${request.nextUrl.search}`);
+    return response;
+  }
 
   const url = request.nextUrl.clone();
   const [path, query = ""] = target.split("?");

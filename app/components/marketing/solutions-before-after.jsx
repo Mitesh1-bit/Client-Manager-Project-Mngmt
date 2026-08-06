@@ -286,12 +286,16 @@ export function SolutionsBeforeAfter() {
   const [mode, setMode] = useState("before");
 
   return (
-    <section ref={ref} className="bg-white py-20 md:py-28">
+    <section ref={ref} className="bg-white py-14 sm:py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="font-mono text-[0.65rem] uppercase tracking-[0.35em] text-mkt-navy/45">Same change request</p>
-          <h2 className="mt-3 font-mkt-display text-3xl text-mkt-navy md:text-5xl">Meridian in real delivery</h2>
-          <p className="mt-4 text-base text-mkt-navy/65 md:text-lg">
+          <p className="font-mono text-[0.65rem] uppercase tracking-[0.28em] text-mkt-navy/45 sm:tracking-[0.35em]">
+            Same change request
+          </p>
+          <h2 className="mt-3 font-mkt-display text-[clamp(1.65rem,5vw,3rem)] text-mkt-navy md:text-5xl">
+            Meridian in real delivery
+          </h2>
+          <p className="mt-3 text-sm text-mkt-navy/65 sm:mt-4 sm:text-base md:text-lg">
             Before and after — one CR, two completely different experiences for your team and client.
           </p>
         </Reveal>

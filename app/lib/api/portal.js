@@ -38,6 +38,8 @@ export function normalizePortalProject(project) {
       ? project.milestones
       : (project.phases ?? []).flatMap((phase) => phase.milestones ?? []);
 
+  const projectDocuments = project.documents ?? [];
+
   return {
     ...project,
     status: toUiStatus("projectStatus", project.status),
@@ -45,7 +47,21 @@ export function normalizePortalProject(project) {
     completionPercent: project.completionPercent ?? 0,
     startDate: project.startDate ?? null,
     endDate: project.endDate ?? null,
-    milestones: flatMilestones.map(normalizePortalMilestone),
+    milestones: flatMilestones.map((milestone) => {
+      const normalized = normalizePortalMilestone(milestone);
+      const milestoneDocs = projectDocuments.filter(
+        (doc) => doc.entityType?.toLowerCase() === "milestone" && doc.entityId === milestone.id,
+      );
+      return {
+        ...normalized,
+        documents: milestoneDocs.map((doc) => ({
+          ...doc,
+          name: doc.fileUrl?.split("/").pop() ?? "Document",
+          sizeBytes: doc.sizeBytes ?? 0,
+          uploadedByName: doc.uploadedBy ?? "Team",
+        })),
+      };
+    }),
     phases: (project.phases ?? []).map((phase) => ({
       ...phase,
       milestones: (phase.milestones ?? []).map(normalizePortalMilestone),

@@ -11,6 +11,10 @@ import { toast } from "sonner";
 
 import { FormField } from "@/app/components/domain/form-field";
 import { MultiSelect, SelectedChips } from "@/app/components/domain/multi-select";
+import {
+  SearchableSelect,
+  shouldUseSearchableSelect,
+} from "@/app/components/domain/searchable-select";
 import { SectionCard } from "@/app/components/domain/states";
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
 import { Button } from "@/app/components/ui/button";
@@ -66,6 +70,13 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
   });
 
   const tagOptions = tagList.map((tag) => ({ value: tag.id, label: tag.name }));
+  const companyOptions = companies.map((company) => ({ value: company.id, label: company.name }));
+  const userOptions = users.map((user) => ({ value: user.id, label: user.name }));
+  const currencyOptions = CURRENCIES.map((currency) => ({
+    value: currency.value,
+    label: currency.label,
+    searchText: currency.label.toLowerCase(),
+  }));
   const cancelHref = mode === "edit" ? `/projects/${project.id}` : "/projects";
 
   async function handleCreateTag(name) {
@@ -122,26 +133,36 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
               <Controller
                 control={control}
                 name="companyId"
-                render={({ field: control_ }) => (
-                  <Select
-                    value={control_.value}
-                    onValueChange={control_.onChange}
-                    // Moving a project between clients would re-parent every
-                    // task, milestone and change request under it.
-                    disabled={mode === "edit"}
-                  >
-                    <SelectTrigger {...field} className="h-10 w-full">
-                      <SelectValue placeholder="Choose a client" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {companies.map((company) => (
-                        <SelectItem key={company.id} value={company.id}>
-                          {company.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                render={({ field: control_ }) =>
+                  shouldUseSearchableSelect(companyOptions) ? (
+                    <SearchableSelect
+                      {...field}
+                      options={companyOptions}
+                      value={control_.value ?? ""}
+                      onChange={control_.onChange}
+                      placeholder="Search clients…"
+                      emptyText="No client matches."
+                      disabled={mode === "edit"}
+                    />
+                  ) : (
+                    <Select
+                      value={control_.value}
+                      onValueChange={control_.onChange}
+                      disabled={mode === "edit"}
+                    >
+                      <SelectTrigger {...field} className="h-10 w-full">
+                        <SelectValue placeholder="Choose a client" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {companies.map((company) => (
+                          <SelectItem key={company.id} value={company.id}>
+                            {company.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )
+                }
               />
             )}
           </FormField>
@@ -153,20 +174,33 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
               <Controller
                 control={control}
                 name="projectManagerId"
-                render={({ field: control_ }) => (
-                  <Select value={control_.value} onValueChange={control_.onChange}>
-                    <SelectTrigger {...field} className="h-10 w-full">
-                      <SelectValue placeholder="Unassigned" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {users.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                render={({ field: control_ }) =>
+                  shouldUseSearchableSelect(userOptions) ? (
+                    <SearchableSelect
+                      {...field}
+                      options={userOptions}
+                      value={control_.value ?? ""}
+                      onChange={control_.onChange}
+                      placeholder="Search team members…"
+                      emptyText="No team member matches."
+                      allowClear
+                      clearLabel="Unassigned"
+                    />
+                  ) : (
+                    <Select value={control_.value} onValueChange={control_.onChange}>
+                      <SelectTrigger {...field} className="h-10 w-full">
+                        <SelectValue placeholder="Unassigned" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {users.map((user) => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )
+                }
               />
             )}
           </FormField>
@@ -269,18 +303,14 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
                 control={control}
                 name="currency"
                 render={({ field: control_ }) => (
-                  <Select value={control_.value} onValueChange={control_.onChange}>
-                    <SelectTrigger {...field} className="h-10 w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CURRENCIES.map((currency) => (
-                        <SelectItem key={currency.value} value={currency.value}>
-                          {currency.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <SearchableSelect
+                    {...field}
+                    options={currencyOptions}
+                    value={control_.value ?? ""}
+                    onChange={control_.onChange}
+                    placeholder="Search currencies…"
+                    emptyText="No currency matches."
+                  />
                 )}
               />
             )}

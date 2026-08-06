@@ -8,6 +8,10 @@ import { toast } from "sonner";
 
 import { Button } from "@/app/components/ui/button";
 import {
+  SearchableSelect,
+  shouldUseSearchableSelect,
+} from "@/app/components/domain/searchable-select";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -99,20 +103,37 @@ export function DocumentUpload({ projects }) {
     }
   }
 
+  const projectOptions = projects.map((project) => ({
+    value: project.id,
+    label: project.name,
+  }));
+
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-      <Select value={target} onValueChange={setTarget} disabled={busy || projects.length === 0}>
-        <SelectTrigger className="h-10 sm:w-56" aria-label="Which project this belongs to">
-          <SelectValue placeholder="Choose a project" />
-        </SelectTrigger>
-        <SelectContent>
-          {projects.map((project) => (
-            <SelectItem key={project.id} value={project.id}>
-              {project.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {shouldUseSearchableSelect(projectOptions) ? (
+        <SearchableSelect
+          options={projectOptions}
+          value={target}
+          onChange={setTarget}
+          placeholder="Choose a project"
+          emptyText="No project matches."
+          disabled={busy || projects.length === 0}
+          className="sm:w-56"
+        />
+      ) : (
+        <Select value={target} onValueChange={setTarget} disabled={busy || projects.length === 0}>
+          <SelectTrigger className="h-10 sm:w-56" aria-label="Which project this belongs to">
+            <SelectValue placeholder="Choose a project" />
+          </SelectTrigger>
+          <SelectContent>
+            {projects.map((project) => (
+              <SelectItem key={project.id} value={project.id}>
+                {project.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       <input
         ref={inputRef}

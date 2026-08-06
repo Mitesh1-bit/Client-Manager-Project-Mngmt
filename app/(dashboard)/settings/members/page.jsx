@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import { PageHeader } from "@/app/components/domain/page-header";
 import { pickList } from "@/app/lib/api/safe-list";
 import { getClient } from "@/app/lib/graphql/apollo-client";
@@ -26,12 +28,14 @@ export default async function SettingsMembersPage() {
 
       <div className="space-y-6">
         <SettingsTabs />
-        <MembersPanel
-          users={users}
-          currentUserId={viewer.id}
-          isAdmin={isAdmin}
-          isProjectManager={isProjectManager}
-        />
+        <Suspense fallback={null}>
+          <MembersPanel
+            users={users}
+            currentUserId={viewer.id}
+            isAdmin={isAdmin}
+            isProjectManager={isProjectManager}
+          />
+        </Suspense>
       </div>
     </>
   );

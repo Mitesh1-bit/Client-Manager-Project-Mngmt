@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
 import { normalizeContact } from "@/app/lib/api/normalize";
@@ -21,10 +22,12 @@ export default async function CompanyContactsPage({ params }) {
   const contacts = asArray(data.company.contacts).map((contact) => normalizeContact(contact));
 
   return (
-    <ContactsPanel
-      companyId={data.company.id}
-      companyName={data.company.name}
-      contacts={contacts}
-    />
+    <Suspense fallback={null}>
+      <ContactsPanel
+        companyId={data.company.id}
+        companyName={data.company.name}
+        contacts={contacts}
+      />
+    </Suspense>
   );
 }

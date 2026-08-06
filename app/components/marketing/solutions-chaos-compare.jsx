@@ -34,13 +34,13 @@ export function SolutionsChaosCompare({ title, subtitle, manualLabel, meridianLa
   }, [play]);
 
   return (
-    <section ref={ref} className="border-y border-mkt-navy/8 bg-[#faf9f6] py-20 md:py-28">
+    <section ref={ref} className="border-y border-mkt-navy/8 bg-[#faf9f6] py-14 sm:py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="font-mkt-display text-4xl text-mkt-navy sm:text-5xl md:text-7xl">
+          <p className="font-mkt-display text-[clamp(1.75rem,6vw,3rem)] text-mkt-navy sm:text-5xl md:text-7xl">
             3× <span className="text-mkt-coral">faster</span>
           </p>
-          <h2 className="mt-4 font-mkt-display text-2xl text-mkt-navy md:text-4xl">{title}</h2>
+          <h2 className="mt-4 font-mkt-display text-[clamp(1.35rem,4.5vw,2.25rem)] text-mkt-navy md:text-4xl">{title}</h2>
           <p className="mt-3 text-base text-mkt-navy/60 md:text-lg">{subtitle}</p>
         </Reveal>
 

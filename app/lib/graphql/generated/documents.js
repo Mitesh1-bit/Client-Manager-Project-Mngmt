@@ -1574,20 +1574,46 @@ fragment NotificationPreferenceFields on NotificationPreferenceType {
   inApp
 }`;
 
-export const PortalApprovalsDocument = gql`
-query PortalApprovals {
-  portalPendingApprovals {
+export const PortalApprovalsInboxDocument = gql`
+query PortalApprovalsInbox {
+  portalProjects {
     id
-    entityType
-    entityId
+    name
+    milestones {
+      ...PortalMilestoneFields
+    }
+  }
+  portalChangeRequests {
+    id
+    title
+    type
+    status
+    updatedAt
+    createdAt
+    projectId
+  }
+  me {
+    contact {
+      firstName
+      lastName
+    }
+  }
+}
+fragment PortalMilestoneFields on MilestoneType {
+  id
+  title
+  description
+  status
+  dueDate
+  approvedAt
+  requiresClientApproval
+  approvals {
+    id
     approverType
     status
     comment
     decidedAt
-  }
-  portalProjects {
-    id
-    name
+    approverName
   }
 }`;
 

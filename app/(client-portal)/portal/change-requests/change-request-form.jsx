@@ -9,6 +9,10 @@ import { LoaderCircle, Send } from "lucide-react";
 import { toast } from "sonner";
 
 import { FormField } from "@/app/components/domain/form-field";
+import {
+  SearchableSelect,
+  shouldUseSearchableSelect,
+} from "@/app/components/domain/searchable-select";
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -23,6 +27,7 @@ import { Textarea } from "@/app/components/ui/textarea";
 import { CreateChangeRequestDocument } from "@/app/lib/graphql/generated/documents";
 import { toCreateChangeRequestVariables } from "@/app/lib/api/portal";
 
+import { PortalCard } from "../portal-ui";
 import { CHANGE_REQUEST_TYPES, changeRequestSchema } from "./change-request-schema";
 
 /**
@@ -31,7 +36,7 @@ import { CHANGE_REQUEST_TYPES, changeRequestSchema } from "./change-request-sche
  * than `SCOPE_ADDITION`, because the person filling this in doesn't think in
  * our enum values.
  */
-export function ChangeRequestForm({ projects }) {
+export function ChangeRequestForm({ projects, defaultProjectId = "" }) {
   const router = useRouter();
   const [serverError, setServerError] = useState(null);
   const [createChangeRequest] = useMutation(CreateChangeRequestDocument);
@@ -44,7 +49,7 @@ export function ChangeRequestForm({ projects }) {
   } = useForm({
     resolver: zodResolver(changeRequestSchema),
     defaultValues: {
-      projectId: projects.length === 1 ? projects[0].id : "",
+      projectId: defaultProjectId || (projects.length === 1 ? projects[0].id : ""),
       type: "SCOPE_ADDITION",
       title: "",
       description: "",
@@ -54,15 +59,18 @@ export function ChangeRequestForm({ projects }) {
   });
 
   async function onSubmit(values) {
+    if (!values.projectId) {
+      setServerError("Choose which project this request is for.");
+      return;
+    }
     setServerError(null);
     try {
       const { data } = await createChangeRequest({
         variables: toCreateChangeRequestVariables(values),
       });
       const created = data.createChangeRequest;
-      const reference = created.id.slice(0, 8);
-      toast.success(`${reference} sent`, {
-        description: "We'll come back to you with the impact shortly.",
+      toast.success("Change request sent", {
+        description: "We'll review the impact and get back to you shortly.",
       });
       router.push(`/portal/change-requests/${created.id}`);
       router.refresh();
@@ -70,6 +78,15 @@ export function ChangeRequestForm({ projects }) {
       setServerError(error?.message ?? "We couldn't send this. Try again.");
     }
   }
+
+  if (projects.length === 0) {
+    return null;
+  }
+
+  const projectOptions = projects.map((project) => ({
+    value: project.id,
+    label: project.name,
+  }));
 
   return (
     <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-5" data-tour="portal-change-form">
@@ -80,27 +97,38 @@ export function ChangeRequestForm({ projects }) {
         </Alert>
       ) : null}
 
-      <div className="rounded-2xl border bg-card p-4 sm:p-5">
+      <PortalCard>
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label="Project" error={errors.projectId?.message} required>
             {(field) => (
               <Controller
                 control={control}
                 name="projectId"
-                render={({ field: control_ }) => (
-                  <Select value={control_.value} onValueChange={control_.onChange}>
-                    <SelectTrigger {...field} className="h-10 w-full">
-                      <SelectValue placeholder="Which project is this for?" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {projects.map((project) => (
-                        <SelectItem key={project.id} value={project.id}>
-                          {project.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                render={({ field: control_ }) =>
+                  shouldUseSearchableSelect(projectOptions) ? (
+                    <SearchableSelect
+                      {...field}
+                      options={projectOptions}
+                      value={control_.value ?? ""}
+                      onChange={control_.onChange}
+                      placeholder="Search projects…"
+                      emptyText="No project matches."
+                    />
+                  ) : (
+                    <Select value={control_.value} onValueChange={control_.onChange}>
+                      <SelectTrigger {...field} className="h-10 w-full">
+                        <SelectValue placeholder="Which project is this for?" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {projects.map((project) => (
+                          <SelectItem key={project.id} value={project.id}>
+                            {project.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )
+                }
               />
             )}
           </FormField>
@@ -182,10 +210,10 @@ export function ChangeRequestForm({ projects }) {
             )}
           </FormField>
         </div>
-      </div>
+      </PortalCard>
 
       <div className="flex flex-col gap-2 sm:flex-row-reverse">
-        <Button type="submit" size="lg" disabled={isSubmitting} className="sm:w-auto">
+        <Button type="submit" size="lg" disabled={isSubmitting} className="bg-[#0a1550] hover:bg-[#1e3a8a] sm:w-auto">
           {isSubmitting ? (
             <LoaderCircle aria-hidden="true" className="animate-spin" />
           ) : (

@@ -64,3 +64,25 @@ export function matchesSearch(row, query, fields) {
     return value != null && String(value).toLowerCase().includes(needle);
   });
 }
+
+/**
+ * Client-side filter before pagination — search + keyed multi-filters.
+ *
+ * @template T
+ * @param {T[]} items
+ * @param {{ query?: string | null, searchFields?: string[], filters?: Record<string, string[]> }} config
+ */
+export function filterList(items, { query = null, searchFields = [], filters = {} }) {
+  let result = [...items];
+
+  if (query && searchFields.length > 0) {
+    result = result.filter((item) => matchesSearch(item, query, searchFields));
+  }
+
+  for (const [key, values] of Object.entries(filters)) {
+    if (!values?.length) continue;
+    result = result.filter((item) => values.includes(String(item?.[key] ?? "")));
+  }
+
+  return result;
+}

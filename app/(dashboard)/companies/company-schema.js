@@ -10,7 +10,17 @@ import { toApiStatus, toUiStatus } from "@/app/lib/api/normalize";
  * Kept in its own module so it can be unit tested without rendering the form.
  */
 
-export const TIMEZONES = Intl.supportedValuesOf("timeZone");
+/** @deprecated Import getTimezoneValues from @/app/lib/geo-options in forms instead. */
+export const TIMEZONES = (() => {
+  try {
+    if (typeof Intl?.supportedValuesOf === "function") {
+      return Intl.supportedValuesOf("timeZone");
+    }
+  } catch {
+    // ignore — forms load the searchable list separately
+  }
+  return [];
+})();
 
 const optionalText = (max, message) =>
   z

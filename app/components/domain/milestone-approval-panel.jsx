@@ -21,6 +21,7 @@ import { Button } from "@/app/components/ui/button";
 import { Label } from "@/app/components/ui/label";
 import { Textarea } from "@/app/components/ui/textarea";
 import { APPROVAL_STATE, approvalNextAction, getMilestoneApprovalState } from "@/app/lib/approvals";
+import { portalDocumentHref, portalDocumentName } from "@/app/lib/api/portal-ui";
 import { formatBytes, formatDate, formatDateTime, initials } from "@/app/lib/format";
 import { ApproveMilestoneDocument, RequestMilestoneChangesDocument } from "@/app/lib/graphql/generated/documents";
 import { cn } from "@/app/lib/utils";
@@ -311,13 +312,15 @@ function Deliverables({ documents }) {
         {documents.map((document) => (
           <li key={document.id}>
             <a
-              href={document.fileUrl}
+              href={portalDocumentHref(document.fileUrl)}
               download
               className="flex items-center gap-2.5 rounded-lg border bg-background/70 px-3 py-2.5 transition-colors hover:bg-background focus-ring"
             >
               <FileText aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-caption font-medium">{document.name}</span>
+                <span className="block truncate text-caption font-medium">
+                  {document.name ?? portalDocumentName(document.fileUrl)}
+                </span>
                 <span className="block text-[0.75rem] text-muted-foreground">
                   v{document.version} · {formatBytes(document.sizeBytes)} ·{" "}
                   {document.uploadedByName}
