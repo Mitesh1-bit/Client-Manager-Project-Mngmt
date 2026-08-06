@@ -772,6 +772,25 @@ export const resolvers = {
       return phase;
     },
 
+    addProjectMember: (_parent, { projectId, userId }) => {
+      const project = byId(db.projects, projectId);
+      if (!project) throw new GraphQLError("Project not found.");
+      const user = byId(db.users, userId);
+      if (!user) throw new GraphQLError("User not found.");
+      if (project.teamIds.includes(userId)) {
+        throw new GraphQLError("This person is already on the project.");
+      }
+      project.teamIds.push(userId);
+      return user;
+    },
+
+    removeProjectMember: (_parent, { projectId, userId }) => {
+      const project = byId(db.projects, projectId);
+      if (!project) throw new GraphQLError("Project not found.");
+      project.teamIds = project.teamIds.filter((id) => id !== userId);
+      return true;
+    },
+
     updateMilestone: (_parent, { id, input }) => {
       const milestone = byId(db.milestones, id);
       if (!milestone) throw new GraphQLError("Milestone not found.");
@@ -1633,6 +1652,7 @@ export const resolvers = {
     company: (project) => byId(db.companies, project.companyId),
     projectManager: (project) => byId(db.users, project.projectManagerId),
     team: (project) => db.users.filter((user) => project.teamIds.includes(user.id)),
+    members: (project) => db.users.filter((user) => project.teamIds.includes(user.id)),
     tags: (project) => db.tags.filter((tag) => project.tagIds.includes(tag.id)),
     phases: (project) =>
       where(db.phases, "projectId", project.id).sort((a, b) => a.orderIndex - b.orderIndex),

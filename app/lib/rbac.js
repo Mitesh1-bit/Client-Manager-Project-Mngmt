@@ -17,7 +17,7 @@ export const ROLE_CATALOG = [
   {
     value: "project_manager",
     label: "Project manager",
-    summary: "Runs delivery — projects, tasks, milestones, change requests, and client records.",
+    summary: "Runs delivery — projects, tasks, milestones, change requests, billing, and client records.",
     access: [
       "Create and edit companies & contacts",
       "Create and manage projects",
@@ -25,7 +25,8 @@ export const ROLE_CATALOG = [
       "Assess and decide change requests",
       "Mark milestones ready for client review",
       "Retention sequences and touchpoints",
-      "Invoices (view and create)",
+      "Contracts and invoices",
+      "Audit log view and export",
       "Add or remove team members (team member role only)",
     ],
   },
@@ -38,18 +39,6 @@ export const ROLE_CATALOG = [
       "Update tasks and board columns",
       "View change requests (no decisions)",
     ],
-  },
-  {
-    value: "finance_admin",
-    label: "Finance admin",
-    summary: "Billing and contracts — no client or project delivery changes.",
-    access: ["View companies and projects (read-only)", "Contracts and invoices"],
-  },
-  {
-    value: "executive_viewer",
-    label: "Executive viewer",
-    summary: "Read-only overview for leadership — dashboard, clients, and audit.",
-    access: ["View dashboard, companies, and projects", "Audit log export"],
   },
 ];
 

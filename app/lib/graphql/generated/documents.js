@@ -270,6 +270,16 @@ fragment ProjectHeader on ProjectType {
     name
     avatarUrl
   }
+  members {
+    ...UserSummaryFields
+  }
+}
+fragment UserSummaryFields on UserSummaryType {
+  id
+  name
+  email
+  role
+  avatarUrl
 }`;
 
 export const ProjectRowFragmentDoc = gql`
@@ -382,6 +392,20 @@ fragment ViewerFields on ViewerType {
     title
     isPrimary
   }
+}`;
+
+export const AddProjectMemberDocument = gql`
+mutation AddProjectMember($projectId: ID!, $userId: ID!) {
+  addProjectMember(projectId: $projectId, userId: $userId) {
+    ...UserSummaryFields
+  }
+}
+fragment UserSummaryFields on UserSummaryType {
+  id
+  name
+  email
+  role
+  avatarUrl
 }`;
 
 export const AddSequenceStepDocument = gql`
@@ -1966,6 +1990,9 @@ fragment ProjectHeader on ProjectType {
     name
     avatarUrl
   }
+  members {
+    ...UserSummaryFields
+  }
 }
 fragment UserSummaryFields on UserSummaryType {
   id
@@ -2010,6 +2037,16 @@ fragment ProjectHeader on ProjectType {
     name
     avatarUrl
   }
+  members {
+    ...UserSummaryFields
+  }
+}
+fragment UserSummaryFields on UserSummaryType {
+  id
+  name
+  email
+  role
+  avatarUrl
 }`;
 
 export const ProjectFormOptionsDocument = gql`
@@ -2259,6 +2296,27 @@ fragment UserSummaryFields on UserSummaryType {
   avatarUrl
 }`;
 
+export const ProjectTeamDocument = gql`
+query ProjectTeam($id: ID!) {
+  project(id: $id) {
+    id
+    name
+    members {
+      ...UserSummaryFields
+    }
+  }
+  users {
+    ...UserSummaryFields
+  }
+}
+fragment UserSummaryFields on UserSummaryType {
+  id
+  name
+  email
+  role
+  avatarUrl
+}`;
+
 export const RefreshTokenDocument = gql`
 mutation RefreshToken {
   refreshToken {
@@ -2266,6 +2324,11 @@ mutation RefreshToken {
     requires2fa
     challengeToken
   }
+}`;
+
+export const RemoveProjectMemberDocument = gql`
+mutation RemoveProjectMember($projectId: ID!, $userId: ID!) {
+  removeProjectMember(projectId: $projectId, userId: $userId)
 }`;
 
 export const RemoveSequenceStepDocument = gql`
@@ -2806,6 +2869,16 @@ fragment ProjectHeader on ProjectType {
     name
     avatarUrl
   }
+  members {
+    ...UserSummaryFields
+  }
+}
+fragment UserSummaryFields on UserSummaryType {
+  id
+  name
+  email
+  role
+  avatarUrl
 }`;
 
 export const UpdateRetentionSequenceDocument = gql`

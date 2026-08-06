@@ -136,7 +136,7 @@ export function normalizeProject(project, usersById, companiesById) {
     status: toUiStatus("projectStatus", project.status),
     health: toUiStatus("projectHealth", project.health),
     tags: project.tags ?? [],
-    team: project.team ?? [],
+    team: project.members ?? [],
     completionPercent: project.completionPercent ?? 0,
     actualCost: project.actualCost ?? 0,
     budget: project.budget ?? null,

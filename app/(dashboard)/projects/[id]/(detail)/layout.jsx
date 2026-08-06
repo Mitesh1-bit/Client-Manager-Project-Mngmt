@@ -50,6 +50,7 @@ export default async function ProjectDetailLayout({ children, params }) {
     { href: `/projects/${id}/gantt`, label: "Timeline" },
     { href: `/projects/${id}/calendar`, label: "Calendar" },
     { href: `/projects/${id}/milestones`, label: "Milestones" },
+    { href: `/projects/${id}/team`, label: "Team" },
     { href: `/projects/${id}/change-requests`, label: "Change requests" },
     { href: `/projects/${id}/documents`, label: "Documents" },
   ];

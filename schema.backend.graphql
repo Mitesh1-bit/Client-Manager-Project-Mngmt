@@ -251,6 +251,8 @@ type Mutation {
   createProject(companyId: ID!, name: String!, description: String = null, status: String! = "planning", priority: String = null, projectManagerId: ID = null, budget: Float = null, currency: String! = "GBP", health: String = "on_track"): ProjectType!
   updateProject(id: ID!, name: String = null, description: String = null, status: String = null, priority: String = null, projectManagerId: ID = null, budget: Float = null, currency: String = null, health: String = null): ProjectType!
   deleteProject(id: ID!): Boolean!
+  addProjectMember(projectId: ID!, userId: ID!): UserSummaryType!
+  removeProjectMember(projectId: ID!, userId: ID!): Boolean!
   createPhase(projectId: ID!, name: String!, orderIndex: Int!, status: String! = "not_started"): PhaseType!
   updatePhase(id: ID!, name: String = null, orderIndex: Int = null, status: String = null): PhaseType!
   deletePhase(id: ID!): Boolean!
@@ -409,6 +411,7 @@ type ProjectType {
   projectManager: UserSummaryType
   phases: [PhaseType!]!
   tasks: [TaskType!]!
+  members: [UserSummaryType!]!
 }
 
 type Query {

@@ -27,8 +27,6 @@ enum UserRole {
   ADMIN
   PROJECT_MANAGER
   TEAM_MEMBER
-  FINANCE_ADMIN
-  VIEWER
 }
 
 enum UserStatus {
@@ -324,6 +322,7 @@ type Project {
   company: Company!
   projectManager: User
   team: [User!]!
+  members: [User!]!
   tags: [Tag!]!
   phases: [ProjectPhase!]!
   milestones: [Milestone!]!
@@ -900,6 +899,8 @@ type Mutation {
   updateMilestone(id: ID!, input: MilestoneInput!): Milestone!
   createPhase(input: PhaseInput!): ProjectPhase!
   updatePhase(id: ID!, input: PhaseInput!): ProjectPhase!
+  addProjectMember(projectId: ID!, userId: ID!): User!
+  removeProjectMember(projectId: ID!, userId: ID!): Boolean!
 
   """
   The Kanban drop write, and the inline status control in the list view.

@@ -1,5 +1,5 @@
 /** Shared role groups for internal tour steps. */
-export const R_ALL = ["admin", "project_manager", "team_member", "finance_admin", "executive_viewer"];
+export const R_ALL = ["admin", "project_manager", "team_member"];
 export const R_CLIENT = ["admin", "project_manager"];
 export const R_DELIVERY = ["admin", "project_manager"];
 export const R_TASKS = ["admin", "project_manager", "team_member"];
@@ -771,7 +771,7 @@ export const INTERNAL_TOUR_STEPS = [
     routes: ["/settings"],
     target: "settings-roles",
     title: "Roles & access",
-    body: "What each role can actually do in your workspace — admin, project manager, team member, and the read-only roles. Client portal access is separate, managed per contact.",
+    body: "What each role can actually do in your workspace — admin, project manager, and team member. Client portal access is separate, managed per contact.",
     placement: "bottom",
     roles: R_ALL,
   },

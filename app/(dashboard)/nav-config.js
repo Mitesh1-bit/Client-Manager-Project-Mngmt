@@ -17,14 +17,14 @@ export const NAV_GROUPS = [
         label: "Clients",
         icon: Building2,
         tourId: "nav-companies",
-        roles: ["admin", "project_manager", "team_member", "finance_admin", "executive_viewer"],
+        roles: ["admin", "project_manager", "team_member"],
       },
       {
         href: "/projects",
         label: "Projects",
         icon: FolderKanban,
         tourId: "nav-projects",
-        roles: ["admin", "project_manager", "team_member", "finance_admin", "executive_viewer"],
+        roles: ["admin", "project_manager", "team_member"],
       },
     ],
   },
@@ -55,7 +55,7 @@ export const FOOTER_NAV = [
     label: "Settings",
     icon: Settings,
     tourId: "nav-settings",
-    roles: ["admin", "project_manager", "team_member", "finance_admin", "executive_viewer"],
+    roles: ["admin", "project_manager", "team_member"],
   },
 ];
 

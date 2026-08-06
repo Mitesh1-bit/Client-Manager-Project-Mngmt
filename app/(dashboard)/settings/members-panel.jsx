@@ -46,13 +46,7 @@ const inviteSchema = z.object({
   name: z.string().trim().min(2, "Enter a name."),
   email: z.string().trim().email("Enter a valid email."),
   password: z.string().min(12, "Password must be at least 12 characters."),
-  role: z.enum([
-    "admin",
-    "project_manager",
-    "team_member",
-    "finance_admin",
-    "executive_viewer",
-  ]),
+  role: z.enum(["admin", "project_manager", "team_member"]),
 });
 
 export function MembersPanel({ users, currentUserId, isAdmin, isProjectManager = false }) {

@@ -33,8 +33,6 @@ export const ROLE_WELCOME_HINT = {
   admin: "As admin, you'll set up team, clients, and projects — this guide covers the full workflow.",
   project_manager: "As project manager, pay attention to projects, board, milestones, and change requests.",
   team_member: "As team member, you'll mainly use the project board to update assigned tasks.",
-  finance_admin: "As finance admin, you have read-only access — creation steps are skipped for your role.",
-  executive_viewer: "As executive viewer, you have a read-only overview — creation steps are skipped.",
 };
 
 /**

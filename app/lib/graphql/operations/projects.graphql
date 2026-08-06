@@ -46,6 +46,9 @@ fragment ProjectHeader on ProjectType {
     name
     avatarUrl
   }
+  members {
+    ...UserSummaryFields
+  }
 }
 
 fragment PhaseFields on PhaseType {
@@ -354,6 +357,29 @@ mutation AddTaskDependency(
     dependsOnTaskId
     type
   }
+}
+
+query ProjectTeam($id: ID!) {
+  project(id: $id) {
+    id
+    name
+    members {
+      ...UserSummaryFields
+    }
+  }
+  users {
+    ...UserSummaryFields
+  }
+}
+
+mutation AddProjectMember($projectId: ID!, $userId: ID!) {
+  addProjectMember(projectId: $projectId, userId: $userId) {
+    ...UserSummaryFields
+  }
+}
+
+mutation RemoveProjectMember($projectId: ID!, $userId: ID!) {
+  removeProjectMember(projectId: $projectId, userId: $userId)
 }
 
 query ProjectChangeRequests($projectId: ID!) {

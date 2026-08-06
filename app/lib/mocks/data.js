@@ -93,7 +93,7 @@ export const users = [
     id: "usr_6",
     name: "Elena Novak",
     email: "elena@meridian.studio",
-    role: "VIEWER",
+    role: "TEAM_MEMBER",
     status: "ACTIVE",
     avatarUrl: null,
     scope: "INTERNAL",
