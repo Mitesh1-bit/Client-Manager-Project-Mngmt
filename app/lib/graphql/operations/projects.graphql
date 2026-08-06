@@ -363,12 +363,32 @@ query ProjectTeam($id: ID!) {
   project(id: $id) {
     id
     name
+    companyId
     members {
       ...UserSummaryFields
+    }
+    clientContacts {
+      id
+      firstName
+      lastName
+      email
+      title
+      isPrimary
     }
   }
   users {
     ...UserSummaryFields
+  }
+  companies {
+    id
+    contacts {
+      id
+      firstName
+      lastName
+      email
+      title
+      isPrimary
+    }
   }
 }
 
@@ -380,6 +400,21 @@ mutation AddProjectMember($projectId: ID!, $userId: ID!) {
 
 mutation RemoveProjectMember($projectId: ID!, $userId: ID!) {
   removeProjectMember(projectId: $projectId, userId: $userId)
+}
+
+mutation AddProjectContact($projectId: ID!, $contactId: ID!) {
+  addProjectContact(projectId: $projectId, contactId: $contactId) {
+    id
+    firstName
+    lastName
+    email
+    title
+    isPrimary
+  }
+}
+
+mutation RemoveProjectContact($projectId: ID!, $contactId: ID!) {
+  removeProjectContact(projectId: $projectId, contactId: $contactId)
 }
 
 query ProjectChangeRequests($projectId: ID!) {

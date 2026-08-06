@@ -394,6 +394,18 @@ fragment ViewerFields on ViewerType {
   }
 }`;
 
+export const AddProjectContactDocument = gql`
+mutation AddProjectContact($projectId: ID!, $contactId: ID!) {
+  addProjectContact(projectId: $projectId, contactId: $contactId) {
+    id
+    firstName
+    lastName
+    email
+    title
+    isPrimary
+  }
+}`;
+
 export const AddProjectMemberDocument = gql`
 mutation AddProjectMember($projectId: ID!, $userId: ID!) {
   addProjectMember(projectId: $projectId, userId: $userId) {
@@ -2301,12 +2313,32 @@ query ProjectTeam($id: ID!) {
   project(id: $id) {
     id
     name
+    companyId
     members {
       ...UserSummaryFields
+    }
+    clientContacts {
+      id
+      firstName
+      lastName
+      email
+      title
+      isPrimary
     }
   }
   users {
     ...UserSummaryFields
+  }
+  companies {
+    id
+    contacts {
+      id
+      firstName
+      lastName
+      email
+      title
+      isPrimary
+    }
   }
 }
 fragment UserSummaryFields on UserSummaryType {
@@ -2324,6 +2356,11 @@ mutation RefreshToken {
     requires2fa
     challengeToken
   }
+}`;
+
+export const RemoveProjectContactDocument = gql`
+mutation RemoveProjectContact($projectId: ID!, $contactId: ID!) {
+  removeProjectContact(projectId: $projectId, contactId: $contactId)
 }`;
 
 export const RemoveProjectMemberDocument = gql`

@@ -323,6 +323,7 @@ type Project {
   projectManager: User
   team: [User!]!
   members: [User!]!
+  clientContacts: [Contact!]!
   tags: [Tag!]!
   phases: [ProjectPhase!]!
   milestones: [Milestone!]!
@@ -901,6 +902,8 @@ type Mutation {
   updatePhase(id: ID!, input: PhaseInput!): ProjectPhase!
   addProjectMember(projectId: ID!, userId: ID!): User!
   removeProjectMember(projectId: ID!, userId: ID!): Boolean!
+  addProjectContact(projectId: ID!, contactId: ID!): Contact!
+  removeProjectContact(projectId: ID!, contactId: ID!): Boolean!
 
   """
   The Kanban drop write, and the inline status control in the list view.

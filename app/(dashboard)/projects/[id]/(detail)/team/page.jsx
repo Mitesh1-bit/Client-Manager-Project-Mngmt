@@ -16,12 +16,15 @@ export default async function ProjectTeamPage({ params }) {
   if (!data.project) notFound();
 
   const claims = await getSessionClaims();
+  const company = pickList(data, "companies").find((row) => row.id === data.project.companyId);
 
   return (
     <TeamPanel
       projectId={id}
       members={data.project.members ?? []}
+      clientContacts={data.project.clientContacts ?? []}
       allUsers={pickList(data, "users")}
+      companyContacts={company?.contacts ?? []}
       isAdmin={claims?.role === "admin"}
       isProjectManager={claims?.role === "project_manager"}
     />

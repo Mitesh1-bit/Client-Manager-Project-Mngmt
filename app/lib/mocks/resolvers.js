@@ -791,6 +791,28 @@ export const resolvers = {
       return true;
     },
 
+    addProjectContact: (_parent, { projectId, contactId }) => {
+      const project = byId(db.projects, projectId);
+      if (!project) throw new GraphQLError("Project not found.");
+      const contact = byId(db.contacts, contactId);
+      if (!contact) throw new GraphQLError("Contact not found.");
+      if (contact.companyId !== project.companyId) {
+        throw new GraphQLError("This contact isn't at the project's client.");
+      }
+      if (project.contactIds.includes(contactId)) {
+        throw new GraphQLError("This contact is already on the project.");
+      }
+      project.contactIds.push(contactId);
+      return contact;
+    },
+
+    removeProjectContact: (_parent, { projectId, contactId }) => {
+      const project = byId(db.projects, projectId);
+      if (!project) throw new GraphQLError("Project not found.");
+      project.contactIds = project.contactIds.filter((id) => id !== contactId);
+      return true;
+    },
+
     updateMilestone: (_parent, { id, input }) => {
       const milestone = byId(db.milestones, id);
       if (!milestone) throw new GraphQLError("Milestone not found.");
@@ -1653,6 +1675,7 @@ export const resolvers = {
     projectManager: (project) => byId(db.users, project.projectManagerId),
     team: (project) => db.users.filter((user) => project.teamIds.includes(user.id)),
     members: (project) => db.users.filter((user) => project.teamIds.includes(user.id)),
+    clientContacts: (project) => db.contacts.filter((contact) => project.contactIds.includes(contact.id)),
     tags: (project) => db.tags.filter((tag) => project.tagIds.includes(tag.id)),
     phases: (project) =>
       where(db.phases, "projectId", project.id).sort((a, b) => a.orderIndex - b.orderIndex),
