@@ -90,6 +90,13 @@ fragment CompanyRow on CompanyType {
     email
     isPrimary
   }
+  tags {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
 }
 fragment UserSummaryFields on UserSummaryType {
   id
@@ -113,8 +120,16 @@ fragment ContactFields on ContactType {
   preferredChannel
   timezone
   portalAccessEnabled
+  portalCanRaiseRequests
   linkedinUrl
   status
+  tags {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
 }`;
 
 export const ContractFieldsFragmentDoc = gql`
@@ -185,6 +200,21 @@ fragment NotificationPreferenceFields on NotificationPreferenceType {
   key
   email
   inApp
+}`;
+
+export const OrgSettingsFieldsFragmentDoc = gql`
+fragment OrgSettingsFields on OrgSettingsType {
+  healthWeightProjectHealth
+  healthWeightTouchpoints
+  healthWeightChangeRequests
+  healthWeightContract
+  healthWeightCompanyStatus
+  healthAtRiskThreshold
+  contractRenewalWindowDays
+  crInternalApprovalCostThreshold
+  crInternalApprovalTimelineDaysThreshold
+  crRevisionCap
+  crResponseSlaDays
 }`;
 
 export const PhaseFieldsFragmentDoc = gql`
@@ -286,6 +316,13 @@ fragment ProjectHeader on ProjectType {
   members {
     ...UserSummaryFields
   }
+  tags {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
 }
 fragment UserSummaryFields on UserSummaryType {
   id
@@ -312,6 +349,13 @@ fragment ProjectRow on ProjectType {
     name
     avatarUrl
   }
+  tags {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
 }`;
 
 export const RetentionSequenceRowFragmentDoc = gql`
@@ -386,6 +430,7 @@ fragment ViewerFields on ViewerType {
   status
   avatarUrl
   scope
+  totpEnabled
   organization {
     id
     name
@@ -449,6 +494,11 @@ mutation AddSequenceStep($sequenceId: ID!, $channel: String!, $offsetDays: Int!,
     templateId
     assigneeRole
   }
+}`;
+
+export const AddTagDocument = gql`
+mutation AddTag($entityType: String!, $entityId: ID!, $tagId: ID!) {
+  addTag(entityType: $entityType, entityId: $entityId, tagId: $tagId)
 }`;
 
 export const AddTaskDependencyDocument = gql`
@@ -767,6 +817,9 @@ query CompanyContacts($id: ID!) {
       ...ContactFields
     }
   }
+  tags {
+    ...TagFields
+  }
 }
 fragment ContactFields on ContactType {
   id
@@ -781,8 +834,16 @@ fragment ContactFields on ContactType {
   preferredChannel
   timezone
   portalAccessEnabled
+  portalCanRaiseRequests
   linkedinUrl
   status
+  tags {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
 }`;
 
 export const CompanyContractsDocument = gql`
@@ -854,7 +915,14 @@ query CompanyForEdit($id: ID!) {
     accountOwner {
       id
     }
+    tags {
+      ...TagFields
+    }
   }
+}
+fragment TagFields on TagType {
+  id
+  name
 }`;
 
 export const CompanyFormOptionsDocument = gql`
@@ -932,6 +1000,13 @@ fragment CompanyRow on CompanyType {
     email
     isPrimary
   }
+  tags {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
 }
 fragment UserSummaryFields on UserSummaryType {
   id
@@ -959,6 +1034,15 @@ query CompanyOverview($id: ID!) {
     primaryContact {
       ...ContactFields
     }
+    activity {
+      id
+      actorId
+      action
+      entityType
+      entityId
+      diff
+      createdAt
+    }
   }
   contracts(companyId: $id) {
     id
@@ -967,6 +1051,9 @@ query CompanyOverview($id: ID!) {
     value
     autoRenew
     status
+  }
+  users {
+    ...UserSummaryFields
   }
 }
 fragment ContactFields on ContactType {
@@ -982,8 +1069,16 @@ fragment ContactFields on ContactType {
   preferredChannel
   timezone
   portalAccessEnabled
+  portalCanRaiseRequests
   linkedinUrl
   status
+  tags {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
 }
 fragment UserSummaryFields on UserSummaryType {
   id
@@ -1081,6 +1176,11 @@ mutation ConfirmProjectUpload($entityId: ID!, $fileUrl: String!) {
   }
 }`;
 
+export const ConfirmTotpDocument = gql`
+mutation ConfirmTotp($code: String!) {
+  confirmTotp(code: $code)
+}`;
+
 export const ConfirmUploadDocument = gql`
 mutation ConfirmUpload($entityType: String!, $entityId: ID!, $fileUrl: String!) {
   confirmUpload(entityType: $entityType, entityId: $entityId, fileUrl: $fileUrl) {
@@ -1164,6 +1264,13 @@ fragment CompanyRow on CompanyType {
     email
     isPrimary
   }
+  tags {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
 }
 fragment UserSummaryFields on UserSummaryType {
   id
@@ -1174,7 +1281,7 @@ fragment UserSummaryFields on UserSummaryType {
 }`;
 
 export const CreateContactDocument = gql`
-mutation CreateContact($companyId: ID!, $firstName: String!, $lastName: String!, $email: String, $phone: String, $title: String, $department: String, $isPrimary: Boolean!, $preferredChannel: String, $timezone: String, $portalAccessEnabled: Boolean!, $portalPassword: String, $linkedinUrl: String, $status: String!) {
+mutation CreateContact($companyId: ID!, $firstName: String!, $lastName: String!, $email: String, $phone: String, $title: String, $department: String, $isPrimary: Boolean!, $preferredChannel: String, $timezone: String, $portalAccessEnabled: Boolean!, $portalCanRaiseRequests: Boolean!, $portalPassword: String, $linkedinUrl: String, $status: String!) {
   createContact(
     companyId: $companyId
     firstName: $firstName
@@ -1187,6 +1294,7 @@ mutation CreateContact($companyId: ID!, $firstName: String!, $lastName: String!,
     preferredChannel: $preferredChannel
     timezone: $timezone
     portalAccessEnabled: $portalAccessEnabled
+    portalCanRaiseRequests: $portalCanRaiseRequests
     portalPassword: $portalPassword
     linkedinUrl: $linkedinUrl
     status: $status
@@ -1207,8 +1315,16 @@ fragment ContactFields on ContactType {
   preferredChannel
   timezone
   portalAccessEnabled
+  portalCanRaiseRequests
   linkedinUrl
   status
+  tags {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
 }`;
 
 export const CreateContractDocument = gql`
@@ -1351,6 +1467,13 @@ fragment ProjectRow on ProjectType {
     name
     avatarUrl
   }
+  tags {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
 }`;
 
 export const CreateRetentionSequenceDocument = gql`
@@ -1489,6 +1612,11 @@ mutation DeleteContract($id: ID!) {
   deleteContract(id: $id)
 }`;
 
+export const DeleteDocumentDocument = gql`
+mutation DeleteDocument($id: ID!) {
+  deleteDocument(id: $id)
+}`;
+
 export const DeleteInvoiceDocument = gql`
 mutation DeleteInvoice($id: ID!) {
   deleteInvoice(id: $id)
@@ -1497,6 +1625,19 @@ mutation DeleteInvoice($id: ID!) {
 export const DeleteUserDocument = gql`
 mutation DeleteUser($id: ID!) {
   deleteUser(id: $id)
+}`;
+
+export const DisableTotpDocument = gql`
+mutation DisableTotp {
+  disableTotp
+}`;
+
+export const EnableTotpDocument = gql`
+mutation EnableTotp {
+  enableTotp {
+    secret
+    provisioningUri
+  }
 }`;
 
 export const EnrollInSequenceDocument = gql`
@@ -1615,6 +1756,7 @@ fragment ViewerFields on ViewerType {
   status
   avatarUrl
   scope
+  totpEnabled
   organization {
     id
     name
@@ -1662,6 +1804,26 @@ fragment NotificationFields on NotificationType {
   link
   readAt
   createdAt
+}`;
+
+export const OrganizationSettingsDocument = gql`
+query OrganizationSettings {
+  organizationSettings {
+    ...OrgSettingsFields
+  }
+}
+fragment OrgSettingsFields on OrgSettingsType {
+  healthWeightProjectHealth
+  healthWeightTouchpoints
+  healthWeightChangeRequests
+  healthWeightContract
+  healthWeightCompanyStatus
+  healthAtRiskThreshold
+  contractRenewalWindowDays
+  crInternalApprovalCostThreshold
+  crInternalApprovalTimelineDaysThreshold
+  crRevisionCap
+  crResponseSlaDays
 }`;
 
 export const PortalApprovalsInboxDocument = gql`
@@ -2121,6 +2283,13 @@ fragment ProjectHeader on ProjectType {
   members {
     ...UserSummaryFields
   }
+  tags {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
 }
 fragment UserSummaryFields on UserSummaryType {
   id
@@ -2168,6 +2337,13 @@ fragment ProjectHeader on ProjectType {
   members {
     ...UserSummaryFields
   }
+  tags {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
 }
 fragment UserSummaryFields on UserSummaryType {
   id
@@ -2321,6 +2497,13 @@ fragment ProjectRow on ProjectType {
     name
     avatarUrl
   }
+  tags {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
 }
 fragment UserSummaryFields on UserSummaryType {
   id
@@ -2487,6 +2670,11 @@ mutation RemoveProjectMember($projectId: ID!, $userId: ID!) {
 export const RemoveSequenceStepDocument = gql`
 mutation RemoveSequenceStep($stepId: ID!) {
   removeSequenceStep(stepId: $stepId)
+}`;
+
+export const RemoveTagDocument = gql`
+mutation RemoveTag($entityType: String!, $entityId: ID!, $tagId: ID!) {
+  removeTag(entityType: $entityType, entityId: $entityId, tagId: $tagId)
 }`;
 
 export const RemoveTaskDependencyDocument = gql`
@@ -2793,6 +2981,13 @@ fragment CompanyRow on CompanyType {
     email
     isPrimary
   }
+  tags {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
 }
 fragment UserSummaryFields on UserSummaryType {
   id
@@ -2803,7 +2998,7 @@ fragment UserSummaryFields on UserSummaryType {
 }`;
 
 export const UpdateContactDocument = gql`
-mutation UpdateContact($id: ID!, $firstName: String, $lastName: String, $email: String, $phone: String, $title: String, $department: String, $isPrimary: Boolean, $preferredChannel: String, $timezone: String, $portalAccessEnabled: Boolean, $portalPassword: String, $linkedinUrl: String, $status: String) {
+mutation UpdateContact($id: ID!, $firstName: String, $lastName: String, $email: String, $phone: String, $title: String, $department: String, $isPrimary: Boolean, $preferredChannel: String, $timezone: String, $portalAccessEnabled: Boolean, $portalCanRaiseRequests: Boolean, $portalPassword: String, $linkedinUrl: String, $status: String) {
   updateContact(
     id: $id
     firstName: $firstName
@@ -2816,6 +3011,7 @@ mutation UpdateContact($id: ID!, $firstName: String, $lastName: String, $email: 
     preferredChannel: $preferredChannel
     timezone: $timezone
     portalAccessEnabled: $portalAccessEnabled
+    portalCanRaiseRequests: $portalCanRaiseRequests
     portalPassword: $portalPassword
     linkedinUrl: $linkedinUrl
     status: $status
@@ -2836,8 +3032,16 @@ fragment ContactFields on ContactType {
   preferredChannel
   timezone
   portalAccessEnabled
+  portalCanRaiseRequests
   linkedinUrl
   status
+  tags {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
 }`;
 
 export const UpdateContractDocument = gql`
@@ -2961,6 +3165,7 @@ fragment ViewerFields on ViewerType {
   status
   avatarUrl
   scope
+  totpEnabled
   organization {
     id
     name
@@ -2980,6 +3185,38 @@ fragment ViewerFields on ViewerType {
     title
     isPrimary
   }
+}`;
+
+export const UpdateOrganizationSettingsDocument = gql`
+mutation UpdateOrganizationSettings($healthWeightProjectHealth: Float, $healthWeightTouchpoints: Float, $healthWeightChangeRequests: Float, $healthWeightContract: Float, $healthWeightCompanyStatus: Float, $healthAtRiskThreshold: Float, $contractRenewalWindowDays: Int, $crInternalApprovalCostThreshold: Float, $crInternalApprovalTimelineDaysThreshold: Int, $crRevisionCap: Int, $crResponseSlaDays: Int) {
+  updateOrganizationSettings(
+    healthWeightProjectHealth: $healthWeightProjectHealth
+    healthWeightTouchpoints: $healthWeightTouchpoints
+    healthWeightChangeRequests: $healthWeightChangeRequests
+    healthWeightContract: $healthWeightContract
+    healthWeightCompanyStatus: $healthWeightCompanyStatus
+    healthAtRiskThreshold: $healthAtRiskThreshold
+    contractRenewalWindowDays: $contractRenewalWindowDays
+    crInternalApprovalCostThreshold: $crInternalApprovalCostThreshold
+    crInternalApprovalTimelineDaysThreshold: $crInternalApprovalTimelineDaysThreshold
+    crRevisionCap: $crRevisionCap
+    crResponseSlaDays: $crResponseSlaDays
+  ) {
+    ...OrgSettingsFields
+  }
+}
+fragment OrgSettingsFields on OrgSettingsType {
+  healthWeightProjectHealth
+  healthWeightTouchpoints
+  healthWeightChangeRequests
+  healthWeightContract
+  healthWeightCompanyStatus
+  healthAtRiskThreshold
+  contractRenewalWindowDays
+  crInternalApprovalCostThreshold
+  crInternalApprovalTimelineDaysThreshold
+  crRevisionCap
+  crResponseSlaDays
 }`;
 
 export const UpdatePhaseDocument = gql`
@@ -3032,6 +3269,13 @@ fragment ProjectHeader on ProjectType {
   members {
     ...UserSummaryFields
   }
+  tags {
+    ...TagFields
+  }
+}
+fragment TagFields on TagType {
+  id
+  name
 }
 fragment UserSummaryFields on UserSummaryType {
   id
@@ -3164,4 +3408,28 @@ mutation UpdateUser($id: ID!, $name: String, $role: String, $status: String) {
     role
     status
   }
+}`;
+
+export const WorkloadDocument = gql`
+query Workload($projectId: ID) {
+  workload(projectId: $projectId) {
+    assigneeId
+    totalEstimatedHours
+    totalActualHours
+    openTaskCount
+  }
+  users {
+    ...UserSummaryFields
+  }
+  projects {
+    id
+    name
+  }
+}
+fragment UserSummaryFields on UserSummaryType {
+  id
+  name
+  email
+  role
+  avatarUrl
 }`;

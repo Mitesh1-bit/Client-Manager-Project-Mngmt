@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   Settings,
   HeartHandshake,
+  Gauge,
 } from "lucide-react";
 
 export const NAV_GROUPS = [
@@ -43,6 +44,13 @@ export const NAV_GROUPS = [
         label: "Retention",
         icon: HeartHandshake,
         tourId: "nav-retention",
+        roles: ["admin", "project_manager"],
+      },
+      {
+        href: "/workload",
+        label: "Workload",
+        icon: Gauge,
+        tourId: "nav-workload",
         roles: ["admin", "project_manager"],
       },
     ],

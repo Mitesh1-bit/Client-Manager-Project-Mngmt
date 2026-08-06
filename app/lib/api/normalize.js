@@ -113,6 +113,7 @@ export function normalizeContact(contact) {
     ...contact,
     fullName: contact.fullName ?? contactFullName(contact),
     status: toUiStatus("contactStatus", contact.status),
+    tags: contact.tags ?? [],
     activity: contact.activity ?? [],
     touchpoints: contact.touchpoints ?? [],
     updatedAt: contact.updatedAt ?? new Date().toISOString(),
@@ -221,10 +222,14 @@ export function filterCompanies(companies, filter = {}) {
   if (filter.accountOwnerId) {
     rows = rows.filter((row) => row.accountOwner?.id === filter.accountOwnerId);
   }
+  if (filter.tagIds?.length) {
+    const allowed = new Set(filter.tagIds);
+    rows = rows.filter((row) => (row.tags ?? []).some((tag) => allowed.has(tag.id)));
+  }
   return rows;
 }
 
-/** @param {Record<string, unknown>[]} projects @param {{ search?: string | null, status?: string[] | null, companyId?: string | null }} filter */
+/** @param {Record<string, unknown>[]} projects @param {{ search?: string | null, status?: string[] | null, companyId?: string | null, tagIds?: string[] | null }} filter */
 export function filterProjects(projects, filter = {}) {
   let rows = projects;
   if (filter.search) {
@@ -237,6 +242,10 @@ export function filterProjects(projects, filter = {}) {
   }
   if (filter.companyId) {
     rows = rows.filter((row) => row.company?.id === filter.companyId || row.companyId === filter.companyId);
+  }
+  if (filter.tagIds?.length) {
+    const allowed = new Set(filter.tagIds);
+    rows = rows.filter((row) => (row.tags ?? []).some((tag) => allowed.has(tag.id)));
   }
   return rows;
 }

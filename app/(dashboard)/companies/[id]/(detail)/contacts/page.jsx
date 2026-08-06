@@ -27,6 +27,7 @@ export default async function CompanyContactsPage({ params }) {
         companyId={data.company.id}
         companyName={data.company.name}
         contacts={contacts}
+        tags={asArray(data.tags)}
       />
     </Suspense>
   );

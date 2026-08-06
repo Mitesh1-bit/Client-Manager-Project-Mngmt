@@ -27,16 +27,18 @@ import {
   SelectValue,
 } from "@/app/components/ui/select";
 import {
+  AddTagDocument,
   CreateCompanyDocument,
   CreateTagDocument,
+  RemoveTagDocument,
   UpdateCompanyDocument,
 } from "@/app/lib/graphql/generated/documents";
+import { syncEntityTags } from "@/app/lib/api/tag-sync";
 import { listStatuses } from "@/app/lib/status";
 
 import {
   companySchema,
   companyToFormValues,
-  toCompanyInput,
   toCreateCompanyVariables,
   toUpdateCompanyVariables,
 } from "./company-schema";
@@ -78,6 +80,8 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
   const [createCompany] = useMutation(CreateCompanyDocument);
   const [updateCompany] = useMutation(UpdateCompanyDocument);
   const [createTag] = useMutation(CreateTagDocument);
+  const [addTag] = useMutation(AddTagDocument);
+  const [removeTag] = useMutation(RemoveTagDocument);
   const [tagList, setTagList] = useState(tags);
 
   const {
@@ -103,21 +107,31 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
 
   async function onSubmit(values) {
     setServerError(null);
-    const input = toCompanyInput(values);
 
     try {
+      let entityId;
       if (mode === "create") {
         const { data } = await createCompany({
           variables: toCreateCompanyVariables(values),
           update: (cache) => cache.evict({ fieldName: "companies" }),
         });
+        entityId = data.createCompany.id;
         toast.success(`${data.createCompany.name} created`);
-        router.push(`/companies/${data.createCompany.id}`);
+        router.push(`/companies/${entityId}`);
       } else {
         const { data } = await updateCompany({ variables: toUpdateCompanyVariables(company.id, values) });
+        entityId = company.id;
         toast.success(`${data.updateCompany.name} updated`);
-        router.push(`/companies/${company.id}`);
+        router.push(`/companies/${entityId}`);
       }
+      await syncEntityTags({
+        addTag,
+        removeTag,
+        entityType: "company",
+        entityId,
+        previousTagIds: mode === "edit" ? (company?.tags ?? []).map((tag) => tag.id) : [],
+        nextTagIds: values.tagIds,
+      });
       router.refresh();
     } catch (error) {
       setServerError(error?.message ?? "We couldn't save this client. Try again.");

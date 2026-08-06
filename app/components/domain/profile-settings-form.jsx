@@ -14,7 +14,13 @@ import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { PasswordInput } from "@/app/components/ui/password-input";
-import { ChangeMyPasswordDocument, UpdateMyProfileDocument } from "@/app/lib/graphql/generated/documents";
+import {
+  ChangeMyPasswordDocument,
+  ConfirmTotpDocument,
+  DisableTotpDocument,
+  EnableTotpDocument,
+  UpdateMyProfileDocument,
+} from "@/app/lib/graphql/generated/documents";
 
 const internalProfileSchema = z.object({
   name: z.string().trim().min(2, "Enter at least 2 characters."),
@@ -256,6 +262,135 @@ export function ProfileSettingsForm({ scope, viewer }) {
           </Button>
         </form>
       </section>
+
+      {isPortal ? null : <TwoFactorSection totpEnabled={Boolean(viewer.totpEnabled)} />}
     </div>
+  );
+}
+
+/** @param {{ totpEnabled: boolean }} props */
+function TwoFactorSection({ totpEnabled }) {
+  const router = useRouter();
+  const [enabled, setEnabled] = useState(totpEnabled);
+  const [setup, setSetup] = useState(null);
+  const [code, setCode] = useState("");
+  const [error, setError] = useState(null);
+  const [enableTotp, { loading: starting }] = useMutation(EnableTotpDocument);
+  const [confirmTotp, { loading: confirming }] = useMutation(ConfirmTotpDocument);
+  const [disableTotp, { loading: disabling }] = useMutation(DisableTotpDocument);
+
+  async function handleStart() {
+    setError(null);
+    try {
+      const { data } = await enableTotp();
+      setSetup(data.enableTotp);
+    } catch (mutationError) {
+      setError(mutationError?.message ?? "Couldn't start setup. Try again.");
+    }
+  }
+
+  function handleCancel() {
+    setSetup(null);
+    setCode("");
+    setError(null);
+  }
+
+  async function handleConfirm(event) {
+    event.preventDefault();
+    setError(null);
+    try {
+      await confirmTotp({ variables: { code } });
+      toast.success("Two-factor authentication enabled");
+      setEnabled(true);
+      setSetup(null);
+      setCode("");
+      router.refresh();
+    } catch (mutationError) {
+      setError(mutationError?.message ?? "That code didn't work. Try again.");
+    }
+  }
+
+  async function handleDisable() {
+    try {
+      await disableTotp();
+      toast.success("Two-factor authentication turned off");
+      setEnabled(false);
+      router.refresh();
+    } catch (mutationError) {
+      toast.error("Couldn't turn off two-factor authentication", {
+        description: mutationError?.message,
+      });
+    }
+  }
+
+  return (
+    <section className="space-y-4 border-t pt-8">
+      <div>
+        <h2 className="text-title">Two-factor authentication</h2>
+        <p className="mt-1 text-caption text-muted-foreground">
+          Require a code from an authenticator app when you sign in.
+        </p>
+      </div>
+
+      {enabled ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/40 px-4 py-3">
+          <p className="text-caption font-medium text-tone-positive-fg">
+            Enabled on your account
+          </p>
+          <Button variant="outline" size="sm" onClick={handleDisable} disabled={disabling}>
+            {disabling ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : null}
+            Turn off
+          </Button>
+        </div>
+      ) : setup ? (
+        <form noValidate onSubmit={handleConfirm} className="space-y-4">
+          {error ? (
+            <Alert variant="destructive">
+              <AlertTitle>Couldn&apos;t confirm</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : null}
+
+          <div className="space-y-1.5">
+            <p className="text-caption text-muted-foreground">
+              Add this key to your authenticator app (Google Authenticator, 1Password, Authy…),
+              then enter the 6-digit code it generates.
+            </p>
+            <code className="block truncate rounded-md bg-muted px-3 py-2 text-caption">
+              {setup.secret}
+            </code>
+          </div>
+
+          <FormField label="6-digit code" required>
+            {(field) => (
+              <Input
+                {...field}
+                value={code}
+                onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="123456"
+                className="h-10 w-32 tabular"
+              />
+            )}
+          </FormField>
+
+          <div className="flex gap-2">
+            <Button type="submit" disabled={confirming || code.length !== 6}>
+              {confirming ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : null}
+              Confirm and enable
+            </Button>
+            <Button type="button" variant="ghost" onClick={handleCancel}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      ) : (
+        <Button onClick={handleStart} disabled={starting}>
+          {starting ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : null}
+          Set up two-factor authentication
+        </Button>
+      )}
+    </section>
   );
 }

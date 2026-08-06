@@ -22,20 +22,23 @@ import { ProjectsTable } from "./projects-table";
 export const metadata = { title: "Projects" };
 
 const SORTABLE = ["name", "status", "completionPercent", "endDate", "updatedAt"];
-const FILTER_KEYS = ["q", "status", "health", "priority", "pm", "company"];
+const FILTER_KEYS = ["q", "status", "health", "priority", "pm", "company", "tag"];
 
 export default async function ProjectsPage({ searchParams }) {
   const params = await searchParams;
   let users = [];
   let companies = [];
+  let tags = [];
 
   try {
     const { data: options } = await getClient().query({ query: ProjectFormOptionsDocument });
     users = pickList(options, "users");
     companies = pickList(options, "companies");
+    tags = pickList(options, "tags");
   } catch {
     users = [];
     companies = [];
+    tags = [];
   }
 
   const filters = [
@@ -58,6 +61,11 @@ export default async function ProjectsPage({ searchParams }) {
         value: company.id,
         label: company.name,
       })),
+    },
+    {
+      key: "tag",
+      label: "Tag",
+      options: tags.map((tag) => ({ value: tag.id, label: tag.name })),
     },
   ];
 
@@ -108,6 +116,7 @@ async function ProjectResults({ params }) {
     priority: nullIfEmpty(readList(params, "priority")),
     projectManagerId: readString(params, "pm"),
     companyId: readString(params, "company"),
+    tagIds: nullIfEmpty(readList(params, "tag")),
   };
 
   const { data } = await getClient().query({

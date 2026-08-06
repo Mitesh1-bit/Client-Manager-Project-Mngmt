@@ -28,10 +28,13 @@ import {
 } from "@/app/components/ui/select";
 import { Textarea } from "@/app/components/ui/textarea";
 import {
+  AddTagDocument,
   CreateProjectDocument,
   CreateTagDocument,
+  RemoveTagDocument,
   UpdateProjectDocument,
 } from "@/app/lib/graphql/generated/documents";
+import { syncEntityTags } from "@/app/lib/api/tag-sync";
 import { listStatuses } from "@/app/lib/status";
 
 import {
@@ -57,6 +60,8 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
   const [createProject] = useMutation(CreateProjectDocument);
   const [updateProject] = useMutation(UpdateProjectDocument);
   const [createTag] = useMutation(CreateTagDocument);
+  const [addTag] = useMutation(AddTagDocument);
+  const [removeTag] = useMutation(RemoveTagDocument);
   const [tagList, setTagList] = useState(tags);
 
   const {
@@ -89,20 +94,31 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
   async function onSubmit(input) {
     setServerError(null);
     try {
+      let entityId;
       if (mode === "create") {
         const { data } = await createProject({
           variables: toCreateProjectVariables(input),
           update: (cache) => cache.evict({ fieldName: "projects" }),
         });
+        entityId = data.createProject.id;
         toast.success(`${data.createProject.name} created`);
-        router.push(`/projects/${data.createProject.id}`);
+        router.push(`/projects/${entityId}`);
       } else {
         const { data } = await updateProject({
           variables: toUpdateProjectVariables(project.id, input),
         });
+        entityId = project.id;
         toast.success(`${data.updateProject.name} updated`);
-        router.push(`/projects/${project.id}`);
+        router.push(`/projects/${entityId}`);
       }
+      await syncEntityTags({
+        addTag,
+        removeTag,
+        entityType: "project",
+        entityId,
+        previousTagIds: mode === "edit" ? (project?.tags ?? []).map((tag) => tag.id) : [],
+        nextTagIds: input.tagIds,
+      });
       router.refresh();
     } catch (error) {
       setServerError(error?.message ?? "We couldn't save this project. Try again.");

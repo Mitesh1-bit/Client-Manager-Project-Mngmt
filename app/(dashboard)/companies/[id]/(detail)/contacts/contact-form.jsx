@@ -9,6 +9,7 @@ import { LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { FormField } from "@/app/components/domain/form-field";
+import { MultiSelect, SelectedChips } from "@/app/components/domain/multi-select";
 import { SearchableSelect } from "@/app/components/domain/searchable-select";
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
 import { Button } from "@/app/components/ui/button";
@@ -24,9 +25,13 @@ import {
 } from "@/app/components/ui/select";
 import { Switch } from "@/app/components/ui/switch";
 import {
+  AddTagDocument,
   CreateContactDocument,
+  CreateTagDocument,
+  RemoveTagDocument,
   UpdateContactDocument,
 } from "@/app/lib/graphql/generated/documents";
+import { syncEntityTags } from "@/app/lib/api/tag-sync";
 
 import {
   contactEditFormSchema,
@@ -38,11 +43,12 @@ import {
   contactFullName,
 } from "./contact-schema";
 
-export function ContactForm({ companyId, contact, onDone, onCancel }) {
+export function ContactForm({ companyId, contact, tags = [], onDone, onCancel }) {
   const router = useRouter();
   const mode = contact ? "edit" : "create";
   const [serverError, setServerError] = useState(null);
   const [timezoneOptions, setTimezoneOptions] = useState([]);
+  const [tagList, setTagList] = useState(tags);
 
   useEffect(() => {
     let active = true;
@@ -62,6 +68,9 @@ export function ContactForm({ companyId, contact, onDone, onCancel }) {
 
   const [createContact] = useMutation(CreateContactDocument);
   const [updateContact] = useMutation(UpdateContactDocument);
+  const [createTag] = useMutation(CreateTagDocument);
+  const [addTag] = useMutation(AddTagDocument);
+  const [removeTag] = useMutation(RemoveTagDocument);
 
   const {
     register,
@@ -74,23 +83,42 @@ export function ContactForm({ companyId, contact, onDone, onCancel }) {
   });
 
   const portalEnabled = useWatch({ control, name: "portalAccessEnabled" });
+  const tagOptions = tagList.map((tag) => ({ value: tag.id, label: tag.name }));
+
+  async function handleCreateTag(name) {
+    const { data } = await createTag({ variables: { name } });
+    const tag = data.createTag;
+    setTagList((current) => [...current, tag]);
+    return { value: tag.id, label: tag.name };
+  }
 
   async function onSubmit(values) {
     setServerError(null);
 
     try {
+      let entityId;
       if (mode === "create") {
         const { data } = await createContact({
           variables: toCreateContactVariables(values, companyId),
           update: (cache) => cache.evict({ id: cache.identify({ __typename: "CompanyType", id: companyId }) }),
         });
+        entityId = data.createContact.id;
         toast.success(`${contactFullName(data.createContact)} added`);
       } else {
         const { data } = await updateContact({
           variables: toUpdateContactVariables(contact.id, values),
         });
+        entityId = contact.id;
         toast.success(`${contactFullName(data.updateContact)} updated`);
       }
+      await syncEntityTags({
+        addTag,
+        removeTag,
+        entityType: "contact",
+        entityId,
+        previousTagIds: mode === "edit" ? (contact?.tags ?? []).map((tag) => tag.id) : [],
+        nextTagIds: values.tagIds,
+      });
       router.refresh();
       onDone?.();
     } catch (error) {
@@ -203,6 +231,35 @@ export function ContactForm({ companyId, contact, onDone, onCancel }) {
           )}
         </FormField>
 
+        <FormField label="Tags" error={errors.tagIds?.message}>
+          {(field) => (
+            <Controller
+              control={control}
+              name="tagIds"
+              render={({ field: control_ }) => (
+                <div className="space-y-2">
+                  <MultiSelect
+                    {...field}
+                    options={tagOptions}
+                    value={control_.value}
+                    onChange={control_.onChange}
+                    onCreate={handleCreateTag}
+                    placeholder="No tags"
+                    emptyText="No tags yet — type a name to create one."
+                  />
+                  <SelectedChips
+                    options={tagOptions}
+                    value={control_.value}
+                    onRemove={(tagId) =>
+                      control_.onChange(control_.value.filter((id) => id !== tagId))
+                    }
+                  />
+                </div>
+              )}
+            />
+          )}
+        </FormField>
+
         <fieldset className="space-y-3 rounded-lg border p-4">
           <legend className="px-1 text-caption font-medium">Permissions and preferences</legend>
 
@@ -221,22 +278,31 @@ export function ContactForm({ companyId, contact, onDone, onCancel }) {
             error={errors.portalAccessEnabled?.message}
           />
           {portalEnabled ? (
-            <FormField
-              label="Portal password"
-              hint="Share this with the client so they can sign in. Minimum 12 characters."
-              error={errors.portalPassword?.message}
-              required={mode === "create"}
-            >
-              {(field) => (
-                <PasswordInput
-                  {...field}
-                  {...register("portalPassword")}
-                  className="h-10"
-                  autoComplete="new-password"
-                  placeholder={mode === "edit" ? "Leave blank to keep current password" : ""}
-                />
-              )}
-            </FormField>
+            <>
+              <FormField
+                label="Portal password"
+                hint="Share this with the client so they can sign in. Minimum 12 characters."
+                error={errors.portalPassword?.message}
+                required={mode === "create"}
+              >
+                {(field) => (
+                  <PasswordInput
+                    {...field}
+                    {...register("portalPassword")}
+                    className="h-10"
+                    autoComplete="new-password"
+                    placeholder={mode === "edit" ? "Leave blank to keep current password" : ""}
+                  />
+                )}
+              </FormField>
+              <ToggleRow
+                control={control}
+                name="portalCanRaiseRequests"
+                label="Can raise change requests"
+                description="Turn off for a view-only portal contact who shouldn't submit requests themselves."
+                error={errors.portalCanRaiseRequests?.message}
+              />
+            </>
           ) : null}
           <ToggleRow
             control={control}

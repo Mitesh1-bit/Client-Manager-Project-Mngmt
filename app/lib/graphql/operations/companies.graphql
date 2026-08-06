@@ -9,6 +9,14 @@ mutation CreateTag($name: String!) {
   }
 }
 
+mutation AddTag($entityType: String!, $entityId: ID!, $tagId: ID!) {
+  addTag(entityType: $entityType, entityId: $entityId, tagId: $tagId)
+}
+
+mutation RemoveTag($entityType: String!, $entityId: ID!, $tagId: ID!) {
+  removeTag(entityType: $entityType, entityId: $entityId, tagId: $tagId)
+}
+
 fragment UserSummaryFields on UserSummaryType {
   id
   name
@@ -30,8 +38,12 @@ fragment ContactFields on ContactType {
   preferredChannel
   timezone
   portalAccessEnabled
+  portalCanRaiseRequests
   linkedinUrl
   status
+  tags {
+    ...TagFields
+  }
 }
 
 fragment CompanyRow on CompanyType {
@@ -52,6 +64,9 @@ fragment CompanyRow on CompanyType {
     lastName
     email
     isPrimary
+  }
+  tags {
+    ...TagFields
   }
 }
 
@@ -97,6 +112,15 @@ query CompanyOverview($id: ID!) {
     primaryContact {
       ...ContactFields
     }
+    activity {
+      id
+      actorId
+      action
+      entityType
+      entityId
+      diff
+      createdAt
+    }
   }
   contracts(companyId: $id) {
     id
@@ -105,6 +129,9 @@ query CompanyOverview($id: ID!) {
     value
     autoRenew
     status
+  }
+  users {
+    ...UserSummaryFields
   }
 }
 
@@ -115,6 +142,9 @@ query CompanyContacts($id: ID!) {
     contacts {
       ...ContactFields
     }
+  }
+  tags {
+    ...TagFields
   }
 }
 
@@ -154,6 +184,9 @@ query CompanyForEdit($id: ID!) {
     status
     accountOwner {
       id
+    }
+    tags {
+      ...TagFields
     }
   }
 }
@@ -246,6 +279,7 @@ mutation CreateContact(
   $preferredChannel: String
   $timezone: String
   $portalAccessEnabled: Boolean!
+  $portalCanRaiseRequests: Boolean!
   $portalPassword: String
   $linkedinUrl: String
   $status: String!
@@ -262,6 +296,7 @@ mutation CreateContact(
     preferredChannel: $preferredChannel
     timezone: $timezone
     portalAccessEnabled: $portalAccessEnabled
+    portalCanRaiseRequests: $portalCanRaiseRequests
     portalPassword: $portalPassword
     linkedinUrl: $linkedinUrl
     status: $status
@@ -282,6 +317,7 @@ mutation UpdateContact(
   $preferredChannel: String
   $timezone: String
   $portalAccessEnabled: Boolean
+  $portalCanRaiseRequests: Boolean
   $portalPassword: String
   $linkedinUrl: String
   $status: String
@@ -298,6 +334,7 @@ mutation UpdateContact(
     preferredChannel: $preferredChannel
     timezone: $timezone
     portalAccessEnabled: $portalAccessEnabled
+    portalCanRaiseRequests: $portalCanRaiseRequests
     portalPassword: $portalPassword
     linkedinUrl: $linkedinUrl
     status: $status

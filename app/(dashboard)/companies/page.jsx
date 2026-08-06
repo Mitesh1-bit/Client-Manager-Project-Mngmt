@@ -79,6 +79,7 @@ async function CompaniesResults({ params }) {
     search: readString(params, "q"),
     status: statuses.length ? statuses : null,
     accountOwnerId: readString(params, "owner"),
+    tagIds: tagIds.length ? tagIds : null,
   };
 
   const { data } = await getClient().query({
