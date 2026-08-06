@@ -324,6 +324,8 @@ type Mutation {
 
   """Update notification channel preferences."""
   updateMyNotificationPreferences(preferences: NotificationPreferencesInput!): [NotificationPreferenceType!]!
+  markNotificationRead(id: ID!): NotificationType!
+  markAllNotificationsRead: Boolean!
 }
 
 input NotificationChannelInput {
@@ -343,6 +345,16 @@ input NotificationPreferencesInput {
   milestoneApprovals: NotificationChannelInput = null
   retentionTouchpoints: NotificationChannelInput = null
   projectUpdates: NotificationChannelInput = null
+}
+
+type NotificationType {
+  id: ID!
+  type: String!
+  title: String!
+  message: String!
+  link: String
+  readAt: DateTime
+  createdAt: DateTime!
 }
 
 type OrganizationViewerType {
@@ -468,6 +480,8 @@ type Query {
   """Signed-in internal user or portal contact."""
   me: ViewerType
   myNotificationPreferences: [NotificationPreferenceType!]!
+  notifications(unreadOnly: Boolean! = false, limit: Int! = 50, offset: Int! = 0): [NotificationType!]!
+  unreadNotificationCount: Int!
 }
 
 type RetentionEnrollmentType {

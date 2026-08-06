@@ -167,6 +167,17 @@ fragment MilestoneFields on MilestoneType {
   }
 }`;
 
+export const NotificationFieldsFragmentDoc = gql`
+fragment NotificationFields on NotificationType {
+  id
+  type
+  title
+  message
+  link
+  readAt
+  createdAt
+}`;
+
 export const NotificationPreferenceFieldsFragmentDoc = gql`
 fragment NotificationPreferenceFields on NotificationPreferenceType {
   key
@@ -1549,12 +1560,33 @@ mutation LogTouchpoint($companyId: ID!, $contactId: ID!, $type: String!, $outcom
   }
 }`;
 
+export const MarkAllNotificationsReadDocument = gql`
+mutation MarkAllNotificationsRead {
+  markAllNotificationsRead
+}`;
+
 export const MarkMilestoneReadyForReviewDocument = gql`
 mutation MarkMilestoneReadyForReview($milestoneId: ID!) {
   markMilestoneReadyForReview(milestoneId: $milestoneId) {
     id
     status
   }
+}`;
+
+export const MarkNotificationReadDocument = gql`
+mutation MarkNotificationRead($id: ID!) {
+  markNotificationRead(id: $id) {
+    ...NotificationFields
+  }
+}
+fragment NotificationFields on NotificationType {
+  id
+  type
+  title
+  message
+  link
+  readAt
+  createdAt
 }`;
 
 export const MeDocument = gql`
@@ -1602,6 +1634,22 @@ fragment NotificationPreferenceFields on NotificationPreferenceType {
   key
   email
   inApp
+}`;
+
+export const NotificationsDocument = gql`
+query Notifications($unreadOnly: Boolean, $limit: Int, $offset: Int) {
+  notifications(unreadOnly: $unreadOnly, limit: $limit, offset: $offset) {
+    ...NotificationFields
+  }
+}
+fragment NotificationFields on NotificationType {
+  id
+  type
+  title
+  message
+  link
+  readAt
+  createdAt
 }`;
 
 export const PortalApprovalsInboxDocument = gql`
@@ -2629,6 +2677,11 @@ query TeamList {
     role
     status
   }
+}`;
+
+export const UnreadNotificationCountDocument = gql`
+query UnreadNotificationCount {
+  unreadNotificationCount
 }`;
 
 export const UpcomingTouchpointsDocument = gql`

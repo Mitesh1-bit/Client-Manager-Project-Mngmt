@@ -414,6 +414,20 @@ export const resolvers = {
   Query: {
     me: (_parent, _args, ctx) => resolveViewer(ctx.claims),
 
+    notifications: (_parent, { unreadOnly, limit = 50, offset = 0 }, ctx) => {
+      const viewerId = ctx.claims?.sub;
+      let rows = db.notifications
+        .filter((row) => row.userId === viewerId)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      if (unreadOnly) rows = rows.filter((row) => !row.readAt);
+      return rows.slice(offset, offset + limit);
+    },
+
+    unreadNotificationCount: (_parent, _args, ctx) => {
+      const viewerId = ctx.claims?.sub;
+      return db.notifications.filter((row) => row.userId === viewerId && !row.readAt).length;
+    },
+
     // Mock activity entries don't track a real actor per row (they're all
     // logged as "You"), so every row is attributed to the signed-in viewer.
     activityLogs: (_parent, { entityType, actorId, startAt, endAt, limit = 100, offset = 0 }, ctx) => {
@@ -790,6 +804,24 @@ export const resolvers = {
       if (!phase) throw new GraphQLError("Phase not found.");
       Object.assign(phase, input);
       return phase;
+    },
+
+    markNotificationRead: (_parent, { id }, ctx) => {
+      const notification = byId(db.notifications, id);
+      if (!notification || notification.userId !== ctx.claims?.sub) {
+        throw new GraphQLError("Notification not found.");
+      }
+      if (!notification.readAt) notification.readAt = new Date().toISOString();
+      return notification;
+    },
+
+    markAllNotificationsRead: (_parent, _args, ctx) => {
+      const viewerId = ctx.claims?.sub;
+      const now = new Date().toISOString();
+      db.notifications.forEach((row) => {
+        if (row.userId === viewerId && !row.readAt) row.readAt = now;
+      });
+      return true;
     },
 
     addProjectMember: (_parent, { projectId, userId }) => {

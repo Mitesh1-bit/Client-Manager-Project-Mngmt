@@ -846,7 +846,19 @@ type ActivityLog {
   createdAt: DateTime!
 }
 
+type NotificationType {
+  id: ID!
+  type: String!
+  title: String!
+  message: String!
+  link: String
+  readAt: DateTime
+  createdAt: DateTime!
+}
+
 type Query {
+  notifications(unreadOnly: Boolean, limit: Int, offset: Int): [NotificationType!]!
+  unreadNotificationCount: Int!
   activityLogs(
     entityType: String
     actorId: ID
@@ -893,6 +905,8 @@ type Query {
 }
 
 type Mutation {
+  markNotificationRead(id: ID!): NotificationType!
+  markAllNotificationsRead: Boolean!
   createCompany(input: CompanyInput!): Company!
   updateCompany(id: ID!, input: CompanyInput!): Company!
   createProject(input: ProjectInput!): Project!

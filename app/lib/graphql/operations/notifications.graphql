@@ -1,0 +1,29 @@
+fragment NotificationFields on NotificationType {
+  id
+  type
+  title
+  message
+  link
+  readAt
+  createdAt
+}
+
+query Notifications($unreadOnly: Boolean, $limit: Int, $offset: Int) {
+  notifications(unreadOnly: $unreadOnly, limit: $limit, offset: $offset) {
+    ...NotificationFields
+  }
+}
+
+query UnreadNotificationCount {
+  unreadNotificationCount
+}
+
+mutation MarkNotificationRead($id: ID!) {
+  markNotificationRead(id: $id) {
+    ...NotificationFields
+  }
+}
+
+mutation MarkAllNotificationsRead {
+  markAllNotificationsRead
+}
