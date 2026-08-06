@@ -143,11 +143,17 @@ export function MembersPanel({ users, currentUserId, isAdmin, isProjectManager =
     }
   }
 
-  async function onStatusChange(userId, status) {
-    if (!isAdmin || userId === currentUserId) return;
+  function canDeactivateUser(user) {
+    if (user.id === currentUserId) return false;
+    if (isAdmin) return true;
+    return isProjectManager && user.role === "team_member";
+  }
+
+  async function onStatusChange(user, status) {
+    if (!canDeactivateUser(user)) return;
     try {
       await updateUser({
-        variables: { id: userId, status },
+        variables: { id: user.id, status },
         refetchQueries: [{ query: TeamListDocument }],
       });
       toast.success(status === "inactive" ? "Team member deactivated" : "Team member reactivated");
@@ -307,35 +313,33 @@ export function MembersPanel({ users, currentUserId, isAdmin, isProjectManager =
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   {isAdmin && user.id !== currentUserId ? (
-                    <>
-                      <Select value={user.role} onValueChange={(role) => onRoleChange(user.id, role)}>
-                        <SelectTrigger className="h-9 w-full sm:w-44">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ROLE_CATALOG.map((role) => (
-                            <SelectItem key={role.value} value={role.value}>
-                              {role.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          onStatusChange(user.id, inactive ? "active" : "inactive")
-                        }
-                      >
-                        {inactive ? "Reactivate" : "Deactivate"}
-                      </Button>
-                    </>
+                    <Select value={user.role} onValueChange={(role) => onRoleChange(user.id, role)}>
+                      <SelectTrigger className="h-9 w-full sm:w-44">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ROLE_CATALOG.map((role) => (
+                          <SelectItem key={role.value} value={role.value}>
+                            {role.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   ) : (
                     <span className="text-caption text-muted-foreground">
                       {humanize(user.role)}
                       {inactive ? " · inactive" : ""}
                     </span>
                   )}
+                  {canDeactivateUser(user) ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onStatusChange(user, inactive ? "active" : "inactive")}
+                    >
+                      {inactive ? "Reactivate" : "Deactivate"}
+                    </Button>
+                  ) : null}
                   {canDeleteUser(user) ? (
                     <Button variant="destructive" size="sm" onClick={() => setDeleteTarget(user)}>
                       Delete

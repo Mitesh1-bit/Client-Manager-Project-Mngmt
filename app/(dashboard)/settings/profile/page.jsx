@@ -18,7 +18,7 @@ export default async function ProfileSettingsPage() {
       />
 
       <div className="space-y-6">
-        <SettingsTabs />
+        <SettingsTabs role={viewer.role} />
         <ProfileSettingsForm scope="INTERNAL" viewer={viewer} />
       </div>
     </>

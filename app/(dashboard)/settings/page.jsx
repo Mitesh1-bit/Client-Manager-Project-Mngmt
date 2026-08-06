@@ -7,7 +7,7 @@ import { SettingsTabs } from "./settings-tabs";
 export const metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
-  await requireViewer("INTERNAL");
+  const viewer = await requireViewer("INTERNAL");
 
   return (
     <>
@@ -18,7 +18,7 @@ export default async function SettingsPage() {
       />
 
       <div className="space-y-6">
-        <SettingsTabs />
+        <SettingsTabs role={viewer.role} />
         <RolesAccessPanel />
       </div>
     </>

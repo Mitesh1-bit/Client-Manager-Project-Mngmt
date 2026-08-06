@@ -584,6 +584,36 @@ query AtRiskDashboard {
   }
 }`;
 
+export const AuditLogDocument = gql`
+query AuditLog($entityType: String, $actorId: ID, $startAt: DateTime, $endAt: DateTime, $limit: Int, $offset: Int) {
+  activityLogs(
+    entityType: $entityType
+    actorId: $actorId
+    startAt: $startAt
+    endAt: $endAt
+    limit: $limit
+    offset: $offset
+  ) {
+    id
+    actorId
+    action
+    entityType
+    entityId
+    diff
+    createdAt
+  }
+  users {
+    ...UserSummaryFields
+  }
+}
+fragment UserSummaryFields on UserSummaryType {
+  id
+  name
+  email
+  role
+  avatarUrl
+}`;
+
 export const CancelEnrollmentDocument = gql`
 mutation CancelEnrollment($enrollmentId: ID!) {
   cancelEnrollment(enrollmentId: $enrollmentId) {

@@ -12,14 +12,20 @@ const TABS = [
   { href: "/settings/notifications", label: "Notifications" },
 ];
 
-export function SettingsTabs() {
+// Mirrors the backend's activityLogs gate (require_role in
+// app/graphql/audit/schema.py).
+const AUDIT_LOG_TAB = { href: "/settings/audit-log", label: "Audit log" };
+const AUDIT_LOG_ROLES = ["admin", "project_manager"];
+
+export function SettingsTabs({ role }) {
   const pathname = usePathname();
+  const tabs = AUDIT_LOG_ROLES.includes(role) ? [...TABS, AUDIT_LOG_TAB] : TABS;
 
   return (
     <div className="-mx-(--content-gutter) overflow-x-auto px-(--content-gutter)">
       <nav aria-label="Settings">
         <ul className="flex min-w-max items-center gap-1 border-b">
-          {TABS.map((tab) => {
+          {tabs.map((tab) => {
             const active = tab.exact ? pathname === tab.href : pathname.startsWith(tab.href);
 
             return (

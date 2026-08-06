@@ -836,7 +836,25 @@ input TouchpointInput {
   notes: String
 }
 
+type ActivityLog {
+  id: ID!
+  actorId: ID!
+  action: String!
+  entityType: String!
+  entityId: ID!
+  diff: JSON
+  createdAt: DateTime!
+}
+
 type Query {
+  activityLogs(
+    entityType: String
+    actorId: ID
+    startAt: DateTime
+    endAt: DateTime
+    limit: Int
+    offset: Int
+  ): [ActivityLog!]!
   company(id: ID!): Company
   companies(filter: CompanyFilter, page: PageInput): CompanyConnection!
   project(id: ID!): Project

@@ -27,7 +27,7 @@ export default async function SettingsMembersPage() {
       />
 
       <div className="space-y-6">
-        <SettingsTabs />
+        <SettingsTabs role={viewer.role} />
         <Suspense fallback={null}>
           <MembersPanel
             users={users}

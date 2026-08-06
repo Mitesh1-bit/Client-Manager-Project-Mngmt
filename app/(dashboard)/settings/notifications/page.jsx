@@ -9,7 +9,7 @@ import { SettingsTabs } from "../settings-tabs";
 export const metadata = { title: "Notification settings" };
 
 export default async function NotificationSettingsPage() {
-  await requireViewer("INTERNAL");
+  const viewer = await requireViewer("INTERNAL");
   const { data } = await getClient().query({ query: MyNotificationPreferencesDocument });
   const preferences = data?.myNotificationPreferences ?? [];
 
@@ -22,7 +22,7 @@ export default async function NotificationSettingsPage() {
       />
 
       <div className="space-y-6">
-        <SettingsTabs />
+        <SettingsTabs role={viewer.role} />
         <NotificationSettingsForm scope="INTERNAL" preferences={preferences} />
       </div>
     </>
