@@ -197,6 +197,20 @@ type Organization {
   settings: JSON
 }
 
+type OrgSettingsType {
+  healthWeightProjectHealth: Float!
+  healthWeightTouchpoints: Float!
+  healthWeightChangeRequests: Float!
+  healthWeightContract: Float!
+  healthWeightCompanyStatus: Float!
+  healthAtRiskThreshold: Float!
+  contractRenewalWindowDays: Int!
+  crInternalApprovalCostThreshold: Float!
+  crInternalApprovalTimelineDaysThreshold: Int!
+  crRevisionCap: Int!
+  crResponseSlaDays: Int!
+}
+
 type User {
   id: ID!
   name: String!
@@ -246,9 +260,11 @@ type HealthScorePoint {
 
 type Contract {
   id: ID!
+  companyId: ID!
   startDate: Date!
   endDate: Date!
   value: Float
+  currency: String!
   autoRenew: Boolean!
   status: String!
 }
@@ -297,11 +313,13 @@ type Contact {
   doNotContact: Boolean!
   timezone: String
   portalAccessEnabled: Boolean!
+  portalCanRaiseRequests: Boolean!
   linkedinUrl: String
   status: ContactStatus!
   company: Company!
   touchpoints: [Touchpoint!]!
   activity: [ActivityEntry!]!
+  tags: [Tag!]!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -573,6 +591,7 @@ type Document {
 
 type ActivityEntry {
   id: ID!
+  actorId: ID
   action: String!
   entityType: String!
   entityId: ID!
@@ -846,7 +865,26 @@ type ActivityLog {
   createdAt: DateTime!
 }
 
+type WorkloadRow {
+  assigneeId: ID!
+  totalEstimatedHours: Float!
+  totalActualHours: Float!
+  openTaskCount: Int!
+}
+
+type NotificationType {
+  id: ID!
+  type: String!
+  title: String!
+  message: String!
+  link: String
+  readAt: DateTime
+  createdAt: DateTime!
+}
+
 type Query {
+  notifications(unreadOnly: Boolean, limit: Int, offset: Int): [NotificationType!]!
+  unreadNotificationCount: Int!
   activityLogs(
     entityType: String
     actorId: ID
@@ -855,6 +893,9 @@ type Query {
     limit: Int
     offset: Int
   ): [ActivityLog!]!
+  activityLogsCount(entityType: String, actorId: ID, startAt: DateTime, endAt: DateTime): Int!
+  organizationSettings: OrgSettingsType!
+  workload(projectId: ID): [WorkloadRow!]!
   company(id: ID!): Company
   companies(filter: CompanyFilter, page: PageInput): CompanyConnection!
   project(id: ID!): Project
@@ -893,6 +934,21 @@ type Query {
 }
 
 type Mutation {
+  markNotificationRead(id: ID!): NotificationType!
+  markAllNotificationsRead: Boolean!
+  updateOrganizationSettings(
+    healthWeightProjectHealth: Float
+    healthWeightTouchpoints: Float
+    healthWeightChangeRequests: Float
+    healthWeightContract: Float
+    healthWeightCompanyStatus: Float
+    healthAtRiskThreshold: Float
+    contractRenewalWindowDays: Int
+    crInternalApprovalCostThreshold: Float
+    crInternalApprovalTimelineDaysThreshold: Int
+    crRevisionCap: Int
+    crResponseSlaDays: Int
+  ): OrgSettingsType!
   createCompany(input: CompanyInput!): Company!
   updateCompany(id: ID!, input: CompanyInput!): Company!
   createProject(input: ProjectInput!): Project!
@@ -959,6 +1015,7 @@ type Mutation {
   """
   requestUploadUrl(input: UploadRequestInput!): UploadTicket!
   confirmUpload(input: ConfirmUploadInput!): Document!
+  deleteDocument(id: ID!): Boolean!
 
   # Added by the frontend — see NEEDED_SCHEMA_CHANGES.md §8.
 
@@ -999,4 +1056,9 @@ type Mutation {
 
   "Pause, resume, or cancel an enrollment without waiting for it to run its course."
   updateEnrollmentStatus(id: ID!, status: EnrollmentStatus!): SequenceEnrollment!
+
+  # Added by the frontend — see NEEDED_SCHEMA_CHANGES.md §4.4 / tags.
+  createTag(name: String!): Tag!
+  addTag(entityType: String!, entityId: ID!, tagId: ID!): Boolean!
+  removeTag(entityType: String!, entityId: ID!, tagId: ID!): Boolean!
 }

@@ -70,7 +70,7 @@ const CHANNEL_LABELS = { EMAIL: "Email", PHONE: "Phone", MEETING: "Meeting" };
  * Contacts nested under a company. One side panel serves three jobs — view,
  * create and edit — so the user never loses their place in the list.
  */
-export function ContactsPanel({ companyId, companyName, contacts = [] }) {
+export function ContactsPanel({ companyId, companyName, contacts = [], tags = [] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [panel, setPanel] = useState(null); // { mode: 'view' | 'edit' | 'create', contactId? }
@@ -83,6 +83,7 @@ export function ContactsPanel({ companyId, companyName, contacts = [] }) {
 
   const query = readString(searchParams, "q");
   const statusFilter = readList(searchParams, "status");
+  const tagFilter = readList(searchParams, "tag");
   const { pageInput } = parseListParams(searchParams, { sortable: [], pageSize: 10 });
 
   const filteredRows = useMemo(() => {
@@ -95,8 +96,12 @@ export function ContactsPanel({ companyId, companyName, contacts = [] }) {
     if (statusFilter.length > 0) {
       list = list.filter((contact) => statusFilter.includes(contact.status));
     }
+    if (tagFilter.length > 0) {
+      const allowed = new Set(tagFilter);
+      list = list.filter((contact) => (contact.tags ?? []).some((tag) => allowed.has(tag.id)));
+    }
     return list;
-  }, [rows, query, statusFilter]);
+  }, [rows, query, statusFilter, tagFilter]);
 
   const { nodes: visibleRows, pageInfo, totalCount } = useMemo(
     () => paginateList(filteredRows, pageInput),
@@ -207,6 +212,14 @@ export function ContactsPanel({ companyId, companyName, contacts = [] }) {
                 Do not contact
               </span>
             ) : null}
+            {(row.original.tags ?? []).map((tag) => (
+              <span
+                key={tag.id}
+                className="inline-flex items-center rounded-full border bg-muted px-1.5 py-0.5 text-[0.6875rem] font-medium text-muted-foreground"
+              >
+                {tag.name}
+              </span>
+            ))}
           </div>
         ),
       },
@@ -294,6 +307,11 @@ export function ContactsPanel({ companyId, companyName, contacts = [] }) {
                 { value: "INACTIVE", label: "Inactive" },
               ],
             },
+            {
+              key: "tag",
+              label: "Tag",
+              options: tags.map((tag) => ({ value: tag.id, label: tag.name })),
+            },
           ]}
         />
       </div>
@@ -331,6 +349,7 @@ export function ContactsPanel({ companyId, companyName, contacts = [] }) {
               </SheetHeader>
               <ContactForm
                 companyId={companyId}
+                tags={tags}
                 onDone={() => setPanel(null)}
                 onCancel={() => setPanel(null)}
               />
@@ -346,6 +365,7 @@ export function ContactsPanel({ companyId, companyName, contacts = [] }) {
               <ContactForm
                 companyId={companyId}
                 contact={selected}
+                tags={tags}
                 onDone={() => setPanel({ mode: "view", contactId: selected.id })}
                 onCancel={() => setPanel({ mode: "view", contactId: selected.id })}
               />
@@ -437,6 +457,19 @@ function ContactDetail({ contact, onEdit }) {
             </Field>
           ) : null}
         </dl>
+
+        {(contact.tags ?? []).length > 0 ? (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {contact.tags.map((tag) => (
+              <span
+                key={tag.id}
+                className="inline-flex items-center rounded-full border bg-muted px-2 py-0.5 text-caption font-medium text-muted-foreground"
+              >
+                {tag.name}
+              </span>
+            ))}
+          </div>
+        ) : null}
 
         <section>
           <h3 className="mb-3 text-subheading">Touchpoints</h3>

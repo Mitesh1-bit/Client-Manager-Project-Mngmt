@@ -27,6 +27,9 @@ fragment ProjectRow on ProjectType {
     name
     avatarUrl
   }
+  tags {
+    ...TagFields
+  }
 }
 
 fragment ProjectHeader on ProjectType {
@@ -48,6 +51,9 @@ fragment ProjectHeader on ProjectType {
   }
   members {
     ...UserSummaryFields
+  }
+  tags {
+    ...TagFields
   }
 }
 
@@ -489,4 +495,8 @@ mutation ConfirmProjectUpload($entityId: ID!, $fileUrl: String!) {
     fileUrl
     version
   }
+}
+
+mutation DeleteDocument($id: ID!) {
+  deleteDocument(id: $id)
 }

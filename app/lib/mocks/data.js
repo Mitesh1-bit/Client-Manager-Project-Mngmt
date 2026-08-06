@@ -1140,6 +1140,49 @@ export const activity = [
   { id: "act_24", entityType: "contact", entityId: "con_5", action: "note.added", summary: "Amara Osei added a note: \"Lena wants a written recovery plan, not a call.\"", actorName: "Amara Osei", actorAvatarUrl: null, diff: null, createdAt: iso(-6) },
 ];
 
+export const notifications = [
+  {
+    id: "ntf_1",
+    userId: "usr_4",
+    type: "task.assigned",
+    title: "You were assigned a task",
+    message: 'Priya Raman assigned you "Design SSO login flow" on Patient Portal Redesign',
+    link: "/projects/prj_1/board",
+    readAt: null,
+    createdAt: iso(0),
+  },
+  {
+    id: "ntf_2",
+    userId: "usr_4",
+    type: "project.member_added",
+    title: "You were added to a project",
+    message: "Priya Raman added you to Checkout Replatform",
+    link: "/projects/prj_2",
+    readAt: null,
+    createdAt: iso(-1),
+  },
+  {
+    id: "ntf_3",
+    userId: "usr_4",
+    type: "milestone.changes_requested",
+    title: "Client responded to a milestone",
+    message: 'The client requested changes on "Design system handover"',
+    link: "/projects/prj_1/milestones",
+    readAt: iso(-2),
+    createdAt: iso(-3),
+  },
+  {
+    id: "ntf_4",
+    userId: "usr_2",
+    type: "change_request.created",
+    title: "New change request",
+    message: '"Add multi-factor auth" was raised on Patient Portal Redesign',
+    link: "/projects/prj_1/change-requests",
+    readAt: null,
+    createdAt: iso(-1),
+  },
+];
+
 export { DEMO_PASSWORD, demoAccounts } from "./demo-accounts.js";
 
 export { iso, day };

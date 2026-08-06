@@ -9,6 +9,14 @@ const nextId = (prefix) => `${prefix}_${++sequence}`;
 const byId = (rows, id) => rows.find((row) => row.id === id) ?? null;
 const where = (rows, key, value) => rows.filter((row) => row[key] === value);
 
+// entityType string (matches the real backend's addTag/removeTag args) -> the
+// mock table holding that entity's tagIds array.
+const TAGGABLE_TABLES = {
+  company: db.companies,
+  project: db.projects,
+  contact: db.contacts,
+};
+
 function paginate(rows, page) {
   const pageNumber = page?.page ?? 1;
   const pageSize = page?.pageSize ?? 25;
@@ -280,6 +288,55 @@ function demotePrimaryContacts(companyId, keepId) {
   }
 }
 
+const ORG_SETTINGS_DEFAULTS = {
+  health_weight_project_health: 0.35,
+  health_weight_touchpoints: 0.25,
+  health_weight_change_requests: 0.15,
+  health_weight_contract: 0.15,
+  health_weight_company_status: 0.1,
+  health_at_risk_threshold: 60,
+  contract_renewal_window_days: 60,
+  cr_internal_approval_cost_threshold: 5000,
+  cr_internal_approval_timeline_days_threshold: 5,
+  cr_revision_cap: 3,
+  cr_response_sla_days: 7,
+};
+
+function readOrgSettings() {
+  const merged = { ...ORG_SETTINGS_DEFAULTS, ...db.organization.settings };
+  return {
+    healthWeightProjectHealth: merged.health_weight_project_health,
+    healthWeightTouchpoints: merged.health_weight_touchpoints,
+    healthWeightChangeRequests: merged.health_weight_change_requests,
+    healthWeightContract: merged.health_weight_contract,
+    healthWeightCompanyStatus: merged.health_weight_company_status,
+    healthAtRiskThreshold: merged.health_at_risk_threshold,
+    contractRenewalWindowDays: merged.contract_renewal_window_days,
+    crInternalApprovalCostThreshold: merged.cr_internal_approval_cost_threshold,
+    crInternalApprovalTimelineDaysThreshold: merged.cr_internal_approval_timeline_days_threshold,
+    crRevisionCap: merged.cr_revision_cap,
+    crResponseSlaDays: merged.cr_response_sla_days,
+  };
+}
+
+function filteredActivityLogs(ctx, { entityType, actorId, startAt, endAt }) {
+  const viewerId = ctx.claims?.sub ?? db.users[0]?.id;
+  let rows = db.activity.map((entry) => ({
+    id: entry.id,
+    actorId: viewerId,
+    action: entry.action,
+    entityType: entry.entityType,
+    entityId: entry.entityId,
+    diff: entry.diff,
+    createdAt: entry.createdAt,
+  }));
+  if (entityType) rows = rows.filter((row) => row.entityType === entityType);
+  if (actorId) rows = rows.filter((row) => row.actorId === actorId);
+  if (startAt) rows = rows.filter((row) => row.createdAt >= startAt);
+  if (endAt) rows = rows.filter((row) => row.createdAt <= endAt);
+  return rows;
+}
+
 function logActivity(entityType, entityId, action, summary, diff = null) {
   db.activity.unshift({
     id: nextId("act"),
@@ -414,24 +471,50 @@ export const resolvers = {
   Query: {
     me: (_parent, _args, ctx) => resolveViewer(ctx.claims),
 
+    notifications: (_parent, { unreadOnly, limit = 50, offset = 0 }, ctx) => {
+      const viewerId = ctx.claims?.sub;
+      let rows = db.notifications
+        .filter((row) => row.userId === viewerId)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      if (unreadOnly) rows = rows.filter((row) => !row.readAt);
+      return rows.slice(offset, offset + limit);
+    },
+
+    unreadNotificationCount: (_parent, _args, ctx) => {
+      const viewerId = ctx.claims?.sub;
+      return db.notifications.filter((row) => row.userId === viewerId && !row.readAt).length;
+    },
+
     // Mock activity entries don't track a real actor per row (they're all
     // logged as "You"), so every row is attributed to the signed-in viewer.
     activityLogs: (_parent, { entityType, actorId, startAt, endAt, limit = 100, offset = 0 }, ctx) => {
-      const viewerId = ctx.claims?.sub ?? db.users[0]?.id;
-      let rows = db.activity.map((entry) => ({
-        id: entry.id,
-        actorId: viewerId,
-        action: entry.action,
-        entityType: entry.entityType,
-        entityId: entry.entityId,
-        diff: entry.diff,
-        createdAt: entry.createdAt,
-      }));
-      if (entityType) rows = rows.filter((row) => row.entityType === entityType);
-      if (actorId) rows = rows.filter((row) => row.actorId === actorId);
-      if (startAt) rows = rows.filter((row) => row.createdAt >= startAt);
-      if (endAt) rows = rows.filter((row) => row.createdAt <= endAt);
+      const rows = filteredActivityLogs(ctx, { entityType, actorId, startAt, endAt });
       return rows.slice(offset, offset + limit);
+    },
+
+    activityLogsCount: (_parent, { entityType, actorId, startAt, endAt }, ctx) =>
+      filteredActivityLogs(ctx, { entityType, actorId, startAt, endAt }).length,
+
+    organizationSettings: () => readOrgSettings(),
+
+    workload: (_parent, { projectId }) => {
+      let openTasks = db.tasks.filter((task) => task.assigneeId && task.status !== "DONE");
+      if (projectId) openTasks = openTasks.filter((task) => task.projectId === projectId);
+
+      const byAssignee = new Map();
+      for (const task of openTasks) {
+        const row = byAssignee.get(task.assigneeId) ?? {
+          assigneeId: task.assigneeId,
+          totalEstimatedHours: 0,
+          totalActualHours: 0,
+          openTaskCount: 0,
+        };
+        row.totalEstimatedHours += task.estimatedHours ?? 0;
+        row.totalActualHours += task.actualHours ?? 0;
+        row.openTaskCount += 1;
+        byAssignee.set(task.assigneeId, row);
+      }
+      return Array.from(byAssignee.values());
     },
 
     company: (_parent, { id }, ctx) => {
@@ -792,6 +875,97 @@ export const resolvers = {
       return phase;
     },
 
+    markNotificationRead: (_parent, { id }, ctx) => {
+      const notification = byId(db.notifications, id);
+      if (!notification || notification.userId !== ctx.claims?.sub) {
+        throw new GraphQLError("Notification not found.");
+      }
+      if (!notification.readAt) notification.readAt = new Date().toISOString();
+      return notification;
+    },
+
+    updateOrganizationSettings: (_parent, args) => {
+      const keyMap = {
+        healthWeightProjectHealth: "health_weight_project_health",
+        healthWeightTouchpoints: "health_weight_touchpoints",
+        healthWeightChangeRequests: "health_weight_change_requests",
+        healthWeightContract: "health_weight_contract",
+        healthWeightCompanyStatus: "health_weight_company_status",
+        healthAtRiskThreshold: "health_at_risk_threshold",
+        contractRenewalWindowDays: "contract_renewal_window_days",
+        crInternalApprovalCostThreshold: "cr_internal_approval_cost_threshold",
+        crInternalApprovalTimelineDaysThreshold: "cr_internal_approval_timeline_days_threshold",
+        crRevisionCap: "cr_revision_cap",
+        crResponseSlaDays: "cr_response_sla_days",
+      };
+      const next = { ...db.organization.settings };
+      for (const [gqlKey, settingsKey] of Object.entries(keyMap)) {
+        if (args[gqlKey] !== undefined && args[gqlKey] !== null) next[settingsKey] = args[gqlKey];
+      }
+
+      const weightKeys = [
+        "health_weight_project_health",
+        "health_weight_touchpoints",
+        "health_weight_change_requests",
+        "health_weight_contract",
+        "health_weight_company_status",
+      ];
+      const weightArgs = [
+        "healthWeightProjectHealth",
+        "healthWeightTouchpoints",
+        "healthWeightChangeRequests",
+        "healthWeightContract",
+        "healthWeightCompanyStatus",
+      ];
+      const weightsTouched = weightArgs.some((key) => args[key] != null);
+      if (weightsTouched) {
+        const total = weightKeys.reduce((sum, key) => sum + (next[key] ?? ORG_SETTINGS_DEFAULTS[key]), 0);
+        if (Math.abs(total - 1) > 0.01) {
+          throw new GraphQLError(`The five health weights must add up to 1.0 (currently ${total.toFixed(2)}).`);
+        }
+      }
+
+      db.organization.settings = next;
+      return readOrgSettings();
+    },
+
+    markAllNotificationsRead: (_parent, _args, ctx) => {
+      const viewerId = ctx.claims?.sub;
+      const now = new Date().toISOString();
+      db.notifications.forEach((row) => {
+        if (row.userId === viewerId && !row.readAt) row.readAt = now;
+      });
+      return true;
+    },
+
+    createTag: (_parent, { name }) => {
+      const existing = db.tags.find((tag) => tag.name.toLowerCase() === name.toLowerCase());
+      if (existing) return existing;
+      const tag = { id: nextId("tag"), name, color: null };
+      db.tags.push(tag);
+      return tag;
+    },
+
+    addTag: (_parent, { entityType, entityId, tagId }) => {
+      const rows = TAGGABLE_TABLES[entityType];
+      if (!rows) throw new GraphQLError(`Unknown taggable entity type "${entityType}".`);
+      const entity = byId(rows, entityId);
+      if (!entity) throw new GraphQLError("Entity not found.");
+      if (!byId(db.tags, tagId)) throw new GraphQLError("Tag not found.");
+      entity.tagIds = entity.tagIds ?? [];
+      if (!entity.tagIds.includes(tagId)) entity.tagIds.push(tagId);
+      return true;
+    },
+
+    removeTag: (_parent, { entityType, entityId, tagId }) => {
+      const rows = TAGGABLE_TABLES[entityType];
+      if (!rows) throw new GraphQLError(`Unknown taggable entity type "${entityType}".`);
+      const entity = byId(rows, entityId);
+      if (!entity) throw new GraphQLError("Entity not found.");
+      entity.tagIds = (entity.tagIds ?? []).filter((id) => id !== tagId);
+      return true;
+    },
+
     addProjectMember: (_parent, { projectId, userId }) => {
       const project = byId(db.projects, projectId);
       if (!project) throw new GraphQLError("Project not found.");
@@ -1026,6 +1200,13 @@ export const resolvers = {
       };
       db.documents.unshift(document);
       return document;
+    },
+
+    deleteDocument: (_parent, { id }) => {
+      const index = db.documents.findIndex((doc) => doc.id === id);
+      if (index === -1) throw new GraphQLError("Document not found.");
+      db.documents.splice(index, 1);
+      return true;
     },
 
     createContact: (_parent, { input }) => {
@@ -1633,6 +1814,12 @@ export const resolvers = {
     },
   },
 
+  Contract: {
+    // Contracts don't carry their own currency — inherit it from the
+    // client's projects, same rule the real backend uses.
+    currency: (contract) => where(db.projects, "companyId", contract.companyId)[0]?.currency ?? "GBP",
+  },
+
   User: {
     organization: () => db.organization,
     contact: (user) => (user.contactId ? byId(db.contacts, user.contactId) : null),
@@ -1681,6 +1868,9 @@ export const resolvers = {
     fullName: (contact) => contactName(contact),
     company: (contact) => byId(db.companies, contact.companyId),
     touchpoints: (contact) => where(db.touchpoints, "contactId", contact.id),
+    portalCanRaiseRequests: (contact) =>
+      contact.portalCanRaiseRequests ?? contact.portalAccessEnabled ?? false,
+    tags: (contact) => db.tags.filter((tag) => (contact.tagIds ?? []).includes(tag.id)),
     activity: (contact) =>
       buildTimeline({
         entityType: "contact",

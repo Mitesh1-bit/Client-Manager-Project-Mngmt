@@ -1,0 +1,15 @@
+query Workload($projectId: ID) {
+  workload(projectId: $projectId) {
+    assigneeId
+    totalEstimatedHours
+    totalActualHours
+    openTaskCount
+  }
+  users {
+    ...UserSummaryFields
+  }
+  projects {
+    id
+    name
+  }
+}

@@ -22,6 +22,7 @@ query AuditLog(
     diff
     createdAt
   }
+  activityLogsCount(entityType: $entityType, actorId: $actorId, startAt: $startAt, endAt: $endAt)
   users {
     ...UserSummaryFields
   }

@@ -100,6 +100,8 @@ type CompanyType {
   primaryContact: ContactType
   contactCount: Int!
   projectCount: Int!
+  tags: [TagType!]!
+  activity(limit: Int! = 20): [ActivityLogType!]!
 }
 
 type CompanyViewerType {
@@ -122,8 +124,10 @@ type ContactType {
   preferredChannel: String
   timezone: String
   portalAccessEnabled: Boolean!
+  portalCanRaiseRequests: Boolean!
   linkedinUrl: String
   status: String!
+  tags: [TagType!]!
 }
 
 type ContactViewerType {
@@ -143,6 +147,7 @@ type ContractType {
   value: Float
   autoRenew: Boolean!
   status: String!
+  currency: String!
 }
 
 """Date (isoformat)"""
@@ -194,6 +199,7 @@ type InvoiceType {
   paidAt: Date
   notes: String
   createdAt: DateTime!
+  currency: String!
 }
 
 """
@@ -239,8 +245,8 @@ type Mutation {
   createCompany(name: String!, industry: String = null, website: String = null, logoUrl: String = null, size: String = null, timezone: String = null, address: JSON = null, status: String! = "lead", accountOwnerId: ID = null, healthScore: Float = null): CompanyType!
   updateCompany(id: ID!, name: String = null, industry: String = null, website: String = null, logoUrl: String = null, size: String = null, timezone: String = null, address: JSON = null, status: String = null, accountOwnerId: ID = null, healthScore: Float = null): CompanyType!
   deleteCompany(id: ID!): Boolean!
-  createContact(companyId: ID!, firstName: String!, lastName: String!, email: String = null, phone: String = null, title: String = null, department: String = null, isPrimary: Boolean! = false, preferredChannel: String = null, timezone: String = null, portalAccessEnabled: Boolean! = false, portalPassword: String = null, linkedinUrl: String = null, status: String! = "active"): ContactType!
-  updateContact(id: ID!, firstName: String = null, lastName: String = null, email: String = null, phone: String = null, title: String = null, department: String = null, isPrimary: Boolean = null, preferredChannel: String = null, timezone: String = null, portalAccessEnabled: Boolean = null, portalPassword: String = null, linkedinUrl: String = null, status: String = null): ContactType!
+  createContact(companyId: ID!, firstName: String!, lastName: String!, email: String = null, phone: String = null, title: String = null, department: String = null, isPrimary: Boolean! = false, preferredChannel: String = null, timezone: String = null, portalAccessEnabled: Boolean! = false, portalCanRaiseRequests: Boolean! = false, portalPassword: String = null, linkedinUrl: String = null, status: String! = "active"): ContactType!
+  updateContact(id: ID!, firstName: String = null, lastName: String = null, email: String = null, phone: String = null, title: String = null, department: String = null, isPrimary: Boolean = null, preferredChannel: String = null, timezone: String = null, portalAccessEnabled: Boolean = null, portalCanRaiseRequests: Boolean = null, portalPassword: String = null, linkedinUrl: String = null, status: String = null): ContactType!
 
   """Set or reset a contact's portal login password."""
   setContactPortalPassword(id: ID!, password: String!): ContactType!
@@ -273,6 +279,7 @@ type Mutation {
   requestMilestoneChanges(approvalId: ID!, comment: String!): ApprovalType!
   requestUploadUrl(entityType: String!, entityId: ID!, filename: String!, contentType: String!): UploadUrlPayload!
   confirmUpload(entityType: String!, entityId: ID!, fileUrl: String!): DocumentType!
+  deleteDocument(id: ID!): Boolean!
 
   """Assign or unassign the internal PM responsible for this request."""
   assignChangeRequest(id: ID!, assignedPmId: ID = null): ChangeRequestType!
@@ -324,6 +331,9 @@ type Mutation {
 
   """Update notification channel preferences."""
   updateMyNotificationPreferences(preferences: NotificationPreferencesInput!): [NotificationPreferenceType!]!
+  markNotificationRead(id: ID!): NotificationType!
+  markAllNotificationsRead: Boolean!
+  updateOrganizationSettings(healthWeightProjectHealth: Float = null, healthWeightTouchpoints: Float = null, healthWeightChangeRequests: Float = null, healthWeightContract: Float = null, healthWeightCompanyStatus: Float = null, healthAtRiskThreshold: Float = null, contractRenewalWindowDays: Int = null, crInternalApprovalCostThreshold: Float = null, crInternalApprovalTimelineDaysThreshold: Int = null, crRevisionCap: Int = null, crResponseSlaDays: Int = null): OrgSettingsType!
 }
 
 input NotificationChannelInput {
@@ -343,6 +353,30 @@ input NotificationPreferencesInput {
   milestoneApprovals: NotificationChannelInput = null
   retentionTouchpoints: NotificationChannelInput = null
   projectUpdates: NotificationChannelInput = null
+}
+
+type NotificationType {
+  id: ID!
+  type: String!
+  title: String!
+  message: String!
+  link: String
+  readAt: DateTime
+  createdAt: DateTime!
+}
+
+type OrgSettingsType {
+  healthWeightProjectHealth: Float!
+  healthWeightTouchpoints: Float!
+  healthWeightChangeRequests: Float!
+  healthWeightContract: Float!
+  healthWeightCompanyStatus: Float!
+  healthAtRiskThreshold: Float!
+  contractRenewalWindowDays: Int!
+  crInternalApprovalCostThreshold: Float!
+  crInternalApprovalTimelineDaysThreshold: Int!
+  crRevisionCap: Int!
+  crResponseSlaDays: Int!
 }
 
 type OrganizationViewerType {
@@ -415,6 +449,7 @@ type ProjectType {
   tasks: [TaskType!]!
   members: [UserSummaryType!]!
   clientContacts: [ContactType!]!
+  tags: [TagType!]!
 }
 
 type Query {
@@ -464,10 +499,14 @@ type Query {
   invoices(companyId: ID = null, projectId: ID = null, status: String = null): [InvoiceType!]!
   invoice(id: ID!): InvoiceType
   activityLogs(entityType: String = null, actorId: ID = null, startAt: DateTime = null, endAt: DateTime = null, limit: Int! = 100, offset: Int! = 0): [ActivityLogType!]!
+  activityLogsCount(entityType: String = null, actorId: ID = null, startAt: DateTime = null, endAt: DateTime = null): Int!
 
   """Signed-in internal user or portal contact."""
   me: ViewerType
   myNotificationPreferences: [NotificationPreferenceType!]!
+  notifications(unreadOnly: Boolean! = false, limit: Int! = 50, offset: Int! = 0): [NotificationType!]!
+  unreadNotificationCount: Int!
+  organizationSettings: OrgSettingsType!
 }
 
 type RetentionEnrollmentType {
@@ -587,6 +626,7 @@ type ViewerType {
   status: String!
   avatarUrl: String
   scope: String!
+  totpEnabled: Boolean!
   organization: OrganizationViewerType
   company: CompanyViewerType
   contact: ContactViewerType

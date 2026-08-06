@@ -6,6 +6,7 @@ fragment ViewerFields on ViewerType {
   status
   avatarUrl
   scope
+  totpEnabled
   organization {
     id
     name
@@ -69,4 +70,19 @@ mutation RefreshToken {
 
 mutation Logout {
   logout
+}
+
+mutation EnableTotp {
+  enableTotp {
+    secret
+    provisioningUri
+  }
+}
+
+mutation ConfirmTotp($code: String!) {
+  confirmTotp(code: $code)
+}
+
+mutation DisableTotp {
+  disableTotp
 }

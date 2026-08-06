@@ -34,7 +34,7 @@ export default async function CompanyContractsPage({ params }) {
         <p className="text-caption text-muted-foreground">
           {contracts.length} contract{contracts.length === 1 ? "" : "s"}
         </p>
-        <ContractDialog companyId={id} />
+        <ContractDialog companyId={id} currency={contracts[0]?.currency ?? "GBP"} />
       </div>
 
       {contracts.length === 0 ? (
@@ -60,7 +60,7 @@ export default async function CompanyContractsPage({ params }) {
                     {formatDate(contract.startDate)} – {formatDate(contract.endDate)}
                   </p>
                 </div>
-                <p className="tabular font-medium">{formatCurrency(contract.value)}</p>
+                <p className="tabular font-medium">{formatCurrency(contract.value, contract.currency)}</p>
               </div>
             </li>
           ))}

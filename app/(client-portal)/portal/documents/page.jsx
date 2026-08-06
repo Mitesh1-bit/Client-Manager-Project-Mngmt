@@ -4,7 +4,7 @@ import { FileText } from "lucide-react";
 import { ListToolbar } from "@/app/components/domain/list-toolbar";
 import { PaginationBar } from "@/app/components/domain/pagination-bar";
 import { filterList, paginateList } from "@/app/lib/api/connection";
-import { portalDocumentHref, portalDocumentName, portalEntityLabel } from "@/app/lib/api/portal-ui";
+import { portalDocumentName } from "@/app/lib/api/portal-ui";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   PortalDocumentsDocument,
@@ -20,11 +20,12 @@ import {
   PortalSectionHeader,
 } from "../portal-ui";
 import { DocumentUpload } from "./document-upload";
+import { PortalDocumentRow } from "./portal-document-row";
 
 export const metadata = { title: "Documents" };
 
 export default async function PortalDocumentsPage({ searchParams }) {
-  await requireViewer("PORTAL");
+  const viewer = await requireViewer("PORTAL");
   const params = await searchParams;
   const query = readString(params, "q");
   const { pageInput } = parseListParams(params, { sortable: [], pageSize: 15 });
@@ -90,24 +91,7 @@ export default async function PortalDocumentsPage({ searchParams }) {
           ) : (
             <ul className="space-y-2">
               {nodes.map((document) => (
-                <li key={document.id}>
-                  <a
-                    href={portalDocumentHref(document.fileUrl)}
-                    className="portal-link-row group focus-ring"
-                  >
-                    <span className="portal-link-row__icon">
-                      <FileText className="size-4" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-medium group-hover:text-[#1e3a8a]">
-                        {document.displayName}
-                      </span>
-                      <span className="block truncate text-sm text-muted-foreground">
-                        {portalEntityLabel(document.entityType)} · v{document.version}
-                      </span>
-                    </span>
-                  </a>
-                </li>
+                <PortalDocumentRow key={document.id} document={document} viewerId={viewer.id} />
               ))}
             </ul>
           )}

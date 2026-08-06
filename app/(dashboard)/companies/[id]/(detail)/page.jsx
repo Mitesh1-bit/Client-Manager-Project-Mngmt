@@ -9,11 +9,41 @@ import { EmptyState, SectionCard } from "@/app/components/domain/states";
 import { Button } from "@/app/components/ui/button";
 import { formatCurrency, formatDate, displayUrl } from "@/app/lib/format";
 import { normalizeCompany } from "@/app/lib/api/normalize";
-import { asArray } from "@/app/lib/api/safe-list";
+import { asArray, pickList } from "@/app/lib/api/safe-list";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { CompanyOverviewDocument } from "@/app/lib/graphql/generated/documents";
+import { humanize } from "@/app/lib/status";
 
 const TIMELINE_LIMIT = 12;
+
+// Not every field is worth calling out in a one-line timeline entry — skip
+// bookkeeping columns that don't mean anything to someone skimming the feed.
+const SKIPPED_DIFF_FIELDS = new Set(["id", "type", "created_at", "updated_at"]);
+
+function firstChangedField(diff) {
+  const before = diff?.before;
+  const after = diff?.after;
+  if (!before || !after) return null;
+  for (const key of Object.keys(after)) {
+    if (SKIPPED_DIFF_FIELDS.has(key)) continue;
+    if (before[key] !== after[key]) return { key, from: before[key], to: after[key] };
+  }
+  return null;
+}
+
+function summarizeActivity(entry, usersById) {
+  // The mock feed already hand-writes a rich summary/actorName per entry —
+  // only the real backend's raw {actorId, diff} shape needs building one.
+  if (entry.summary) return entry;
+
+  const actorName = usersById.get(entry.actorId)?.name ?? null;
+  const label = `${humanize(entry.entityType)} ${entry.action}d`;
+  const changed = firstChangedField(entry.diff);
+  const detail = changed
+    ? ` — ${humanize(changed.key)}: ${changed.from ?? "—"} → ${changed.to ?? "—"}`
+    : "";
+  return { id: entry.id, action: entry.action, actorName, createdAt: entry.createdAt, summary: `${label}${detail}` };
+}
 
 export default async function CompanyOverviewPage({ params }) {
   const { id } = await params;
@@ -30,7 +60,8 @@ export default async function CompanyOverviewPage({ params }) {
   const activeContract = contracts.find(
     (contract) => String(contract.status).toLowerCase() === "active",
   );
-  const activity = company.activity ?? [];
+  const usersById = new Map(pickList(data, "users").map((user) => [user.id, user]));
+  const activity = (company.activity ?? []).map((entry) => summarizeActivity(entry, usersById));
 
   return (
     <div className="grid gap-5 lg:grid-cols-3">

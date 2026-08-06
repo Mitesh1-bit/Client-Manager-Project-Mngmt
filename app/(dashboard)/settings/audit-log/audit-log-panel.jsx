@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useLazyQuery } from "@apollo/client/react";
-import { Download, History, LoaderCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, History, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { DataTable } from "@/app/components/domain/data-table";
@@ -45,6 +45,52 @@ const ENTITY_HREF = {
   project: (id) => `/projects/${id}`,
 };
 
+// Fields that resolve to a user — shown by name instead of a raw ID.
+const USER_ID_FIELDS = new Set(["assignee_id", "project_manager_id", "account_owner_id"]);
+
+function humanizeDiffValue(key, value, usersById) {
+  if (value === null || value === undefined || value === "") return "—";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (USER_ID_FIELDS.has(key)) return usersById.get(value)?.name ?? value;
+  if (key.endsWith("_id")) return value;
+  return humanize(String(value));
+}
+
+/**
+ * Activity diffs come in two shapes: `{before, after}` field snapshots from
+ * a create/update/delete, or a flat one-off note like `{member_added: "X"}`
+ * from actions that aren't a simple field change. Either way, turn it into
+ * readable "Field: old -> new" rows instead of a raw JSON dump.
+ */
+function diffRows(diff, usersById) {
+  if (!diff) return [];
+  const { before, after, ...rest } = diff;
+  if (before || after) {
+    const keys = new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})]);
+    keys.delete("id");
+    const rows = [];
+    for (const key of keys) {
+      const oldValue = before?.[key];
+      const newValue = after?.[key];
+      const label = humanize(key);
+      if (before && after) {
+        if (oldValue === newValue) continue;
+        rows.push({
+          label,
+          text: `${humanizeDiffValue(key, oldValue, usersById)} → ${humanizeDiffValue(key, newValue, usersById)}`,
+        });
+      } else {
+        rows.push({ label, text: humanizeDiffValue(key, after ? newValue : oldValue, usersById) });
+      }
+    }
+    return rows;
+  }
+  return Object.entries(rest).map(([key, value]) => ({
+    label: humanize(key),
+    text: humanizeDiffValue(key, value, usersById),
+  }));
+}
+
 function csvEscape(value) {
   const text = value === null || value === undefined ? "" : String(value);
   return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
@@ -77,51 +123,46 @@ function downloadCsv(rows, usersById) {
   URL.revokeObjectURL(url);
 }
 
-export function AuditLogPanel({ initialEntries, users, pageSize }) {
+export function AuditLogPanel({ initialEntries, initialTotalCount, users, pageSize }) {
   const [entries, setEntries] = useState(initialEntries);
+  const [totalCount, setTotalCount] = useState(initialTotalCount);
+  const [page, setPage] = useState(1);
   const [entityType, setEntityType] = useState("");
   const [actorId, setActorId] = useState("");
   const [startAt, setStartAt] = useState("");
   const [endAt, setEndAt] = useState("");
-  const [hasMore, setHasMore] = useState(initialEntries.length === pageSize);
 
   const usersById = useMemo(() => new Map(users.map((user) => [user.id, user])), [users]);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   const [runQuery, { loading }] = useLazyQuery(AuditLogDocument, {
     fetchPolicy: "network-only",
   });
 
-  function buildVariables(offset) {
+  function buildVariables(targetPage) {
     return {
       entityType: entityType || null,
       actorId: actorId || null,
       startAt: startAt ? new Date(startAt).toISOString() : null,
       endAt: endAt ? new Date(`${endAt}T23:59:59`).toISOString() : null,
       limit: pageSize,
-      offset,
+      offset: (targetPage - 1) * pageSize,
     };
   }
 
-  async function applyFilters() {
+  async function goToPage(targetPage) {
     try {
-      const { data } = await runQuery({ variables: buildVariables(0) });
-      const rows = pickList(data, "activityLogs");
-      setEntries(rows);
-      setHasMore(rows.length === pageSize);
+      const { data } = await runQuery({ variables: buildVariables(targetPage) });
+      setEntries(pickList(data, "activityLogs"));
+      setTotalCount(data?.activityLogsCount ?? 0);
+      setPage(targetPage);
     } catch (error) {
       toast.error("Couldn't load the audit log", { description: error?.message });
     }
   }
 
-  async function loadMore() {
-    try {
-      const { data } = await runQuery({ variables: buildVariables(entries.length) });
-      const rows = pickList(data, "activityLogs");
-      setEntries((current) => [...current, ...rows]);
-      setHasMore(rows.length === pageSize);
-    } catch (error) {
-      toast.error("Couldn't load more entries", { description: error?.message });
-    }
+  function applyFilters() {
+    goToPage(1);
   }
 
   function handleExport() {
@@ -176,19 +217,25 @@ export function AuditLogPanel({ initialEntries, users, pageSize }) {
         id: "details",
         header: "Details",
         enableSorting: false,
-        cell: ({ row }) =>
-          row.original.diff ? (
+        cell: ({ row }) => {
+          const rows = diffRows(row.original.diff, usersById);
+          if (rows.length === 0) return <span className="text-muted-foreground">—</span>;
+          return (
             <details>
               <summary className="cursor-pointer text-caption text-muted-foreground hover:text-foreground">
-                View
+                {rows.length} change{rows.length === 1 ? "" : "s"}
               </summary>
-              <pre className="mt-1.5 max-w-md overflow-x-auto rounded-md bg-muted p-2 text-[0.6875rem]">
-                {JSON.stringify(row.original.diff, null, 2)}
-              </pre>
+              <dl className="mt-1.5 max-w-md space-y-1">
+                {rows.map((entry) => (
+                  <div key={entry.label} className="flex gap-1.5 text-caption">
+                    <dt className="shrink-0 font-medium">{entry.label}:</dt>
+                    <dd className="truncate text-muted-foreground">{entry.text}</dd>
+                  </div>
+                ))}
+              </dl>
             </details>
-          ) : (
-            <span className="text-muted-foreground">—</span>
-          ),
+          );
+        },
       },
     ],
     [usersById],
@@ -197,7 +244,7 @@ export function AuditLogPanel({ initialEntries, users, pageSize }) {
   return (
     <SectionCard
       title="Activity"
-      description={`${entries.length} entr${entries.length === 1 ? "y" : "ies"} loaded`}
+      description={`${totalCount} entr${totalCount === 1 ? "y" : "ies"} total`}
       actions={
         <Button variant="outline" size="sm" onClick={handleExport} disabled={entries.length === 0}>
           <Download aria-hidden="true" />
@@ -273,12 +320,45 @@ export function AuditLogPanel({ initialEntries, users, pageSize }) {
         }
       />
 
-      {hasMore ? (
-        <div className="mt-4 flex justify-center">
-          <Button variant="outline" onClick={loadMore} disabled={loading}>
-            {loading ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : null}
-            Load more
-          </Button>
+      {totalCount > 0 ? (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-caption text-muted-foreground" aria-live="polite">
+            Showing{" "}
+            <span className="tabular font-medium text-foreground">
+              {(page - 1) * pageSize + 1}
+            </span>
+            –
+            <span className="tabular font-medium text-foreground">
+              {Math.min(page * pageSize, totalCount)}
+            </span>{" "}
+            of <span className="tabular font-medium text-foreground">{totalCount}</span>
+          </p>
+
+          {totalPages > 1 ? (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1 || loading}
+                onClick={() => goToPage(page - 1)}
+              >
+                <ChevronLeft aria-hidden="true" />
+                Previous
+              </Button>
+              <span className="tabular px-1 text-caption text-muted-foreground">
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages || loading}
+                onClick={() => goToPage(page + 1)}
+              >
+                Next
+                <ChevronRight aria-hidden="true" />
+              </Button>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </SectionCard>

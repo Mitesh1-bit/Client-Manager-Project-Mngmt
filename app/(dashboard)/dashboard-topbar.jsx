@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Search } from "lucide-react";
+import { Search } from "lucide-react";
 
 import { CrmTourTrigger } from "@/app/components/domain/crm-tour-trigger";
+import { NotificationBell } from "@/app/components/domain/notification-bell";
 import { Button } from "@/app/components/ui/button";
 import { Separator } from "@/app/components/ui/separator";
 import { SidebarTrigger } from "@/app/components/ui/sidebar";
@@ -31,9 +32,7 @@ export function DashboardTopbar() {
           </Link>
         </Button>
         <CrmTourTrigger />
-        <Button variant="ghost" size="icon-sm" aria-label="Notifications" disabled>
-          <Bell aria-hidden="true" />
-        </Button>
+        <NotificationBell />
       </div>
     </header>
   );

@@ -1,0 +1,49 @@
+fragment OrgSettingsFields on OrgSettingsType {
+  healthWeightProjectHealth
+  healthWeightTouchpoints
+  healthWeightChangeRequests
+  healthWeightContract
+  healthWeightCompanyStatus
+  healthAtRiskThreshold
+  contractRenewalWindowDays
+  crInternalApprovalCostThreshold
+  crInternalApprovalTimelineDaysThreshold
+  crRevisionCap
+  crResponseSlaDays
+}
+
+query OrganizationSettings {
+  organizationSettings {
+    ...OrgSettingsFields
+  }
+}
+
+mutation UpdateOrganizationSettings(
+  $healthWeightProjectHealth: Float
+  $healthWeightTouchpoints: Float
+  $healthWeightChangeRequests: Float
+  $healthWeightContract: Float
+  $healthWeightCompanyStatus: Float
+  $healthAtRiskThreshold: Float
+  $contractRenewalWindowDays: Int
+  $crInternalApprovalCostThreshold: Float
+  $crInternalApprovalTimelineDaysThreshold: Int
+  $crRevisionCap: Int
+  $crResponseSlaDays: Int
+) {
+  updateOrganizationSettings(
+    healthWeightProjectHealth: $healthWeightProjectHealth
+    healthWeightTouchpoints: $healthWeightTouchpoints
+    healthWeightChangeRequests: $healthWeightChangeRequests
+    healthWeightContract: $healthWeightContract
+    healthWeightCompanyStatus: $healthWeightCompanyStatus
+    healthAtRiskThreshold: $healthAtRiskThreshold
+    contractRenewalWindowDays: $contractRenewalWindowDays
+    crInternalApprovalCostThreshold: $crInternalApprovalCostThreshold
+    crInternalApprovalTimelineDaysThreshold: $crInternalApprovalTimelineDaysThreshold
+    crRevisionCap: $crRevisionCap
+    crResponseSlaDays: $crResponseSlaDays
+  ) {
+    ...OrgSettingsFields
+  }
+}

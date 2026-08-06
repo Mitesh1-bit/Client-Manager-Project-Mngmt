@@ -55,9 +55,11 @@ export const contactSchema = z.object({
     ),
   isPrimary: z.boolean().default(false),
   portalAccessEnabled: z.boolean().default(false),
+  portalCanRaiseRequests: z.boolean().default(true),
   portalPassword: z.string().optional().transform((value) => value?.trim() || ""),
   doNotContact: z.boolean().default(false),
   status: z.enum(["ACTIVE", "INACTIVE"]).default("ACTIVE"),
+  tagIds: z.array(z.string()).default([]),
 });
 
 /**
@@ -126,9 +128,11 @@ export function contactToFormValues(contact) {
     linkedinUrl: contact?.linkedinUrl ?? "",
     isPrimary: contact?.isPrimary ?? false,
     portalAccessEnabled: contact?.portalAccessEnabled ?? false,
+    portalCanRaiseRequests: contact?.portalCanRaiseRequests ?? true,
     portalPassword: "",
     doNotContact: contact?.doNotContact ?? false,
     status: toUiStatus("contactStatus", contact?.status) ?? "ACTIVE",
+    tagIds: (contact?.tags ?? []).map((tag) => tag.id),
   };
 }
 
@@ -149,6 +153,7 @@ export function toCreateContactVariables(values, companyId) {
     preferredChannel: values.preferredChannel?.toLowerCase() ?? null,
     timezone: values.timezone,
     portalAccessEnabled: values.portalAccessEnabled,
+    portalCanRaiseRequests: values.portalCanRaiseRequests,
     portalPassword: values.portalAccessEnabled && values.portalPassword ? values.portalPassword : null,
     linkedinUrl: values.linkedinUrl,
     status: toApiStatus("contactStatus", values.status),
@@ -168,6 +173,7 @@ export function toUpdateContactVariables(id, values) {
     preferredChannel: values.preferredChannel?.toLowerCase() ?? null,
     timezone: values.timezone,
     portalAccessEnabled: values.portalAccessEnabled,
+    portalCanRaiseRequests: values.portalCanRaiseRequests,
     portalPassword: values.portalAccessEnabled && values.portalPassword ? values.portalPassword : null,
     linkedinUrl: values.linkedinUrl,
     status: toApiStatus("contactStatus", values.status),
