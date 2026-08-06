@@ -143,6 +143,7 @@ type ContractType {
   value: Float
   autoRenew: Boolean!
   status: String!
+  currency: String!
 }
 
 """Date (isoformat)"""
@@ -194,6 +195,7 @@ type InvoiceType {
   paidAt: Date
   notes: String
   createdAt: DateTime!
+  currency: String!
 }
 
 """

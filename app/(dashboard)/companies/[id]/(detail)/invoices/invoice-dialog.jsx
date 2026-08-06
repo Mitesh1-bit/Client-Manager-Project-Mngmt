@@ -29,8 +29,8 @@ import { Textarea } from "@/app/components/ui/textarea";
 import { CreateInvoiceDocument } from "@/app/lib/graphql/generated/documents";
 import { listStatuses } from "@/app/lib/status";
 
-/** @param {{ companyId: string }} props */
-export function InvoiceDialog({ companyId }) {
+/** @param {{ companyId: string, currency?: string }} props */
+export function InvoiceDialog({ companyId, currency = "GBP" }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [invoiceNumber, setInvoiceNumber] = useState("");
@@ -113,7 +113,7 @@ export function InvoiceDialog({ companyId }) {
           <div className="form-grid gap-3">
             <div className="space-y-1.5">
               <Label className="text-caption font-medium">
-                Amount <span aria-hidden="true" className="-ml-1 text-destructive">*</span>
+                Amount ({currency}) <span aria-hidden="true" className="-ml-1 text-destructive">*</span>
               </Label>
               <Input
                 type="number"

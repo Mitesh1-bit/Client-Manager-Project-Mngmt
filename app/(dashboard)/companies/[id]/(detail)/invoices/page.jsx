@@ -36,7 +36,7 @@ export default async function CompanyInvoicesPage({ params }) {
       <EmptyState
         icon={Lock}
         title="You don't have access to invoices"
-        description={formatGraphqlError(invoicesResult.error, "Ask an admin or finance admin for access.")}
+        description={formatGraphqlError(invoicesResult.error, "Ask an admin or project manager for access.")}
       />
     );
   }
@@ -52,7 +52,7 @@ export default async function CompanyInvoicesPage({ params }) {
         <p className="text-caption text-muted-foreground">
           {invoices.length} invoice{invoices.length === 1 ? "" : "s"}
         </p>
-        <InvoiceDialog companyId={id} />
+        <InvoiceDialog companyId={id} currency={invoices[0]?.currency ?? "GBP"} />
       </div>
 
       {invoices.length === 0 ? (
@@ -79,7 +79,7 @@ export default async function CompanyInvoicesPage({ params }) {
                     <p className="mt-1 text-caption text-pretty text-muted-foreground">{invoice.notes}</p>
                   ) : null}
                 </div>
-                <p className="tabular font-medium">{formatCurrency(invoice.amount)}</p>
+                <p className="tabular font-medium">{formatCurrency(invoice.amount, invoice.currency)}</p>
               </div>
             </li>
           ))}

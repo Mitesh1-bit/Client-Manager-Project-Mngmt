@@ -125,6 +125,7 @@ fragment ContractFields on ContractType {
   startDate
   endDate
   value
+  currency
   autoRenew
   status
 }`;
@@ -136,6 +137,7 @@ fragment InvoiceFields on InvoiceType {
   projectId
   invoiceNumber
   amount
+  currency
   status
   dueDate
   issuedAt
@@ -796,6 +798,7 @@ fragment ContractFields on ContractType {
   startDate
   endDate
   value
+  currency
   autoRenew
   status
 }`;
@@ -895,6 +898,7 @@ fragment InvoiceFields on InvoiceType {
   projectId
   invoiceNumber
   amount
+  currency
   status
   dueDate
   issuedAt
@@ -1228,6 +1232,7 @@ fragment ContractFields on ContractType {
   startDate
   endDate
   value
+  currency
   autoRenew
   status
 }`;
@@ -1253,6 +1258,7 @@ fragment InvoiceFields on InvoiceType {
   projectId
   invoiceNumber
   amount
+  currency
   status
   dueDate
   issuedAt
@@ -2855,6 +2861,7 @@ fragment ContractFields on ContractType {
   startDate
   endDate
   value
+  currency
   autoRenew
   status
 }`;
@@ -2880,6 +2887,7 @@ fragment InvoiceFields on InvoiceType {
   projectId
   invoiceNumber
   amount
+  currency
   status
   dueDate
   issuedAt

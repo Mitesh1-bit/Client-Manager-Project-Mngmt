@@ -29,8 +29,8 @@ import { Switch } from "@/app/components/ui/switch";
 import { CreateContractDocument } from "@/app/lib/graphql/generated/documents";
 import { listStatuses } from "@/app/lib/status";
 
-/** @param {{ companyId: string }} props */
-export function ContractDialog({ companyId }) {
+/** @param {{ companyId: string, currency?: string }} props */
+export function ContractDialog({ companyId, currency = "GBP" }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -129,7 +129,7 @@ export function ContractDialog({ companyId }) {
 
           <div className="form-grid gap-3">
             <div className="space-y-1.5">
-              <Label className="text-caption font-medium">Value</Label>
+              <Label className="text-caption font-medium">Value ({currency})</Label>
               <Input
                 type="number"
                 min="0"

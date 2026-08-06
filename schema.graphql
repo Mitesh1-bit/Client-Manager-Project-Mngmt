@@ -246,9 +246,11 @@ type HealthScorePoint {
 
 type Contract {
   id: ID!
+  companyId: ID!
   startDate: Date!
   endDate: Date!
   value: Float
+  currency: String!
   autoRenew: Boolean!
   status: String!
 }

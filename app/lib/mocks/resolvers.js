@@ -1673,6 +1673,12 @@ export const resolvers = {
     },
   },
 
+  Contract: {
+    // Contracts don't carry their own currency — inherit it from the
+    // client's projects, same rule the real backend uses.
+    currency: (contract) => where(db.projects, "companyId", contract.companyId)[0]?.currency ?? "GBP",
+  },
+
   User: {
     organization: () => db.organization,
     contact: (user) => (user.contactId ? byId(db.contacts, user.contactId) : null),
