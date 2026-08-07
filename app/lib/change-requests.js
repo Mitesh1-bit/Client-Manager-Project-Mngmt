@@ -46,17 +46,24 @@ export const RESPONSE_SLA_DAYS = {
 /**
  * Legal transitions for the "move it along" mutation. Assessment and decision
  * have their own mutations and are not listed here.
+ *
+ * This mirrors `TRANSITION_TABLE` in `backend/app/graphql/change_requests/
+ * state_machine.py` exactly — that module is the actual source of truth, this
+ * is just a client-side copy so the "Move to…" menu never offers something
+ * the server will then reject. The two had drifted (this table used to be a
+ * guess, per the file-level comment above); every entry below was checked
+ * against the real table, not re-guessed.
  */
 const TRANSITIONS = {
-  SUBMITTED: ["UNDER_REVIEW", "ON_HOLD", "CLOSED"],
-  UNDER_REVIEW: ["PENDING_IMPACT_ASSESSMENT", "ON_HOLD", "CLOSED"],
-  PENDING_IMPACT_ASSESSMENT: ["UNDER_REVIEW", "ON_HOLD", "CLOSED"],
-  PENDING_APPROVAL: ["ON_HOLD", "CLOSED"],
-  ON_HOLD: ["UNDER_REVIEW", "PENDING_IMPACT_ASSESSMENT", "PENDING_APPROVAL", "CLOSED"],
-  APPROVED: ["IN_PROGRESS", "ON_HOLD", "CLOSED"],
-  IN_PROGRESS: ["IMPLEMENTED", "ON_HOLD"],
+  SUBMITTED: ["UNDER_REVIEW"],
+  UNDER_REVIEW: ["PENDING_IMPACT_ASSESSMENT", "ON_HOLD", "REJECTED"],
+  PENDING_IMPACT_ASSESSMENT: ["PENDING_APPROVAL", "ON_HOLD"],
+  PENDING_APPROVAL: ["APPROVED", "REJECTED"],
+  APPROVED: ["IN_PROGRESS"],
+  IN_PROGRESS: ["IMPLEMENTED"],
   IMPLEMENTED: ["CLOSED"],
-  REJECTED: ["CLOSED"],
+  REJECTED: ["CLOSED", "SUBMITTED"],
+  ON_HOLD: ["UNDER_REVIEW"],
   CLOSED: [],
 };
 
