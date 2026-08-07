@@ -18,6 +18,7 @@ import { hasActiveFilters, parseListParams, readList, readString } from "@/app/l
 import { listStatuses } from "@/app/lib/status";
 
 import { ChangeRequestsTable } from "./change-requests-table";
+import { NewChangeRequestDialog } from "./new-change-request-dialog";
 import { QueueTabs } from "./queue-tabs";
 
 export const metadata = { title: "Change requests" };
@@ -43,6 +44,7 @@ export default async function ChangeRequestsPage({ searchParams }) {
 
   const users = pickList(optionsResult.data, "users");
   const companies = pickList(optionsResult.data, "companies");
+  const projects = pickList(optionsResult.data, "projects");
 
   const countShape = {
     all: { totalCount: counts.changeRequestDashboard?.openCount ?? 0 },
@@ -57,6 +59,7 @@ export default async function ChangeRequestsPage({ searchParams }) {
         eyebrow="Operations"
         title="Change requests"
         description="Everything clients have asked for, what needs assessing, and what's waiting on a decision."
+        actions={<NewChangeRequestDialog projects={projects} />}
       />
 
       <div className="space-y-4">
@@ -155,7 +158,7 @@ async function QueueResults({ params, bucket }) {
     ...(statuses.length ? { status: statuses } : {}),
   };
 
-  const { rows } = await fetchChangeRequestQueue();
+  const { rows, projects } = await fetchChangeRequestQueue();
   let filtered = rows;
 
   if (filter.search) {
@@ -186,7 +189,7 @@ async function QueueResults({ params, bucket }) {
     <ChangeRequestsTable
       connection={connection}
       sort={sort}
-      emptyState={filteredActive ? <NothingInBucket bucket={bucket} /> : <NoRequests />}
+      emptyState={filteredActive ? <NothingInBucket bucket={bucket} /> : <NoRequests projects={projects} />}
     />
   );
 }
@@ -231,12 +234,13 @@ function NothingInBucket({ bucket }) {
   );
 }
 
-function NoRequests() {
+function NoRequests({ projects }) {
   return (
     <EmptyState
       icon={GitPullRequestArrow}
       title="No change requests yet"
       description="When a client asks for something outside the agreed scope, it lands here for assessment."
+      action={<NewChangeRequestDialog projects={projects} />}
     />
   );
 }

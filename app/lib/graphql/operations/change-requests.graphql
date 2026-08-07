@@ -113,6 +113,7 @@ mutation CreateChangeRequest(
   $type: String!
   $description: String
   $priority: String!
+  $desiredDueDate: Date
 ) {
   createChangeRequest(
     projectId: $projectId
@@ -120,6 +121,7 @@ mutation CreateChangeRequest(
     type: $type
     description: $description
     priority: $priority
+    desiredDueDate: $desiredDueDate
   ) {
     ...ChangeRequestDetailFields
   }

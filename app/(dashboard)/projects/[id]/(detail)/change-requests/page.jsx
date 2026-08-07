@@ -5,21 +5,30 @@ import { StatusBadge } from "@/app/components/domain/status-badge";
 import { formatCurrency, formatRelativeDays, humanizeType } from "@/app/lib/format";
 import { normalizeChangeRequest } from "@/app/lib/api/normalize";
 import { getClient } from "@/app/lib/graphql/apollo-client";
-import { ChangeRequestsByProjectDocument } from "@/app/lib/graphql/generated/documents";
+import {
+  ChangeRequestsByProjectDocument,
+  ProjectDetailHeaderDocument,
+} from "@/app/lib/graphql/generated/documents";
 import { cn } from "@/app/lib/utils";
+
+import { NewChangeRequestDialog } from "@/app/(dashboard)/change-requests/new-change-request-dialog";
 
 export const metadata = { title: "Change requests" };
 
 export default async function ProjectChangeRequestsPage({ params }) {
   const { id } = await params;
-  const { data } = await getClient().query({
-    query: ChangeRequestsByProjectDocument,
-    variables: { projectId: id },
-  });
+  const [{ data }, { data: header }] = await Promise.all([
+    getClient().query({ query: ChangeRequestsByProjectDocument, variables: { projectId: id } }),
+    getClient().query({ query: ProjectDetailHeaderDocument, variables: { id } }),
+  ]);
 
   const requests = [...(data.changeRequests ?? [])]
     .map(normalizeChangeRequest)
     .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+  const newRequestButton = (
+    <NewChangeRequestDialog lockedProjectId={id} lockedProjectName={header.project?.name} />
+  );
 
   if (requests.length === 0) {
     return (
@@ -27,14 +36,14 @@ export default async function ProjectChangeRequestsPage({ params }) {
         icon={GitPullRequestArrow}
         title="No change requests"
         description="Nobody has asked to change the scope, timeline or budget of this project."
+        action={newRequestButton}
       />
     );
   }
 
   return (
     <div className="space-y-3">
-      {/* Read-only here: raising, assessing and deciding change requests is
-          the Phase 5 lifecycle, which owns its own screens. */}
+      <div className="flex justify-end">{newRequestButton}</div>
       <ul className="space-y-3">
         {requests.map((request) => (
           <li key={request.id} className="rounded-xl border bg-card p-4">

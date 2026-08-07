@@ -9,12 +9,17 @@ import { SettingsTabs } from "./settings-tabs";
 
 export const metadata = { title: "Settings" };
 
+// Health-score weighting and change-request approval rules aren't ready to
+// expose yet — flip this back on when they are. Flip, not delete: the panel,
+// its mutation and the backend settings it edits are all still live.
+const SHOW_ORG_SETTINGS = false;
+
 export default async function SettingsPage() {
   const viewer = await requireViewer("INTERNAL");
   const isAdmin = viewer.role === "admin";
 
   let orgSettings = null;
-  if (isAdmin) {
+  if (isAdmin && SHOW_ORG_SETTINGS) {
     const { data } = await getClient().query({ query: OrganizationSettingsDocument });
     orgSettings = data?.organizationSettings ?? null;
   }

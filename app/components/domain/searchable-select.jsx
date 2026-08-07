@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Plus } from "lucide-react";
 
 import { Button } from "@/app/components/ui/button";
 import {
@@ -26,6 +26,15 @@ export const SEARCHABLE_SELECT_THRESHOLD = 0;
  * Single-select combobox with type-to-search. Used for timezones, countries,
  * and any long option list in forms or filters.
  *
+ * `allowCustom`, when passed, turns this into a creatable select: typing
+ * something that doesn't match any option offers a "Use '<text>'" row.
+ * Selecting it calls `onChange` with that text (run through
+ * `normalizeCustomValue` first, if given) — there's no persisted record
+ * behind it the way a created tag has one, it's just a value the option
+ * list doesn't happen to contain. If `value` itself doesn't match any
+ * option (a custom value chosen earlier), the trigger falls back to
+ * `formatUnknownValue(value)` instead of the placeholder.
+ *
  * @param {{
  *   options: Array<{ value: string, label: string, searchText?: string }>,
  *   value?: string | null,
@@ -34,6 +43,10 @@ export const SEARCHABLE_SELECT_THRESHOLD = 0;
  *   emptyText?: string,
  *   allowClear?: boolean,
  *   clearLabel?: string,
+ *   allowCustom?: boolean,
+ *   createLabel?: (text: string) => string,
+ *   normalizeCustomValue?: (text: string) => string,
+ *   formatUnknownValue?: (value: string) => string,
  *   disabled?: boolean,
  *   id?: string,
  *   className?: string,
@@ -49,22 +62,41 @@ export function SearchableSelect({
   emptyText = "Nothing found.",
   allowClear = false,
   clearLabel = "Not set",
+  allowCustom = false,
+  createLabel = (text) => `Use "${text}"`,
+  normalizeCustomValue = (text) => text.trim(),
+  formatUnknownValue = (val) => val,
   disabled = false,
   id,
   className,
   ...aria
 }) {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const selected = useMemo(
     () => options.find((option) => option.value === value) ?? null,
     [options, value],
   );
 
+  const trimmedSearch = search.trim();
+  const hasExactMatch = options.some(
+    (option) => option.label.toLowerCase() === trimmedSearch.toLowerCase(),
+  );
+  const canCreate = allowCustom && trimmedSearch.length > 0 && !hasExactMatch;
+
+  function selectCustom() {
+    onChange(normalizeCustomValue(trimmedSearch));
+    setSearch("");
+    setOpen(false);
+  }
+
   return (
     <Popover
       open={open}
       onOpenChange={(next) => {
-        if (!disabled) setOpen(next);
+        if (disabled) return;
+        setOpen(next);
+        if (!next) setSearch("");
       }}
     >
       <PopoverTrigger asChild>
@@ -78,8 +110,8 @@ export function SearchableSelect({
           className={cn("h-10 w-full justify-between font-normal", className)}
           {...aria}
         >
-          <span className={cn("truncate", !selected && "text-muted-foreground")}>
-            {selected?.label ?? placeholder}
+          <span className={cn("truncate", !selected && !value && "text-muted-foreground")}>
+            {selected?.label ?? (value ? formatUnknownValue(value) : placeholder)}
           </span>
           <ChevronsUpDown aria-hidden="true" className="ml-2 size-4 shrink-0 opacity-50" />
         </Button>
@@ -87,15 +119,15 @@ export function SearchableSelect({
 
       <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-0">
         <Command
-          filter={(itemValue, search) => {
-            const needle = search.trim().toLowerCase();
+          filter={(itemValue, currentSearch) => {
+            const needle = currentSearch.trim().toLowerCase();
             if (!needle) return 1;
             return itemValue.toLowerCase().includes(needle) ? 1 : 0;
           }}
         >
-          <CommandInput placeholder="Search…" />
+          <CommandInput placeholder="Search…" value={search} onValueChange={setSearch} />
           <CommandList className="max-h-72">
-            <CommandEmpty>{emptyText}</CommandEmpty>
+            {!canCreate ? <CommandEmpty>{emptyText}</CommandEmpty> : null}
             <CommandGroup>
               {allowClear ? (
                 <CommandItem
@@ -118,6 +150,7 @@ export function SearchableSelect({
                   value={option.searchText ?? `${option.label} ${option.value}`}
                   onSelect={() => {
                     onChange(option.value);
+                    setSearch("");
                     setOpen(false);
                   }}
                 >
@@ -131,6 +164,12 @@ export function SearchableSelect({
                   {option.label}
                 </CommandItem>
               ))}
+              {canCreate ? (
+                <CommandItem value={`__custom__ ${trimmedSearch}`} onSelect={selectCustom}>
+                  <Plus aria-hidden="true" className="size-4" />
+                  {createLabel(trimmedSearch)}
+                </CommandItem>
+              ) : null}
             </CommandGroup>
           </CommandList>
         </Command>

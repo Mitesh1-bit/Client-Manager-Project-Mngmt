@@ -287,7 +287,7 @@ type Mutation {
   transitionChangeRequest(id: ID!, toStatus: String!, reason: String = null): ChangeRequestType!
   submitImpactAssessment(id: ID!, impactHours: Float = null, impactCost: Float = null, impactTimelineDays: Int = null, assessmentNotes: String = null): ChangeRequestType!
   decideChangeRequest(id: ID!, approvalId: ID!, decision: String!, comment: String = null, applyFinancialImpact: Boolean! = false): ChangeRequestType!
-  createChangeRequest(projectId: ID!, title: String!, type: String!, description: String = null, priority: String! = "medium", desiredDueDate: Date = null): ChangeRequestType!
+  createChangeRequest(projectId: ID!, title: String!, type: String!, description: String = null, priority: String! = "medium", desiredDueDate: Date = null, requestedByContactId: ID = null): ChangeRequestType!
   draftImpactAssessment(id: ID!): ImpactAssessmentDraftType
   resubmitChangeRequest(id: ID!): ChangeRequestType!
   createRetentionSequence(name: String!, companyId: ID!, triggerType: String! = "manual", description: String = null, isTemplate: Boolean! = false, submitForApproval: Boolean! = false): RetentionSequenceType!
@@ -493,16 +493,7 @@ type Query {
   changeRequests(projectId: ID!, status: String = null): [ChangeRequestType!]!
   changeRequest(id: ID!): ChangeRequestType
   changeRequestDashboard: ChangeRequestDashboardType!
-  retentionSequences(
-    activeOnly: Boolean! = false
-    companyId: ID
-    status: String
-    source: String
-    createdById: ID
-    createdAfter: DateTime
-    createdBefore: DateTime
-    search: String
-  ): [RetentionSequenceType!]!
+  retentionSequences(activeOnly: Boolean! = false, companyId: ID = null, status: String = null, source: String = null, createdById: ID = null, createdAfter: DateTime = null, createdBefore: DateTime = null, search: String = null): [RetentionSequenceType!]!
   retentionSequence(id: ID!): RetentionSequenceType
   upcomingTouchpoints: [TouchpointType!]!
 
@@ -558,12 +549,12 @@ type RetentionSequenceType {
   approvedAt: DateTime
   rejectionReason: String
   aiRationale: String
-  steps: [SequenceStepType!]!
-  enrollments: [RetentionEnrollmentType!]!
-  activeEnrollmentCount: Int!
   company: CompanyType
   createdBy: UserSummaryType
   approvedBy: UserSummaryType
+  steps: [SequenceStepType!]!
+  enrollments: [RetentionEnrollmentType!]!
+  activeEnrollmentCount: Int!
 }
 
 type SearchResultsType {

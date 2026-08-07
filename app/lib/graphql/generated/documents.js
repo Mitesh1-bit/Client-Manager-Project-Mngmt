@@ -1290,13 +1290,14 @@ mutation ConfirmUpload($entityType: String!, $entityId: ID!, $fileUrl: String!) 
 }`;
 
 export const CreateChangeRequestDocument = gql`
-mutation CreateChangeRequest($projectId: ID!, $title: String!, $type: String!, $description: String, $priority: String!) {
+mutation CreateChangeRequest($projectId: ID!, $title: String!, $type: String!, $description: String, $priority: String!, $desiredDueDate: Date) {
   createChangeRequest(
     projectId: $projectId
     title: $title
     type: $type
     description: $description
     priority: $priority
+    desiredDueDate: $desiredDueDate
   ) {
     ...ChangeRequestDetailFields
   }
