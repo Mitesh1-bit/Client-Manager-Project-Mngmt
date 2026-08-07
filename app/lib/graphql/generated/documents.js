@@ -1040,7 +1040,7 @@ fragment UserSummaryFields on UserSummaryType {
 }`;
 
 export const CompanyOverviewDocument = gql`
-query CompanyOverview($id: ID!) {
+query CompanyOverview($id: ID!, $canViewContracts: Boolean!) {
   company(id: $id) {
     id
     name
@@ -1067,7 +1067,7 @@ query CompanyOverview($id: ID!) {
       createdAt
     }
   }
-  contracts(companyId: $id) {
+  contracts(companyId: $id) @include(if: $canViewContracts) {
     id
     startDate
     endDate

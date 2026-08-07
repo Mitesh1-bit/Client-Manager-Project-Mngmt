@@ -11,11 +11,16 @@ import { formatCurrency, formatDate, displayUrl } from "@/app/lib/format";
 import { normalizeCompany } from "@/app/lib/api/normalize";
 import { asArray, pickList } from "@/app/lib/api/safe-list";
 import { formatStoredAddress } from "@/app/lib/geo-options";
+import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { CompanyOverviewDocument } from "@/app/lib/graphql/generated/documents";
 import { humanize } from "@/app/lib/status";
 
 const TIMELINE_LIMIT = 12;
+// Mirrors the backend's `contracts` query gate (require_role in
+// app/graphql/contracts/schema.py) — skipped via @include rather than fetched
+// and discarded, so a team member's overview query doesn't error out.
+const CONTRACT_ROLES = ["admin", "project_manager"];
 
 // Not every field is worth calling out in a one-line timeline entry — skip
 // bookkeeping columns that don't mean anything to someone skimming the feed.
@@ -48,9 +53,11 @@ function summarizeActivity(entry, usersById) {
 
 export default async function CompanyOverviewPage({ params }) {
   const { id } = await params;
+  const claims = await getSessionClaims();
+  const canViewContracts = CONTRACT_ROLES.includes(claims?.role);
   const { data } = await getClient().query({
     query: CompanyOverviewDocument,
-    variables: { id },
+    variables: { id, canViewContracts },
   });
 
   const company = normalizeCompany(data.company);

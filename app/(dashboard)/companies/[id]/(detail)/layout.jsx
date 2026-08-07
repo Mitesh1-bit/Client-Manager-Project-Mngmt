@@ -14,11 +14,12 @@ import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { CompanyDetailHeaderDocument } from "@/app/lib/graphql/generated/documents";
 
-// Mirrors the backend's `invoices` query gate (require_role in
-// app/graphql/invoices/schema.py) — a role outside this list gets a clean
-// "Requires one of roles: ..." error, so the tab is hidden rather than
-// linking somewhere that always fails.
+// Mirrors the backend's `invoices`/`contracts` query gates (require_role in
+// app/graphql/invoices/schema.py and app/graphql/contracts/schema.py) — a
+// role outside this list gets a clean "Requires one of roles: ..." error, so
+// the tab is hidden rather than linking somewhere that always fails.
 const INVOICE_ROLES = ["admin", "project_manager"];
+const CONTRACT_ROLES = ["admin", "project_manager"];
 
 import { CompanyStatusMenu } from "./company-status-menu";
 
@@ -43,6 +44,7 @@ export default async function CompanyDetailLayout({ children, params }) {
 
   const claims = await getSessionClaims();
   const canViewInvoices = INVOICE_ROLES.includes(claims?.role);
+  const canViewContracts = CONTRACT_ROLES.includes(claims?.role);
 
   const tabs = [
     { href: `/companies/${id}`, label: "Overview" },
@@ -50,7 +52,7 @@ export default async function CompanyDetailLayout({ children, params }) {
     { href: `/companies/${id}/projects`, label: "Projects" },
     { href: `/companies/${id}/touchpoints`, label: "Touchpoints" },
     { href: `/companies/${id}/docs`, label: "Documents" },
-    { href: `/companies/${id}/contracts`, label: "Contracts" },
+    ...(canViewContracts ? [{ href: `/companies/${id}/contracts`, label: "Contracts" }] : []),
     ...(canViewInvoices ? [{ href: `/companies/${id}/invoices`, label: "Invoices" }] : []),
     { href: `/companies/${id}/change-log`, label: "Change log" },
   ];

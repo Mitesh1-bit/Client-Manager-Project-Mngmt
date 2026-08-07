@@ -301,7 +301,7 @@ type Mutation {
   skipTouchpoint(id: ID!, notes: String = null): TouchpointType!
 
   """
-  Record a touchpoint that already happened  a call made, a meeting held.
+  Record a touchpoint that already happened — a call made, a meeting held.
   """
   logTouchpoint(companyId: ID!, contactId: ID!, type: String!, outcome: String = null, notes: String = null, projectId: ID = null, occurredAt: DateTime = null): TouchpointType!
   createContract(companyId: ID!, name: String!, startDate: Date!, endDate: Date!, value: Float = null, autoRenew: Boolean! = false, status: String! = "draft"): ContractType!
@@ -449,12 +449,12 @@ type ProjectType {
   health: String
   startDate: Date
   endDate: Date
+  company: CompanyType
   projectManager: UserSummaryType
   phases: [PhaseType!]!
   tasks: [TaskType!]!
   members: [UserSummaryType!]!
   clientContacts: [ContactType!]!
-  company: CompanyType
   tags: [TagType!]!
 }
 
@@ -492,7 +492,7 @@ type Query {
   upcomingTouchpoints: [TouchpointType!]!
 
   """
-  Full touchpoint history for a company  scheduled, completed and skipped.
+  Full touchpoint history for a company — scheduled, completed and skipped.
   """
   companyTouchpoints(companyId: ID!): [TouchpointType!]!
 
