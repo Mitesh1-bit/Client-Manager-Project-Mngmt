@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, UserPlus, Users } from "lucide-react";
+import { Building2, Pencil, Sparkles, UserPlus, Users } from "lucide-react";
 
 import { BackLink } from "@/app/components/domain/back-link";
-
 import { EnrollInSequenceDialog } from "@/app/components/domain/enroll-in-sequence-dialog";
 import { SectionCard, EmptyState } from "@/app/components/domain/states";
 import { Button } from "@/app/components/ui/button";
+import { normalizeRetentionSequence } from "@/app/lib/api/normalize";
 import { pickList } from "@/app/lib/api/safe-list";
+import { formatDateTime } from "@/app/lib/format";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   RetentionFormOptionsDocument,
@@ -16,6 +17,14 @@ import {
 
 import { EnrollmentRow } from "./enrollment-row";
 import { SequenceStepTimeline } from "./sequence-step-timeline";
+import { SequenceApprovalPanel } from "../sequence-approval-panel";
+import { DuplicateSequenceButton } from "../duplicate-sequence-button";
+import {
+  isSequenceEditable,
+  isSequenceEnrollable,
+  SEQUENCE_SOURCE_LABELS,
+  SEQUENCE_STATUS_LABELS,
+} from "../sequence-schema";
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
@@ -33,6 +42,10 @@ const TRIGGER_LABELS = {
   ON_RENEWAL_APPROACHING: "Starts as a renewal approaches",
 };
 
+function isActiveEnrollment(status) {
+  return String(status).toLowerCase() === "active";
+}
+
 export default async function SequenceDetailPage({ params }) {
   const { id } = await params;
 
@@ -41,17 +54,21 @@ export default async function SequenceDetailPage({ params }) {
     getClient().query({ query: RetentionFormOptionsDocument }),
   ]);
 
-  const sequence = data.retentionSequence;
-  if (!sequence) notFound();
+  const rawSequence = data.retentionSequence;
+  if (!rawSequence) notFound();
 
-  const activeEnrollments = sequence.enrollments.filter((e) => e.status === "ACTIVE");
-  const otherEnrollments = sequence.enrollments.filter((e) => e.status !== "ACTIVE");
-  const enrolledCompanyIds = new Set(
-    sequence.enrollments.filter((e) => e.status === "ACTIVE").map((e) => e.company.id),
+  const sequence = normalizeRetentionSequence(rawSequence);
+  const enrollable = isSequenceEnrollable(sequence);
+  const editable = isSequenceEditable(sequence);
+
+  const activeEnrollments = sequence.enrollments.filter((e) => isActiveEnrollment(e.status));
+  const otherEnrollments = sequence.enrollments.filter((e) => !isActiveEnrollment(e.status));
+  const enrolledContactIds = activeEnrollments.map((e) => e.contact.id);
+  const companyFromOptions = pickList(options, "companies").find(
+    (company) => company.id === sequence.companyId,
   );
-  const enrollableCompanies = pickList(options, "companies").filter(
-    (company) => !enrolledCompanyIds.has(company.id),
-  );
+  const companyContacts = companyFromOptions?.contacts ?? [];
+  const enrollableCompanies = pickList(options, "companies");
 
   return (
     <div className="mx-auto w-full max-w-3xl">
@@ -61,39 +78,72 @@ export default async function SequenceDetailPage({ params }) {
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-title text-balance">{sequence.name}</h1>
-            <span
-              className={
-                sequence.isActive
-                  ? "inline-flex items-center rounded-full border border-tone-positive-border bg-tone-positive-bg px-2 py-0.5 text-[0.75rem] font-medium text-tone-positive-fg"
-                  : "inline-flex items-center rounded-full border bg-muted px-2 py-0.5 text-[0.75rem] font-medium text-muted-foreground"
-              }
-            >
-              {sequence.isActive ? "Active" : "Inactive"}
+            <span className="inline-flex items-center rounded-full border bg-muted px-2 py-0.5 text-[0.75rem] font-medium text-muted-foreground">
+              {SEQUENCE_STATUS_LABELS[sequence.status] ?? sequence.status}
             </span>
+            {sequence.source === "AI" ? (
+              <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[0.75rem] font-medium text-muted-foreground">
+                <Sparkles aria-hidden="true" className="size-3.5" />
+                {SEQUENCE_SOURCE_LABELS.AI}
+              </span>
+            ) : (
+              <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[0.75rem] font-medium text-muted-foreground">
+                {SEQUENCE_SOURCE_LABELS.MANUAL}
+              </span>
+            )}
           </div>
           <p className="mt-1.5 text-caption text-muted-foreground">
             {TRIGGER_LABELS[sequence.triggerType] ?? sequence.triggerType}
           </p>
+          {sequence.company?.name && sequence.companyId ? (
+            <p className="mt-1.5 flex items-center gap-1.5 text-caption text-muted-foreground">
+              <Building2 aria-hidden="true" className="size-3.5" />
+              <Link href={`/companies/${sequence.companyId}`} className="hover:text-foreground hover:underline">
+                {sequence.company.name}
+              </Link>
+            </p>
+          ) : null}
           {sequence.description ? (
             <p className="mt-2 max-w-xl text-caption text-pretty text-muted-foreground">
               {sequence.description}
             </p>
           ) : null}
+          <dl className="mt-3 space-y-1 text-[0.75rem] text-muted-foreground">
+            {sequence.createdBy?.name ? (
+              <div>
+                Created by {sequence.createdBy.name}
+                {sequence.createdAt ? ` · ${formatDateTime(sequence.createdAt)}` : ""}
+              </div>
+            ) : null}
+            {sequence.approvedBy?.name ? (
+              <div>
+                Approved by {sequence.approvedBy.name}
+                {sequence.approvedAt ? ` · ${formatDateTime(sequence.approvedAt)}` : ""}
+              </div>
+            ) : null}
+          </dl>
         </div>
 
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0">
-          <Button variant="outline" asChild>
-            <Link href={`/retention/sequences/${id}/edit`}>
-              <Pencil aria-hidden="true" />
-              Edit
-            </Link>
-          </Button>
+          <DuplicateSequenceButton sequenceId={sequence.id} />
+          {editable ? (
+            <Button variant="outline" asChild>
+              <Link href={`/retention/sequences/${id}/edit`}>
+                <Pencil aria-hidden="true" />
+                Edit
+              </Link>
+            </Button>
+          ) : null}
           <EnrollInSequenceDialog
             sequenceId={sequence.id}
             sequenceName={sequence.name}
+            companyId={sequence.companyId}
+            companyName={sequence.company?.name}
             companies={enrollableCompanies}
+            contacts={companyContacts}
+            enrolledContactIds={enrolledContactIds}
             trigger={
-              <Button disabled={!sequence.isActive}>
+              <Button disabled={!enrollable || companyContacts.length === 0}>
                 <UserPlus aria-hidden="true" />
                 Enroll a client
               </Button>
@@ -102,10 +152,23 @@ export default async function SequenceDetailPage({ params }) {
         </div>
       </header>
 
-      {!sequence.isActive ? (
+      <SequenceApprovalPanel
+        sequenceId={sequence.id}
+        status={sequence.status}
+        aiRationale={sequence.aiRationale}
+        rejectionReason={sequence.rejectionReason}
+      />
+
+      {!enrollable ? (
         <p className="mb-5 rounded-lg border border-tone-caution-border bg-tone-caution-bg px-3.5 py-2.5 text-caption text-tone-caution-fg">
-          This sequence is inactive, so it can&apos;t take new enrollments. Edit it to reactivate.
+          This sequence isn&apos;t approved yet, so it can&apos;t take new enrollments.
         </p>
+      ) : null}
+
+      {sequence.aiRationale && sequence.status !== "PENDING" ? (
+        <SectionCard title="Retention strategy" className="mb-5">
+          <p className="text-caption text-pretty text-muted-foreground">{sequence.aiRationale}</p>
+        </SectionCard>
       ) : null}
 
       <div className="space-y-5">

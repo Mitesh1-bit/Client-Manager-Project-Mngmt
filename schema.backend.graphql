@@ -290,11 +290,17 @@ type Mutation {
   createChangeRequest(projectId: ID!, title: String!, type: String!, description: String = null, priority: String! = "medium", desiredDueDate: Date = null): ChangeRequestType!
   draftImpactAssessment(id: ID!): ImpactAssessmentDraftType
   resubmitChangeRequest(id: ID!): ChangeRequestType!
-  createRetentionSequence(name: String!, triggerType: String! = "manual", isTemplate: Boolean! = false): RetentionSequenceType!
+  createRetentionSequence(name: String!, companyId: ID!, triggerType: String! = "manual", description: String = null, isTemplate: Boolean! = false, submitForApproval: Boolean! = false): RetentionSequenceType!
+  generateRetentionSequence(companyId: ID!): RetentionSequenceType!
+  submitRetentionSequence(id: ID!): RetentionSequenceType!
+  approveRetentionSequence(id: ID!): RetentionSequenceType!
+  rejectRetentionSequence(id: ID!, reason: String = null): RetentionSequenceType!
   duplicateRetentionSequence(sequenceId: ID!): RetentionSequenceType!
-  updateRetentionSequence(id: ID!, name: String = null, triggerType: String = null, isActive: Boolean = null): RetentionSequenceType!
+  updateRetentionSequence(id: ID!, name: String = null, triggerType: String = null, description: String = null, companyId: ID = null, isActive: Boolean = null): RetentionSequenceType!
   removeSequenceStep(stepId: ID!): Boolean!
-  addSequenceStep(sequenceId: ID!, channel: String!, offsetDays: Int!, templateId: ID = null, assigneeRole: String = null): SequenceStepType!
+  addSequenceStep(sequenceId: ID!, channel: String!, offsetDays: Int!, templateId: ID = null, assigneeRole: String = null, name: String = null, actionMessage: String = null): SequenceStepType!
+  updateSequenceStep(stepId: ID!, channel: String = null, offsetDays: Int = null, assigneeRole: String = null, name: String = null, actionMessage: String = null): SequenceStepType!
+  reorderSequenceSteps(sequenceId: ID!, orderedStepIds: [ID!]!): [SequenceStepType!]!
   enrollInSequence(sequenceId: ID!, companyId: ID!, contactId: ID!, projectId: ID = null): RetentionEnrollmentType!
   cancelEnrollment(enrollmentId: ID!): RetentionEnrollmentType!
   completeTouchpoint(id: ID!, outcome: String = null, notes: String = null): TouchpointType!
@@ -487,7 +493,16 @@ type Query {
   changeRequests(projectId: ID!, status: String = null): [ChangeRequestType!]!
   changeRequest(id: ID!): ChangeRequestType
   changeRequestDashboard: ChangeRequestDashboardType!
-  retentionSequences(activeOnly: Boolean! = false): [RetentionSequenceType!]!
+  retentionSequences(
+    activeOnly: Boolean! = false
+    companyId: ID
+    status: String
+    source: String
+    createdById: ID
+    createdAfter: DateTime
+    createdBefore: DateTime
+    search: String
+  ): [RetentionSequenceType!]!
   retentionSequence(id: ID!): RetentionSequenceType
   upcomingTouchpoints: [TouchpointType!]!
 
@@ -535,9 +550,20 @@ type RetentionSequenceType {
   triggerType: String!
   isActive: Boolean!
   isTemplate: Boolean!
+  description: String
+  status: String!
+  source: String!
+  companyId: ID
+  createdAt: DateTime!
+  approvedAt: DateTime
+  rejectionReason: String
+  aiRationale: String
   steps: [SequenceStepType!]!
   enrollments: [RetentionEnrollmentType!]!
   activeEnrollmentCount: Int!
+  company: CompanyType
+  createdBy: UserSummaryType
+  approvedBy: UserSummaryType
 }
 
 type SearchResultsType {
@@ -558,6 +584,8 @@ type SequenceStepType {
   offsetDays: Int!
   templateId: ID
   assigneeRole: String
+  name: String
+  actionMessage: String
 }
 
 type TagType {

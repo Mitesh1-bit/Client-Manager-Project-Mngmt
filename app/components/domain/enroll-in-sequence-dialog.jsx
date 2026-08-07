@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
 import { LoaderCircle, Workflow } from "lucide-react";
@@ -16,6 +16,7 @@ import {
   DialogTrigger,
 } from "@/app/components/ui/dialog";
 import { Button } from "@/app/components/ui/button";
+import { Checkbox } from "@/app/components/ui/checkbox";
 import { Label } from "@/app/components/ui/label";
 import {
   Select,
@@ -25,21 +26,10 @@ import {
   SelectValue,
 } from "@/app/components/ui/select";
 import { EnrollInSequenceDocument } from "@/app/lib/graphql/generated/documents";
+import { cn } from "@/app/lib/utils";
 
 /**
- * Enrolls a company into a sequence. Works from either direction: fix the
- * company and pick a sequence (used from the at-risk dashboard), or fix the
- * sequence and pick a company (used from a sequence's own detail page).
- * Whichever side isn't fixed needs its option list passed in.
- *
- * @param {{
- *   trigger: React.ReactNode,
- *   companyId?: string, companyName?: string,
- *   sequenceId?: string, sequenceName?: string,
- *   sequences?: Array<{ id: string, name: string, isActive: boolean }>,
- *   companies?: Array<{ id: string, name: string, contacts?: Array<object> }>,
- *   contacts?: Array<{ id: string, firstName: string, lastName: string, isPrimary?: boolean }>,
- * }} props
+ * Enrolls one or more contacts from a client company into a sequence.
  */
 export function EnrollInSequenceDialog({
   trigger,
@@ -50,44 +40,78 @@ export function EnrollInSequenceDialog({
   sequences,
   companies,
   contacts,
+  enrolledContactIds = [],
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState(companyId ?? "");
   const [selectedSequenceId, setSelectedSequenceId] = useState(sequenceId ?? "");
-  const [selectedContactId, setSelectedContactId] = useState("");
+  const [selectedContactIds, setSelectedContactIds] = useState([]);
   const [error, setError] = useState(null);
   const [enroll, { loading }] = useMutation(EnrollInSequenceDocument);
 
-  const activeSequences = sequences?.filter((sequence) => sequence.isActive) ?? [];
-  const availableContacts =
-    contacts ?? companies?.find((company) => company.id === selectedCompanyId)?.contacts ?? [];
+  const activeSequences =
+    sequences?.filter(
+      (sequence) =>
+        sequence.isActive &&
+        ["approved", "active", "APPROVED", "ACTIVE"].includes(String(sequence.status ?? "active")) &&
+        (!companyId || !sequence.companyId || sequence.companyId === companyId),
+    ) ?? [];
+
+  const resolvedCompanyId = companyId ?? selectedCompanyId;
+
+  const companyContacts = useMemo(() => {
+    if (contacts?.length) return contacts;
+    return companies?.find((company) => company.id === resolvedCompanyId)?.contacts ?? [];
+  }, [contacts, companies, resolvedCompanyId]);
+
+  const availableContacts = useMemo(
+    () => companyContacts.filter((contact) => !enrolledContactIds.includes(contact.id)),
+    [companyContacts, enrolledContactIds],
+  );
+
+  useEffect(() => {
+    if (!open) return;
+    const defaults = availableContacts.filter((contact) => contact.isPrimary).map((contact) => contact.id);
+    setSelectedContactIds(defaults.length ? defaults : availableContacts.slice(0, 1).map((contact) => contact.id));
+  }, [open, availableContacts]);
+
+  function toggleContact(contactId, checked) {
+    setSelectedContactIds((current) =>
+      checked ? [...new Set([...current, contactId])] : current.filter((id) => id !== contactId),
+    );
+  }
 
   async function handleEnroll() {
     const finalCompanyId = companyId ?? selectedCompanyId;
     const finalSequenceId = sequenceId ?? selectedSequenceId;
-    const finalContactId =
-      selectedContactId || availableContacts.find((contact) => contact.isPrimary)?.id || "";
+
     if (!finalCompanyId || !finalSequenceId) {
       setError(companyId ? "Choose a sequence." : "Choose a client.");
       return;
     }
-    if (!finalContactId) {
-      setError("Choose a contact.");
+    if (selectedContactIds.length === 0) {
+      setError("Choose at least one contact.");
       return;
     }
 
     setError(null);
     try {
-      await enroll({
-        variables: { sequenceId: finalSequenceId, companyId: finalCompanyId, contactId: finalContactId },
-      });
+      for (const contactId of selectedContactIds) {
+        await enroll({
+          variables: { sequenceId: finalSequenceId, companyId: finalCompanyId, contactId },
+        });
+      }
+
       const enrolledSequenceName =
         sequenceName ?? sequences?.find((s) => s.id === finalSequenceId)?.name ?? "the sequence";
       const enrolledCompanyName =
         companyName ?? companies?.find((c) => c.id === finalCompanyId)?.name ?? "the client";
+      const contactLabel =
+        selectedContactIds.length === 1 ? "1 contact" : `${selectedContactIds.length} contacts`;
+
       toast.success(`${enrolledCompanyName} enrolled`, {
-        description: `Touchpoints for "${enrolledSequenceName}" are now scheduled.`,
+        description: `${contactLabel} added to "${enrolledSequenceName}".`,
       });
       setOpen(false);
       router.refresh();
@@ -110,10 +134,10 @@ export function EnrollInSequenceDialog({
           <DialogTitle>Enroll in a sequence</DialogTitle>
           <DialogDescription>
             {companyName
-              ? `Schedules ${companyName}'s touchpoints for whichever sequence you choose.`
+              ? `Schedule touchpoints for ${companyName}. Select one or more contacts to include.`
               : sequenceName
-                ? `Schedules "${sequenceName}"'s touchpoints for whichever client you choose.`
-                : "Schedules the sequence's touchpoints starting today."}
+                ? `Schedule "${sequenceName}" for a client and choose who should receive the touchpoints.`
+                : "Schedule the sequence's touchpoints starting today."}
           </DialogDescription>
         </DialogHeader>
 
@@ -126,7 +150,13 @@ export function EnrollInSequenceDialog({
             </Field>
           ) : (
             <Field label="Client" required>
-              <Select value={selectedCompanyId} onValueChange={setSelectedCompanyId}>
+              <Select
+                value={selectedCompanyId}
+                onValueChange={(value) => {
+                  setSelectedCompanyId(value);
+                  setSelectedContactIds([]);
+                }}
+              >
                 <SelectTrigger className="h-10 w-full">
                   <SelectValue placeholder="Choose a client" />
                 </SelectTrigger>
@@ -171,34 +201,50 @@ export function EnrollInSequenceDialog({
             </Field>
           )}
 
-          <Field label="Contact" required>
-            <Select
-              value={
-                selectedContactId && availableContacts.some((contact) => contact.id === selectedContactId)
-                  ? selectedContactId
-                  : (availableContacts.find((contact) => contact.isPrimary)?.id ?? "")
-              }
-              onValueChange={setSelectedContactId}
-              disabled={availableContacts.length === 0}
-            >
-              <SelectTrigger className="h-10 w-full">
-                <SelectValue placeholder="Choose a contact" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableContacts.length === 0 ? (
-                  <p className="px-2 py-1.5 text-caption text-muted-foreground">
-                    No contacts on file for this client
-                  </p>
-                ) : (
-                  availableContacts.map((contact) => (
-                    <SelectItem key={contact.id} value={contact.id}>
-                      {contact.firstName} {contact.lastName}
-                      {contact.isPrimary ? " (primary)" : ""}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+          <Field label="Contacts" required>
+            {availableContacts.length === 0 ? (
+              <p className="rounded-lg border border-dashed px-3 py-2.5 text-caption text-muted-foreground">
+                No contacts available for this client.
+                {companyId ? (
+                  <>
+                    {" "}
+                    <a href={`/companies/${companyId}/contacts`} className="font-medium text-primary hover:underline">
+                      Add contacts
+                    </a>
+                  </>
+                ) : null}
+              </p>
+            ) : (
+              <ul className="max-h-48 space-y-2 overflow-y-auto rounded-lg border p-3">
+                {availableContacts.map((contact) => {
+                  const checked = selectedContactIds.includes(contact.id);
+                  return (
+                    <li key={contact.id}>
+                      <label
+                        className={cn(
+                          "flex cursor-pointer items-start gap-3 rounded-md px-1 py-1.5 hover:bg-muted/60",
+                          checked && "bg-muted/40",
+                        )}
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(value) => toggleContact(contact.id, value === true)}
+                          className="mt-0.5"
+                        />
+                        <span className="min-w-0 text-caption">
+                          <span className="font-medium">
+                            {contact.firstName} {contact.lastName}
+                          </span>
+                          {contact.isPrimary ? (
+                            <span className="ml-1 text-muted-foreground">(primary)</span>
+                          ) : null}
+                        </span>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </Field>
 
           {error ? <p className="text-caption font-medium text-destructive">{error}</p> : null}
@@ -208,9 +254,9 @@ export function EnrollInSequenceDialog({
           <Button variant="ghost" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleEnroll} disabled={loading}>
+          <Button onClick={handleEnroll} disabled={loading || availableContacts.length === 0}>
             {loading ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : null}
-            Enroll
+            Enroll{selectedContactIds.length > 1 ? ` (${selectedContactIds.length})` : ""}
           </Button>
         </DialogFooter>
       </DialogContent>

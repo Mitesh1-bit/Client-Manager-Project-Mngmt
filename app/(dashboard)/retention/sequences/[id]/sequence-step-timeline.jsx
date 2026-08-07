@@ -34,7 +34,7 @@ export function SequenceStepTimeline({ steps }) {
 
             <div className="min-w-0 flex-1 pt-1">
               <p className="flex flex-wrap items-baseline gap-x-2">
-                <span className="font-medium text-pretty">{step.name}</span>
+                <span className="font-medium text-pretty">{step.name || `Step ${index + 1}`}</span>
                 <span className="tabular text-caption text-muted-foreground">
                   Day {step.offsetDays}
                 </span>
@@ -44,6 +44,11 @@ export function SequenceStepTimeline({ steps }) {
                 {step.assigneeRole ? ` · ${ROLE_LABELS[step.assigneeRole] ?? step.assigneeRole}` : ""}
                 {step.templateId ? ` · template ${step.templateId}` : ""}
               </p>
+              {step.actionMessage ? (
+                <p className="mt-2 rounded-lg border bg-muted/40 px-3 py-2 text-caption text-pretty text-muted-foreground">
+                  {step.actionMessage}
+                </p>
+              ) : null}
             </div>
           </li>
         );

@@ -31,6 +31,10 @@ const REASON_TONE_CLASSES = {
  */
 export function AtRiskCompanyCard({ row, sequences }) {
   const { company, reasons, overdueTouchpointCount, lastTouchpointAt, activeEnrollments } = row;
+  const companySequences = sequences.filter(
+    (sequence) => !sequence.companyId || sequence.companyId === company.id,
+  );
+  const enrolledContactIds = activeEnrollments.map((enrollment) => enrollment.contact?.id).filter(Boolean);
 
   return (
     <article className="rounded-2xl border bg-card p-4 sm:p-5">
@@ -124,8 +128,9 @@ export function AtRiskCompanyCard({ row, sequences }) {
         <EnrollInSequenceDialog
           companyId={company.id}
           companyName={company.name}
-          sequences={sequences}
+          sequences={companySequences}
           contacts={company.contacts}
+          enrolledContactIds={enrolledContactIds}
           trigger={
             <Button variant="outline" size="sm">
               <Workflow aria-hidden="true" />

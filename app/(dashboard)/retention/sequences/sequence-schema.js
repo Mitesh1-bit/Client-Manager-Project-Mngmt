@@ -2,12 +2,6 @@ import { z } from "zod";
 import { SEQUENCE_ASSIGNEE_ROLES } from "@/app/lib/assignee-roles";
 import { toUiStatus } from "@/app/lib/api/normalize";
 
-/**
- * Client-side validation for the sequence builder. Mirrors the rules the mock
- * resolver enforces in `toSequenceSteps()` (see NEEDED_SCHEMA_CHANGES.md
- * §9.1) so a mistake is caught while editing, not after a round trip.
- */
-
 export const TRIGGER_TYPES = [
   { value: "MANUAL", label: "Manual — start it yourself for a client" },
   { value: "ON_COMPANY_CREATED", label: "When a new client is created" },
@@ -15,18 +9,26 @@ export const TRIGGER_TYPES = [
   { value: "ON_RENEWAL_APPROACHING", label: "As a renewal approaches" },
 ];
 
+export const SEQUENCE_STATUS_LABELS = {
+  DRAFT: "Draft",
+  PENDING: "Pending approval",
+  APPROVED: "Approved",
+  REJECTED: "Rejected",
+  ACTIVE: "Active",
+};
+
+export const SEQUENCE_SOURCE_LABELS = {
+  AI: "AI generated",
+  MANUAL: "Manual",
+};
+
 export const ASSIGNEE_ROLES = SEQUENCE_ASSIGNEE_ROLES;
 
 const ASSIGNEE_ROLE_VALUES = ASSIGNEE_ROLES.map((role) => role.value);
 
 const stepSchema = z.object({
-  // Present only in client-side form state, for dnd-kit and RHF field
-  // identity — never sent to the server, which assigns its own step ids.
   clientId: z.string(),
-  // Set only for a step that already exists on the server (edit mode) — its
-  // absence is how the submit handler tells a new step from an existing one.
   id: z.string().optional(),
-  // Display-only — the API doesn't persist a step name, so this never round-trips.
   name: z
     .string()
     .trim()
@@ -45,10 +47,17 @@ const stepSchema = z.object({
     .optional()
     .transform((value) => value || null),
   templateId: z.string().optional().transform((value) => value || null),
+  actionMessage: z
+    .string()
+    .trim()
+    .max(1000, "Keep messaging under 1000 characters.")
+    .optional()
+    .transform((value) => value || null),
 });
 
 export const sequenceSchema = z
   .object({
+    companyId: z.string().min(1, "Choose a client company."),
     name: z
       .string()
       .trim()
@@ -66,14 +75,14 @@ export const sequenceSchema = z
       "ON_PROJECT_COMPLETED",
       "ON_RENEWAL_APPROACHING",
     ]),
-    isActive: z.boolean().default(true),
+    isActive: z.boolean().default(false),
     steps: z.array(stepSchema).min(1, "Add at least one step."),
   })
-  // Mirrors the server: steps run in the order they're arranged in, so a
-  // later step firing before an earlier one is a contradiction, not just an
-  // unusual choice.
   .refine(
-    (values) => values.steps.every((step, index) => index === 0 || step.offsetDays >= values.steps[index - 1].offsetDays),
+    (values) =>
+      values.steps.every(
+        (step, index) => index === 0 || step.offsetDays >= values.steps[index - 1].offsetDays,
+      ),
     {
       path: ["steps"],
       message: "Steps must run in day order — drag a step to fix where it falls out of order.",
@@ -85,10 +94,11 @@ export const nextClientId = () => `step_${Date.now()}_${++clientIdCounter}`;
 
 export function sequenceToFormValues(sequence) {
   return {
+    companyId: sequence?.companyId ?? sequence?.company?.id ?? "",
     name: sequence?.name ?? "",
     description: sequence?.description ?? "",
     triggerType: toUiStatus("sequenceTriggerType", sequence?.triggerType) ?? "MANUAL",
-    isActive: sequence?.isActive ?? true,
+    isActive: sequence?.isActive ?? false,
     steps: sequence?.steps?.length
       ? [...sequence.steps]
           .sort((a, b) => a.stepOrder - b.stepOrder)
@@ -98,10 +108,11 @@ export function sequenceToFormValues(sequence) {
               clientId: nextClientId(),
               id: step.id,
               name: step.name ?? "",
-              channel: channel === "EMAIL" ? "CALL" : channel,
+              channel,
               offsetDays: step.offsetDays,
               assigneeRole: step.assigneeRole ? String(step.assigneeRole).toUpperCase() : "",
-              templateId: channel === "EMAIL" ? "" : (step.templateId ?? ""),
+              templateId: step.templateId ?? "",
+              actionMessage: step.actionMessage ?? "",
             };
           })
       : [
@@ -112,15 +123,25 @@ export function sequenceToFormValues(sequence) {
             offsetDays: 0,
             assigneeRole: "",
             templateId: "",
+            actionMessage: "",
           },
         ],
   };
 }
 
-/** Drops the client-only `clientId` before the mutation goes out. */
 export function toSequenceInput(values) {
   return {
     ...values,
     steps: values.steps.map(({ clientId: _clientId, ...step }) => step),
   };
+}
+
+export function isSequenceEditable(sequence) {
+  const status = toUiStatus("sequenceStatus", sequence?.status) ?? sequence?.status;
+  return !["PENDING", "REJECTED"].includes(status);
+}
+
+export function isSequenceEnrollable(sequence) {
+  const status = toUiStatus("sequenceStatus", sequence?.status) ?? sequence?.status;
+  return ["APPROVED", "ACTIVE"].includes(status) && sequence?.isActive;
 }

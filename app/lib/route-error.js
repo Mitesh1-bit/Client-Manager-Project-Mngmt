@@ -19,6 +19,12 @@ export function logRouteError(scope, error) {
     }));
   }
 
+  // Next.js strips message/stack on the client copy of route errors — digest is
+  // still useful for matching against the server log above.
+  if (!payload.message && payload.digest) {
+    payload.message = `Route error (see server log). Digest: ${payload.digest}`;
+  }
+
   console.error(`[Route error:${scope}]`, payload);
   return payload;
 }

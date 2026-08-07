@@ -372,10 +372,42 @@ export const RetentionSequenceRowFragmentDoc = gql`
 fragment RetentionSequenceRow on RetentionSequenceType {
   id
   name
+  description
   triggerType
   isActive
   isTemplate
+  status
+  source
+  companyId
+  createdAt
+  approvedAt
+  rejectionReason
+  aiRationale
   activeEnrollmentCount
+  company {
+    id
+    name
+  }
+  createdBy {
+    id
+    name
+  }
+  approvedBy {
+    id
+    name
+  }
+}`;
+
+export const RetentionSequenceStepRowFragmentDoc = gql`
+fragment RetentionSequenceStepRow on SequenceStepType {
+  id
+  stepOrder
+  channel
+  offsetDays
+  templateId
+  assigneeRole
+  name
+  actionMessage
 }`;
 
 export const TagFieldsFragmentDoc = gql`
@@ -497,21 +529,28 @@ fragment UserSummaryFields on UserSummaryType {
 }`;
 
 export const AddSequenceStepDocument = gql`
-mutation AddSequenceStep($sequenceId: ID!, $channel: String!, $offsetDays: Int!, $templateId: ID, $assigneeRole: String) {
+mutation AddSequenceStep($sequenceId: ID!, $channel: String!, $offsetDays: Int!, $templateId: ID, $assigneeRole: String, $name: String, $actionMessage: String) {
   addSequenceStep(
     sequenceId: $sequenceId
     channel: $channel
     offsetDays: $offsetDays
     templateId: $templateId
     assigneeRole: $assigneeRole
+    name: $name
+    actionMessage: $actionMessage
   ) {
-    id
-    stepOrder
-    channel
-    offsetDays
-    templateId
-    assigneeRole
+    ...RetentionSequenceStepRow
   }
+}
+fragment RetentionSequenceStepRow on SequenceStepType {
+  id
+  stepOrder
+  channel
+  offsetDays
+  templateId
+  assigneeRole
+  name
+  actionMessage
 }`;
 
 export const AddTagDocument = gql`
@@ -540,6 +579,41 @@ mutation ApproveMilestone($approvalId: ID!) {
     id
     status
     decidedAt
+  }
+}`;
+
+export const ApproveRetentionSequenceDocument = gql`
+mutation ApproveRetentionSequence($id: ID!) {
+  approveRetentionSequence(id: $id) {
+    ...RetentionSequenceRow
+  }
+}
+fragment RetentionSequenceRow on RetentionSequenceType {
+  id
+  name
+  description
+  triggerType
+  isActive
+  isTemplate
+  status
+  source
+  companyId
+  createdAt
+  approvedAt
+  rejectionReason
+  aiRationale
+  activeEnrollmentCount
+  company {
+    id
+    name
+  }
+  createdBy {
+    id
+    name
+  }
+  approvedBy {
+    id
+    name
   }
 }`;
 
@@ -1516,11 +1590,14 @@ fragment TagFields on TagType {
 }`;
 
 export const CreateRetentionSequenceDocument = gql`
-mutation CreateRetentionSequence($name: String!, $triggerType: String!, $isTemplate: Boolean!) {
+mutation CreateRetentionSequence($name: String!, $companyId: ID!, $triggerType: String!, $description: String, $isTemplate: Boolean!, $submitForApproval: Boolean!) {
   createRetentionSequence(
     name: $name
+    companyId: $companyId
     triggerType: $triggerType
+    description: $description
     isTemplate: $isTemplate
+    submitForApproval: $submitForApproval
   ) {
     ...RetentionSequenceRow
   }
@@ -1528,10 +1605,30 @@ mutation CreateRetentionSequence($name: String!, $triggerType: String!, $isTempl
 fragment RetentionSequenceRow on RetentionSequenceType {
   id
   name
+  description
   triggerType
   isActive
   isTemplate
+  status
+  source
+  companyId
+  createdAt
+  approvedAt
+  rejectionReason
+  aiRationale
   activeEnrollmentCount
+  company {
+    id
+    name
+  }
+  createdBy {
+    id
+    name
+  }
+  approvedBy {
+    id
+    name
+  }
 }`;
 
 export const CreateTagDocument = gql`
@@ -1680,6 +1777,41 @@ mutation DisableTotp {
   disableTotp
 }`;
 
+export const DuplicateRetentionSequenceDocument = gql`
+mutation DuplicateRetentionSequence($sequenceId: ID!) {
+  duplicateRetentionSequence(sequenceId: $sequenceId) {
+    ...RetentionSequenceRow
+  }
+}
+fragment RetentionSequenceRow on RetentionSequenceType {
+  id
+  name
+  description
+  triggerType
+  isActive
+  isTemplate
+  status
+  source
+  companyId
+  createdAt
+  approvedAt
+  rejectionReason
+  aiRationale
+  activeEnrollmentCount
+  company {
+    id
+    name
+  }
+  createdBy {
+    id
+    name
+  }
+  approvedBy {
+    id
+    name
+  }
+}`;
+
 export const EnableTotpDocument = gql`
 mutation EnableTotp {
   enableTotp {
@@ -1724,6 +1856,54 @@ query FoundationSummary {
     pendingApprovalCount
     overdueCount
   }
+}`;
+
+export const GenerateRetentionSequenceDocument = gql`
+mutation GenerateRetentionSequence($companyId: ID!) {
+  generateRetentionSequence(companyId: $companyId) {
+    ...RetentionSequenceRow
+    steps {
+      ...RetentionSequenceStepRow
+    }
+  }
+}
+fragment RetentionSequenceRow on RetentionSequenceType {
+  id
+  name
+  description
+  triggerType
+  isActive
+  isTemplate
+  status
+  source
+  companyId
+  createdAt
+  approvedAt
+  rejectionReason
+  aiRationale
+  activeEnrollmentCount
+  company {
+    id
+    name
+  }
+  createdBy {
+    id
+    name
+  }
+  approvedBy {
+    id
+    name
+  }
+}
+fragment RetentionSequenceStepRow on SequenceStepType {
+  id
+  stepOrder
+  channel
+  offsetDays
+  templateId
+  assigneeRole
+  name
+  actionMessage
 }`;
 
 export const LoginDocument = gql`
@@ -2747,6 +2927,41 @@ mutation RefreshToken {
   }
 }`;
 
+export const RejectRetentionSequenceDocument = gql`
+mutation RejectRetentionSequence($id: ID!, $reason: String) {
+  rejectRetentionSequence(id: $id, reason: $reason) {
+    ...RetentionSequenceRow
+  }
+}
+fragment RetentionSequenceRow on RetentionSequenceType {
+  id
+  name
+  description
+  triggerType
+  isActive
+  isTemplate
+  status
+  source
+  companyId
+  createdAt
+  approvedAt
+  rejectionReason
+  aiRationale
+  activeEnrollmentCount
+  company {
+    id
+    name
+  }
+  createdBy {
+    id
+    name
+  }
+  approvedBy {
+    id
+    name
+  }
+}`;
+
 export const RemoveProjectContactDocument = gql`
 mutation RemoveProjectContact($projectId: ID!, $contactId: ID!) {
   removeProjectContact(projectId: $projectId, contactId: $contactId)
@@ -2770,6 +2985,14 @@ mutation RemoveTag($entityType: String!, $entityId: ID!, $tagId: ID!) {
 export const RemoveTaskDependencyDocument = gql`
 mutation RemoveTaskDependency($id: ID!) {
   removeTaskDependency(id: $id)
+}`;
+
+export const ReorderSequenceStepsDocument = gql`
+mutation ReorderSequenceSteps($sequenceId: ID!, $orderedStepIds: [ID!]!) {
+  reorderSequenceSteps(sequenceId: $sequenceId, orderedStepIds: $orderedStepIds) {
+    id
+    stepOrder
+  }
 }`;
 
 export const RequestMilestoneChangesDocument = gql`
@@ -2820,10 +3043,12 @@ mutation ResubmitChangeRequest($id: ID!) {
 
 export const RetentionFormOptionsDocument = gql`
 query RetentionFormOptions {
-  retentionSequences(activeOnly: false) {
+  retentionSequences(activeOnly: true) {
     id
     name
     isActive
+    status
+    companyId
   }
   companies {
     id
@@ -2842,12 +3067,7 @@ query RetentionSequenceDetail($id: ID!) {
   retentionSequence(id: $id) {
     ...RetentionSequenceRow
     steps {
-      id
-      stepOrder
-      channel
-      offsetDays
-      templateId
-      assigneeRole
+      ...RetentionSequenceStepRow
     }
     enrollments {
       id
@@ -2870,31 +3090,91 @@ query RetentionSequenceDetail($id: ID!) {
 fragment RetentionSequenceRow on RetentionSequenceType {
   id
   name
+  description
   triggerType
   isActive
   isTemplate
+  status
+  source
+  companyId
+  createdAt
+  approvedAt
+  rejectionReason
+  aiRationale
   activeEnrollmentCount
+  company {
+    id
+    name
+  }
+  createdBy {
+    id
+    name
+  }
+  approvedBy {
+    id
+    name
+  }
+}
+fragment RetentionSequenceStepRow on SequenceStepType {
+  id
+  stepOrder
+  channel
+  offsetDays
+  templateId
+  assigneeRole
+  name
+  actionMessage
 }`;
 
 export const RetentionSequencesDocument = gql`
-query RetentionSequences($activeOnly: Boolean!) {
-  retentionSequences(activeOnly: $activeOnly) {
+query RetentionSequences($activeOnly: Boolean!, $companyId: ID, $status: String, $source: String, $createdById: ID, $createdAfter: DateTime, $createdBefore: DateTime, $search: String) {
+  retentionSequences(
+    activeOnly: $activeOnly
+    companyId: $companyId
+    status: $status
+    source: $source
+    createdById: $createdById
+    createdAfter: $createdAfter
+    createdBefore: $createdBefore
+    search: $search
+  ) {
     ...RetentionSequenceRow
     steps {
       id
       stepOrder
       channel
       offsetDays
+      name
     }
   }
 }
 fragment RetentionSequenceRow on RetentionSequenceType {
   id
   name
+  description
   triggerType
   isActive
   isTemplate
+  status
+  source
+  companyId
+  createdAt
+  approvedAt
+  rejectionReason
+  aiRationale
   activeEnrollmentCount
+  company {
+    id
+    name
+  }
+  createdBy {
+    id
+    name
+  }
+  approvedBy {
+    id
+    name
+  }
 }`;
 
 export const SearchDocument = gql`
@@ -2955,6 +3235,41 @@ mutation Signup($organizationName: String!, $fullName: String!, $email: String!,
     accessToken
     requires2fa
     challengeToken
+  }
+}`;
+
+export const SubmitRetentionSequenceDocument = gql`
+mutation SubmitRetentionSequence($id: ID!) {
+  submitRetentionSequence(id: $id) {
+    ...RetentionSequenceRow
+  }
+}
+fragment RetentionSequenceRow on RetentionSequenceType {
+  id
+  name
+  description
+  triggerType
+  isActive
+  isTemplate
+  status
+  source
+  companyId
+  createdAt
+  approvedAt
+  rejectionReason
+  aiRationale
+  activeEnrollmentCount
+  company {
+    id
+    name
+  }
+  createdBy {
+    id
+    name
+  }
+  approvedBy {
+    id
+    name
   }
 }`;
 
@@ -3396,11 +3711,13 @@ fragment UserSummaryFields on UserSummaryType {
 }`;
 
 export const UpdateRetentionSequenceDocument = gql`
-mutation UpdateRetentionSequence($id: ID!, $name: String, $triggerType: String, $isActive: Boolean) {
+mutation UpdateRetentionSequence($id: ID!, $name: String, $triggerType: String, $description: String, $companyId: ID, $isActive: Boolean) {
   updateRetentionSequence(
     id: $id
     name: $name
     triggerType: $triggerType
+    description: $description
+    companyId: $companyId
     isActive: $isActive
   ) {
     ...RetentionSequenceRow
@@ -3409,10 +3726,54 @@ mutation UpdateRetentionSequence($id: ID!, $name: String, $triggerType: String, 
 fragment RetentionSequenceRow on RetentionSequenceType {
   id
   name
+  description
   triggerType
   isActive
   isTemplate
+  status
+  source
+  companyId
+  createdAt
+  approvedAt
+  rejectionReason
+  aiRationale
   activeEnrollmentCount
+  company {
+    id
+    name
+  }
+  createdBy {
+    id
+    name
+  }
+  approvedBy {
+    id
+    name
+  }
+}`;
+
+export const UpdateSequenceStepDocument = gql`
+mutation UpdateSequenceStep($stepId: ID!, $channel: String, $offsetDays: Int, $assigneeRole: String, $name: String, $actionMessage: String) {
+  updateSequenceStep(
+    stepId: $stepId
+    channel: $channel
+    offsetDays: $offsetDays
+    assigneeRole: $assigneeRole
+    name: $name
+    actionMessage: $actionMessage
+  ) {
+    ...RetentionSequenceStepRow
+  }
+}
+fragment RetentionSequenceStepRow on SequenceStepType {
+  id
+  stepOrder
+  channel
+  offsetDays
+  templateId
+  assigneeRole
+  name
+  actionMessage
 }`;
 
 export const UpdateTaskDocument = gql`

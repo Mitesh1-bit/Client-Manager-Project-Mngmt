@@ -176,6 +176,23 @@ export const SequenceStepCard = forwardRef(function SequenceStepCard(
               )}
             </FormField>
           ) : null}
+
+          <FormField
+            label="Suggested messaging"
+            hint="Talking points or draft message for this touchpoint."
+            error={stepErrors?.actionMessage?.message}
+            className="sm:col-span-12"
+          >
+            {(field) => (
+              <textarea
+                {...field}
+                {...register(`steps.${index}.actionMessage`)}
+                rows={2}
+                placeholder="Hi {{contact}}, checking in on…"
+                className="flex min-h-[3.5rem] w-full rounded-lg border border-input bg-background px-3 py-2 text-caption shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            )}
+          </FormField>
         </div>
 
         <Button

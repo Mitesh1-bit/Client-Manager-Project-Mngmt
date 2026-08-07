@@ -17,9 +17,8 @@ import { CompanyOverviewDocument } from "@/app/lib/graphql/generated/documents";
 import { humanize } from "@/app/lib/status";
 
 const TIMELINE_LIMIT = 12;
-// Mirrors the backend's `contracts` query gate (require_role in
-// app/graphql/contracts/schema.py) — skipped via @include rather than fetched
-// and discarded, so a team member's overview query doesn't error out.
+// Mirrors the backend's `contracts` query gate — skipped via @include so team
+// members don't hit a permission error on overview.
 const CONTRACT_ROLES = ["admin", "project_manager"];
 
 // Not every field is worth calling out in a one-line timeline entry — skip

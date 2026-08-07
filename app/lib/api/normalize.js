@@ -67,6 +67,17 @@ const TO_UI = {
     on_project_completed: "ON_PROJECT_COMPLETED",
     on_renewal_approaching: "ON_RENEWAL_APPROACHING",
   },
+  sequenceStatus: {
+    draft: "DRAFT",
+    pending: "PENDING",
+    approved: "APPROVED",
+    rejected: "REJECTED",
+    active: "ACTIVE",
+  },
+  sequenceSource: {
+    ai: "AI",
+    manual: "MANUAL",
+  },
   changeRequestType: {
     scope_addition: "SCOPE_ADDITION",
     scope_reduction: "SCOPE_REDUCTION",
@@ -253,11 +264,13 @@ export function normalizeRetentionSequence(sequence) {
   return {
     ...sequence,
     triggerType: toUiStatus("sequenceTriggerType", sequence.triggerType) ?? "MANUAL",
+    status: toUiStatus("sequenceStatus", sequence.status) ?? "DRAFT",
+    source: toUiStatus("sequenceSource", sequence.source) ?? "MANUAL",
     steps: (sequence.steps ?? []).map((step) => {
       const channel = toUiStatus("touchpointChannel", step.channel) ?? "CALL";
       return {
         ...step,
-        channel: channel === "EMAIL" ? "CALL" : channel,
+        channel,
         assigneeRole: step.assigneeRole ? String(step.assigneeRole).toUpperCase() : null,
       };
     }),

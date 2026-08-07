@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { ChevronRight, Users } from "lucide-react";
+import { Building2, ChevronRight, Sparkles, Users } from "lucide-react";
 
 import { channelIcon } from "@/app/lib/channels";
 import { humanizeType } from "@/app/lib/format";
 import { cn } from "@/app/lib/utils";
+
+import { SEQUENCE_SOURCE_LABELS, SEQUENCE_STATUS_LABELS } from "./sequence-schema";
 
 const TRIGGER_LABELS = {
   MANUAL: "Started manually",
@@ -12,9 +14,18 @@ const TRIGGER_LABELS = {
   ON_RENEWAL_APPROACHING: "Starts as a renewal approaches",
 };
 
+const STATUS_STYLES = {
+  DRAFT: "border-border bg-muted text-muted-foreground",
+  PENDING: "border-tone-caution-border bg-tone-caution-bg text-tone-caution-fg",
+  APPROVED: "border-tone-positive-border bg-tone-positive-bg text-tone-positive-fg",
+  ACTIVE: "border-tone-positive-border bg-tone-positive-bg text-tone-positive-fg",
+  REJECTED: "border-destructive/30 bg-destructive/5 text-destructive",
+};
+
 export function SequenceCard({ sequence }) {
   const sortedSteps = [...sequence.steps].sort((a, b) => a.stepOrder - b.stepOrder);
   const totalDays = sortedSteps.at(-1)?.offsetDays ?? 0;
+  const status = sequence.status ?? "DRAFT";
 
   return (
     <Link
@@ -28,17 +39,27 @@ export function SequenceCard({ sequence }) {
             <span
               className={cn(
                 "inline-flex items-center rounded-full border px-1.5 py-0.5 text-[0.6875rem] font-medium",
-                sequence.isActive
-                  ? "border-tone-positive-border bg-tone-positive-bg text-tone-positive-fg"
-                  : "border-border bg-muted text-muted-foreground",
+                STATUS_STYLES[status] ?? STATUS_STYLES.DRAFT,
               )}
             >
-              {sequence.isActive ? "Active" : "Inactive"}
+              {SEQUENCE_STATUS_LABELS[status] ?? humanizeType(status)}
             </span>
+            {sequence.source === "AI" ? (
+              <span className="inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[0.6875rem] font-medium text-muted-foreground">
+                <Sparkles aria-hidden="true" className="size-3" />
+                {SEQUENCE_SOURCE_LABELS.AI}
+              </span>
+            ) : null}
           </div>
           <p className="mt-1 text-caption text-muted-foreground">
             {TRIGGER_LABELS[sequence.triggerType] ?? humanizeType(sequence.triggerType)}
           </p>
+          {sequence.company?.name ? (
+            <p className="mt-1 flex items-center gap-1.5 text-caption text-muted-foreground">
+              <Building2 aria-hidden="true" className="size-3.5 shrink-0" />
+              {sequence.company.name}
+            </p>
+          ) : null}
         </div>
         <ChevronRight
           aria-hidden="true"
@@ -47,9 +68,7 @@ export function SequenceCard({ sequence }) {
       </div>
 
       {sequence.description ? (
-        <p className="mt-3 text-caption text-pretty text-muted-foreground">
-          {sequence.description}
-        </p>
+        <p className="mt-3 text-caption text-pretty text-muted-foreground">{sequence.description}</p>
       ) : null}
 
       <ol className="mt-4 flex flex-wrap items-center gap-x-1 gap-y-1.5">
@@ -58,7 +77,7 @@ export function SequenceCard({ sequence }) {
           return (
             <li key={step.id} className="flex items-center gap-1">
               <span
-                title={`${step.name} · day ${step.offsetDays}`}
+                title={`${step.name || "Step"} · day ${step.offsetDays}`}
                 className="flex size-6 items-center justify-center rounded-full bg-muted text-muted-foreground"
               >
                 <Icon aria-hidden="true" className="size-3.5" />
@@ -87,6 +106,12 @@ export function SequenceCard({ sequence }) {
             {sequence.activeEnrollmentCount === 1 ? "" : "s"}
           </dd>
         </div>
+        {sequence.createdBy?.name ? (
+          <div>
+            <dt className="sr-only">Created by</dt>
+            <dd>By {sequence.createdBy.name}</dd>
+          </div>
+        ) : null}
       </dl>
     </Link>
   );

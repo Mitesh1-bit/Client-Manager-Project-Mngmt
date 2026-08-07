@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
@@ -37,38 +37,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/app/components/ui/select";
-import { Switch } from "@/app/components/ui/switch";
-import { Textarea } from "@/app/components/ui/textarea";
 import {
   AddSequenceStepDocument,
   CreateRetentionSequenceDocument,
   RemoveSequenceStepDocument,
+  ReorderSequenceStepsDocument,
+  SubmitRetentionSequenceDocument,
   UpdateRetentionSequenceDocument,
+  UpdateSequenceStepDocument,
 } from "@/app/lib/graphql/generated/documents";
 
 import { SequenceStepCard } from "./sequence-step-card";
 import {
   TRIGGER_TYPES,
+  isSequenceEditable,
   nextClientId,
   sequenceSchema,
   sequenceToFormValues,
   toSequenceInput,
 } from "./sequence-schema";
 
-/**
- * Create and edit share one builder. Interaction weight matches the Kanban
- * board from Phase 3 deliberately — this is the other place in the app where
- * someone reorders a list by feel and expects it to hold together: drag with
- * the mouse, reorder with the keyboard, and out-of-order steps flagged as you
- * go rather than only on submit.
- */
-export function SequenceBuilder({ mode, sequence }) {
+function stepMutationVariables(step) {
+  return {
+    channel: step.channel.toLowerCase(),
+    offsetDays: Number(step.offsetDays),
+    templateId: step.templateId || null,
+    assigneeRole: step.assigneeRole ? step.assigneeRole.toLowerCase() : null,
+    name: step.name || null,
+    actionMessage: step.actionMessage || null,
+  };
+}
+
+export function SequenceBuilder({ mode, sequence, companies = [] }) {
   const router = useRouter();
   const [serverError, setServerError] = useState(null);
+  const editable = mode === "create" || isSequenceEditable(sequence);
+
   const [createSequence] = useMutation(CreateRetentionSequenceDocument);
   const [updateSequence] = useMutation(UpdateRetentionSequenceDocument);
   const [addStep] = useMutation(AddSequenceStepDocument);
+  const [updateStep] = useMutation(UpdateSequenceStepDocument);
   const [removeStep] = useMutation(RemoveSequenceStepDocument);
+  const [reorderSteps] = useMutation(ReorderSequenceStepsDocument);
+  const [submitSequence] = useMutation(SubmitRetentionSequenceDocument);
 
   const {
     register,
@@ -83,6 +94,11 @@ export function SequenceBuilder({ mode, sequence }) {
   const { fields, append, remove, move } = useFieldArray({ control, name: "steps" });
   const channels = useWatch({ control, name: "steps" })?.map((step) => step.channel) ?? [];
   const offsets = useWatch({ control, name: "steps" })?.map((step) => Number(step.offsetDays)) ?? [];
+
+  const companyOptions = useMemo(
+    () => companies.map((company) => ({ value: company.id, label: company.name })),
+    [companies],
+  );
 
   const [activeId, setActiveId] = useState(null);
   const sensors = useSensors(
@@ -101,7 +117,32 @@ export function SequenceBuilder({ mode, sequence }) {
   const totalDays = offsets.length ? Math.max(...offsets.filter((n) => Number.isFinite(n)), 0) : 0;
   const cancelHref = mode === "edit" ? `/retention/sequences/${sequence.id}` : "/retention/sequences";
 
-  async function onSubmit(values) {
+  async function persistSteps(sequenceId, inputSteps, existingSteps = []) {
+    const remainingIds = new Set(inputSteps.map((step) => step.id).filter(Boolean));
+    const removedIds = existingSteps.map((step) => step.id).filter((id) => !remainingIds.has(id));
+    for (const stepId of removedIds) {
+      await removeStep({ variables: { stepId } });
+    }
+
+    const orderedStepIds = [];
+    for (const step of inputSteps) {
+      if (step.id) {
+        await updateStep({ variables: { stepId: step.id, ...stepMutationVariables(step) } });
+        orderedStepIds.push(step.id);
+      } else {
+        const { data } = await addStep({
+          variables: { sequenceId, ...stepMutationVariables(step) },
+        });
+        orderedStepIds.push(data.addSequenceStep.id);
+      }
+    }
+
+    if (orderedStepIds.length > 1) {
+      await reorderSteps({ variables: { sequenceId, orderedStepIds } });
+    }
+  }
+
+  async function saveSequence(values, submitForApproval = false) {
     setServerError(null);
     const input = toSequenceInput(values);
 
@@ -110,67 +151,53 @@ export function SequenceBuilder({ mode, sequence }) {
         const { data } = await createSequence({
           variables: {
             name: input.name,
+            companyId: input.companyId,
+            description: input.description,
             triggerType: input.triggerType?.toLowerCase() ?? "manual",
-            isTemplate: input.isTemplate ?? false,
+            isTemplate: false,
+            submitForApproval: false,
           },
           update: (cache) => cache.evict({ fieldName: "retentionSequences" }),
         });
         const sequenceId = data.createRetentionSequence.id;
 
-        // Steps aren't part of createRetentionSequence — the API only lets
-        // you append them one at a time, so they're added here in order
-        // right after the sequence itself is created.
         for (const step of input.steps) {
           await addStep({
-            variables: {
-              sequenceId,
-              channel: step.channel.toLowerCase(),
-              offsetDays: Number(step.offsetDays),
-              templateId: step.templateId || null,
-              assigneeRole: step.assigneeRole ? step.assigneeRole.toLowerCase() : null,
-            },
+            variables: { sequenceId, ...stepMutationVariables(step) },
           });
         }
 
-        toast.success(`"${data.createRetentionSequence.name}" created`);
+        if (submitForApproval) {
+          await submitSequence({ variables: { id: sequenceId } });
+        }
+
+        toast.success(
+          submitForApproval
+            ? `"${data.createRetentionSequence.name}" submitted for approval`
+            : `"${data.createRetentionSequence.name}" saved as draft`,
+        );
         router.push(`/retention/sequences/${sequenceId}`);
       } else {
         await updateSequence({
           variables: {
             id: sequence.id,
             name: input.name,
+            description: input.description,
+            companyId: input.companyId,
             triggerType: input.triggerType?.toLowerCase() ?? null,
             isActive: input.isActive,
           },
         });
 
-        // Steps that were on the sequence originally but aren't in the form
-        // anymore were removed in the builder — delete them on the server.
-        const remainingIds = new Set(input.steps.map((step) => step.id).filter(Boolean));
-        const removedIds = (sequence.steps ?? [])
-          .map((step) => step.id)
-          .filter((id) => !remainingIds.has(id));
-        for (const stepId of removedIds) {
-          await removeStep({ variables: { stepId } });
+        await persistSteps(sequence.id, input.steps, sequence.steps ?? []);
+
+        if (submitForApproval) {
+          await submitSequence({ variables: { id: sequence.id } });
         }
 
-        // Steps with no server id are new — the API only supports appending,
-        // not reordering or editing existing steps in place, so those are
-        // left as-is (still shown, still real, just not touched here).
-        const newSteps = input.steps.filter((step) => !step.id);
-        for (const step of newSteps) {
-          await addStep({
-            variables: {
-              sequenceId: sequence.id,
-              channel: step.channel.toLowerCase(),
-              offsetDays: Number(step.offsetDays),
-              templateId: step.templateId || null,
-              assigneeRole: step.assigneeRole ? step.assigneeRole.toLowerCase() : null,
-            },
-          });
-        }
-
-        toast.success(`"${input.name}" updated`);
+        toast.success(
+          submitForApproval ? `"${input.name}" submitted for approval` : `"${input.name}" updated`,
+        );
         router.push(`/retention/sequences/${sequence.id}`);
       }
       router.refresh();
@@ -179,16 +206,45 @@ export function SequenceBuilder({ mode, sequence }) {
     }
   }
 
+  if (!editable && mode === "edit") {
+    return (
+      <Alert>
+        <AlertTitle>This sequence can&apos;t be edited</AlertTitle>
+        <AlertDescription>
+          Pending and rejected sequences are read-only. Duplicate it to create a new draft.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+    <form noValidate className="space-y-5">
       <SectionCard title="About this sequence">
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField
-            label="Name"
-            error={errors.name?.message}
-            required
-            className="sm:col-span-2"
-          >
+          <FormField label="Client company" error={errors.companyId?.message} required className="sm:col-span-2">
+            {(field) => (
+              <Controller
+                control={control}
+                name="companyId"
+                render={({ field: control_ }) => (
+                  <Select value={control_.value} onValueChange={control_.onChange}>
+                    <SelectTrigger {...field} className="h-10 w-full">
+                      <SelectValue placeholder="Choose a client company" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {companyOptions.map((company) => (
+                        <SelectItem key={company.value} value={company.value}>
+                          {company.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            )}
+          </FormField>
+
+          <FormField label="Name" error={errors.name?.message} required className="sm:col-span-2">
             {(field) => (
               <Input
                 {...field}
@@ -200,17 +256,14 @@ export function SequenceBuilder({ mode, sequence }) {
             )}
           </FormField>
 
-          <FormField
-            label="Description"
-            error={errors.description?.message}
-            className="sm:col-span-2"
-          >
+          <FormField label="Description" error={errors.description?.message} className="sm:col-span-2">
             {(field) => (
-              <Textarea
+              <textarea
                 {...field}
                 {...register("description")}
                 rows={2}
                 placeholder="What this sequence is for and when to use it."
+                className="flex min-h-[4.5rem] w-full rounded-lg border border-input bg-background px-3 py-2 text-caption shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             )}
           </FormField>
@@ -237,24 +290,6 @@ export function SequenceBuilder({ mode, sequence }) {
               />
             )}
           </FormField>
-
-          <div className="flex items-center justify-between gap-4 rounded-lg border p-3.5">
-            <div className="min-w-0">
-              <Label htmlFor="seq-active" className="text-caption font-medium">
-                Active
-              </Label>
-              <p className="mt-0.5 text-[0.75rem] text-muted-foreground">
-                Inactive sequences can&apos;t be enrolled into.
-              </p>
-            </div>
-            <Controller
-              control={control}
-              name="isActive"
-              render={({ field }) => (
-                <Switch id="seq-active" checked={field.value} onCheckedChange={field.onChange} />
-              )}
-            />
-          </div>
         </div>
       </SectionCard>
 
@@ -278,6 +313,7 @@ export function SequenceBuilder({ mode, sequence }) {
                 offsetDays: offsets.at(-1) ?? 0,
                 assigneeRole: "",
                 templateId: "",
+                actionMessage: "",
               })
             }
           >
@@ -338,24 +374,29 @@ export function SequenceBuilder({ mode, sequence }) {
       ) : null}
 
       <div className="sticky bottom-0 z-20 -mx-(--content-gutter) border-t bg-background/90 px-(--content-gutter) backdrop-blur">
-        <div className="flex items-center justify-end gap-2 py-3">
+        <div className="flex flex-wrap items-center justify-end gap-2 py-3">
           {isDirty ? (
             <p className="mr-auto text-caption text-muted-foreground">Unsaved changes</p>
           ) : null}
           <Button type="button" variant="ghost" asChild>
             <Link href={cancelHref}>Cancel</Link>
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <LoaderCircle aria-hidden="true" className="animate-spin" />
-                Saving…
-              </>
-            ) : mode === "create" ? (
-              "Create sequence"
-            ) : (
-              "Save changes"
-            )}
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isSubmitting}
+            onClick={handleSubmit((values) => saveSequence(values, false))}
+          >
+            {isSubmitting ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : null}
+            Save draft
+          </Button>
+          <Button
+            type="button"
+            disabled={isSubmitting}
+            onClick={handleSubmit((values) => saveSequence(values, true))}
+          >
+            {isSubmitting ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : null}
+            Submit for approval
           </Button>
         </div>
       </div>

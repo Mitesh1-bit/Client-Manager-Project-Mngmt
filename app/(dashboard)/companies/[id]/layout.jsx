@@ -1,27 +1,21 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ExternalLink, Pencil } from "lucide-react";
+import { ExternalLink, Pencil, Building2 } from "lucide-react";
 
 import { BackLink } from "@/app/components/domain/back-link";
-
 import { DetailTabs } from "@/app/components/domain/detail-tabs";
 import { EntityAvatar } from "@/app/components/domain/entity-avatar";
+import { EmptyState } from "@/app/components/domain/states";
 import { TagList } from "@/app/components/domain/tag-list";
 import { Button } from "@/app/components/ui/button";
-import { displayUrl } from "@/app/lib/format";
 import { normalizeCompany } from "@/app/lib/api/normalize";
 import { getSessionClaims } from "@/app/lib/auth/session";
+import { displayUrl } from "@/app/lib/format";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { CompanyDetailHeaderDocument } from "@/app/lib/graphql/generated/documents";
 
-// Mirrors the backend's `invoices`/`contracts` query gates (require_role in
-// app/graphql/invoices/schema.py and app/graphql/contracts/schema.py) — a
-// role outside this list gets a clean "Requires one of roles: ..." error, so
-// the tab is hidden rather than linking somewhere that always fails.
-const INVOICE_ROLES = ["admin", "project_manager"];
-const CONTRACT_ROLES = ["admin", "project_manager"];
-
 import { CompanyStatusMenu } from "./company-status-menu";
+
+const INVOICE_ROLES = ["admin", "project_manager"];
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
@@ -32,7 +26,7 @@ export async function generateMetadata({ params }) {
   return { title: data.company?.name ?? "Client" };
 }
 
-export default async function CompanyDetailLayout({ children, params }) {
+export default async function CompanyLayout({ children, params }) {
   const { id } = await params;
   const { data } = await getClient().query({
     query: CompanyDetailHeaderDocument,
@@ -40,11 +34,27 @@ export default async function CompanyDetailLayout({ children, params }) {
   });
 
   const company = normalizeCompany(data.company);
-  if (!company) notFound();
+
+  if (!company) {
+    return (
+      <div className="min-w-0 space-y-6">
+        <BackLink href="/companies">Clients</BackLink>
+        <EmptyState
+          icon={Building2}
+          title="Client not found"
+          description="This client may have been deleted, belongs to another workspace, or you may not have access."
+          action={
+            <Button asChild>
+              <Link href="/companies">Back to clients</Link>
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
 
   const claims = await getSessionClaims();
   const canViewInvoices = INVOICE_ROLES.includes(claims?.role);
-  const canViewContracts = CONTRACT_ROLES.includes(claims?.role);
 
   const tabs = [
     { href: `/companies/${id}`, label: "Overview" },
@@ -52,7 +62,7 @@ export default async function CompanyDetailLayout({ children, params }) {
     { href: `/companies/${id}/projects`, label: "Projects" },
     { href: `/companies/${id}/touchpoints`, label: "Touchpoints" },
     { href: `/companies/${id}/docs`, label: "Documents" },
-    ...(canViewContracts ? [{ href: `/companies/${id}/contracts`, label: "Contracts" }] : []),
+    { href: `/companies/${id}/contracts`, label: "Contracts" },
     ...(canViewInvoices ? [{ href: `/companies/${id}/invoices`, label: "Invoices" }] : []),
     { href: `/companies/${id}/change-log`, label: "Change log" },
   ];
@@ -71,8 +81,6 @@ export default async function CompanyDetailLayout({ children, params }) {
               size="lg"
             />
             <div className="min-w-0">
-              {/* Status lives in the menu on the right — one source of truth,
-                  not a badge and a control that can disagree. */}
               <h1 className="text-title text-balance">{company.name}</h1>
 
               <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-muted-foreground">
