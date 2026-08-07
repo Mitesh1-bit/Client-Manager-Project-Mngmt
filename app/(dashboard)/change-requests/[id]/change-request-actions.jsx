@@ -73,11 +73,16 @@ export function ChangeRequestActions({ request, users = [] }) {
       toast.success(`Moved to ${getStatusMeta("changeRequestStatus", status).label.toLowerCase()}`);
       setConfirming(null);
       setNote("");
-      router.refresh();
     } catch (error) {
       toast.error("Couldn't update the status", { description: error?.message });
     } finally {
       setBusy(false);
+      // Refresh even on failure: a write can land server-side and still
+      // surface as an error (e.g. the response itself failed to build) —
+      // without this, the page keeps showing the pre-attempt state and
+      // offers a "next" transition that's actually a no-op from where the
+      // record really is now, which is confusing to retry.
+      router.refresh();
     }
   }
 
@@ -89,11 +94,11 @@ export function ChangeRequestActions({ request, users = [] }) {
       });
       const assignee = users.find((user) => user.id === userId);
       toast.success(assignee ? `Assigned to ${assignee.name}` : "Unassigned");
-      router.refresh();
     } catch (error) {
       toast.error("Couldn't update the assignee", { description: error?.message });
     } finally {
       setAssigning(false);
+      router.refresh();
     }
   }
 

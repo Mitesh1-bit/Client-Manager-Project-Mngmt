@@ -104,7 +104,7 @@ export function ChangeRequestsTable({ connection, sort, emptyState }) {
                 )}
               >
                 {row.original.impactCost > 0 ? "+" : ""}
-                {formatCurrency(row.original.impactCost)}
+                {formatCurrency(row.original.impactCost, row.original.project.currency)}
               </p>
               <p className="tabular text-[0.75rem] text-muted-foreground">
                 {row.original.impactTimelineDays > 0 ? "+" : ""}

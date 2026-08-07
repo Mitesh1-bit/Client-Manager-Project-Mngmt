@@ -55,7 +55,7 @@ export function AssessmentPanel({ request, threshold }) {
               <dt className="text-muted-foreground">Cost</dt>
               <dd className="tabular mt-0.5 font-medium">
                 {request.impactCost > 0 ? "+" : ""}
-                {formatCurrency(request.impactCost)}
+                {formatCurrency(request.impactCost, request.currency)}
               </dd>
             </div>
             <div>

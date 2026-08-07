@@ -93,7 +93,7 @@ export function ChangeRequestStatusPanel({ request, audience = "INTERNAL" }) {
           label="Cost impact"
           value={
             isAssessed(request)
-              ? `${request.impactCost > 0 ? "+" : ""}${formatCurrency(request.impactCost)}`
+              ? `${request.impactCost > 0 ? "+" : ""}${formatCurrency(request.impactCost, request.currency)}`
               : null
           }
           tone={request.impactCost > 0 ? "up" : request.impactCost < 0 ? "down" : "flat"}

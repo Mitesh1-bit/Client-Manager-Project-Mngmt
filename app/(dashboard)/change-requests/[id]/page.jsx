@@ -43,6 +43,9 @@ export default async function ChangeRequestDetailPage({ params }) {
   const threshold = data.me?.organization?.settings?.changeRequestInternalApprovalThresholdCost ?? 0;
   const company = data.companies?.find((candidate) => candidate.id === request.companyId);
   const project = data.projects?.find((candidate) => candidate.id === request.projectId);
+  // Cost impact is billed in whatever the project itself is billed in, same
+  // rule contracts already inherit — there's no separate currency on a CR.
+  request.currency = project?.currency ?? "GBP";
 
   return (
     <div className="mx-auto w-full max-w-4xl">

@@ -86,6 +86,7 @@ query PortalChangeRequestDetail($id: ID!) {
   portalProjects {
     id
     name
+    currency
   }
 }
 

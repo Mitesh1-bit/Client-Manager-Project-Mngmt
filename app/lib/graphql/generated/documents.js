@@ -798,6 +798,7 @@ query ChangeRequestDetail($id: ID!) {
     id
     name
     companyId
+    currency
   }
   companies {
     id
@@ -806,6 +807,8 @@ query ChangeRequestDetail($id: ID!) {
   users {
     id
     name
+    role
+    jobTitle
     avatarUrl
   }
 }
@@ -840,6 +843,8 @@ query ChangeRequestFormOptions {
   users {
     id
     name
+    role
+    jobTitle
     avatarUrl
   }
   companies {
@@ -865,6 +870,16 @@ query ChangeRequestQueue {
     id
     name
     companyId
+    currency
+  }
+  companies {
+    id
+    name
+  }
+  users {
+    id
+    name
+    avatarUrl
   }
 }`;
 
@@ -2106,6 +2121,7 @@ query PortalChangeRequestDetail($id: ID!) {
   portalProjects {
     id
     name
+    currency
   }
 }
 fragment PortalChangeRequestFields on ChangeRequestType {

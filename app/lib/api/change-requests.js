@@ -16,7 +16,8 @@ export async function fetchChangeRequestQueue(client = getClient()) {
     slaDays: 0,
   };
 
-  const projectById = new Map(projects.map((project) => [project.id, project]));
+  const companyById = new Map((data?.companies ?? []).map((company) => [company.id, company]));
+  const usersById = new Map((data?.users ?? []).map((user) => [user.id, user]));
   const rows = [];
 
   for (const project of projects) {
@@ -28,8 +29,9 @@ export async function fetchChangeRequestQueue(client = getClient()) {
       rows.push(
         normalizeChangeRequest({
           ...cr,
-          project: { id: project.id, name: project.name },
-          company: projectById.get(project.companyId) ?? { id: project.companyId },
+          project: { id: project.id, name: project.name, currency: project.currency },
+          company: companyById.get(project.companyId) ?? { id: project.companyId },
+          assignedPm: cr.assignedPmId ? (usersById.get(cr.assignedPmId) ?? null) : null,
         }),
       );
     }

@@ -38,6 +38,7 @@ export default async function PortalChangeRequestDetailPage({ params }) {
 
   const projectsById = new Map((data.portalProjects ?? []).map((p) => [p.id, p]));
   const project = projectsById.get(request.projectId) ?? request.project;
+  request.currency = project?.currency ?? "GBP";
 
   return (
     <div className="mx-auto w-full max-w-2xl">

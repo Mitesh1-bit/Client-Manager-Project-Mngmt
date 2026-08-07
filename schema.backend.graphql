@@ -432,6 +432,7 @@ type PortalProjectType {
   health: String
   startDate: Date
   endDate: Date
+  currency: String!
   phases: [PhaseType!]!
   tasks: [TaskType!]!
   milestones: [MilestoneType!]!

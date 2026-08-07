@@ -140,7 +140,11 @@ export function AssessmentForm({ request, threshold, onDone }) {
           )}
         </FormField>
 
-        <FormField label="Cost impact" hint="In pounds." error={errors.impactCost?.message}>
+        <FormField
+          label="Cost impact"
+          hint={`In ${request.currency ?? "GBP"}.`}
+          error={errors.impactCost?.message}
+        >
           {(field) => (
             <Input {...field} {...register("impactCost")} type="number" step="50" className="h-10" />
           )}
@@ -181,7 +185,7 @@ export function AssessmentForm({ request, threshold, onDone }) {
           label="Internal sign-off"
           description={
             threshold
-              ? `Suggested for anything at or above ${formatCurrency(threshold)}. This one is ${formatCurrency(Math.abs(cost))}.`
+              ? `Suggested for anything at or above ${formatCurrency(threshold, request.currency)}. This one is ${formatCurrency(Math.abs(cost), request.currency)}.`
               : "Someone on our side signs off before the client sees it."
           }
           onManualChange={() => {
