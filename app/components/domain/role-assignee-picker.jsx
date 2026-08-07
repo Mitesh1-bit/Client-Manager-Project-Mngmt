@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { SearchableSelect } from "@/app/components/domain/searchable-select";
 import {
   Select,
   SelectContent,
@@ -61,6 +62,10 @@ export function RoleAssigneePicker({
     () => usersInAssigneeCategory(users, roleCategory),
     [users, roleCategory],
   );
+  const assigneeSelectOptions = useMemo(
+    () => assigneeOptions.map((user) => ({ value: user.id, label: user.name })),
+    [assigneeOptions],
+  );
 
   function handleRoleChange(nextCategory) {
     const category = nextCategory === NONE ? "" : nextCategory;
@@ -99,23 +104,17 @@ export function RoleAssigneePicker({
 
       <div className="space-y-1.5">
         <p className="text-caption font-medium">{assigneeLabel}</p>
-        <Select
-          value={value || NONE}
-          onValueChange={(next) => onChange?.(next === NONE ? "" : next)}
+        <SearchableSelect
+          className="h-9"
+          options={assigneeSelectOptions}
+          value={value || ""}
+          onChange={(next) => onChange?.(next)}
+          placeholder={assigneePlaceholder}
+          emptyText="No one matches."
+          allowClear
+          clearLabel={clearAssigneeLabel}
           disabled={disabled || !roleCategory || assigneeOptions.length === 0}
-        >
-          <SelectTrigger className="h-9 w-full">
-            <SelectValue placeholder={assigneePlaceholder} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={NONE}>{clearAssigneeLabel}</SelectItem>
-            {assigneeOptions.map((user) => (
-              <SelectItem key={user.id} value={user.id}>
-                {user.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        />
       </div>
     </div>
   );

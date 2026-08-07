@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { DataTable } from "@/app/components/domain/data-table";
 import { EntityAvatar } from "@/app/components/domain/entity-avatar";
+import { SearchableSelect } from "@/app/components/domain/searchable-select";
 import { EmptyState, SectionCard } from "@/app/components/domain/states";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -133,6 +134,13 @@ export function AuditLogPanel({ initialEntries, initialTotalCount, users, pageSi
   const [endAt, setEndAt] = useState("");
 
   const usersById = useMemo(() => new Map(users.map((user) => [user.id, user])), [users]);
+  const actorOptions = useMemo(
+    () => [
+      { value: "all", label: "Everyone" },
+      ...users.map((user) => ({ value: user.id, label: user.name })),
+    ],
+    [users],
+  );
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   const [runQuery, { loading }] = useLazyQuery(AuditLogDocument, {
@@ -270,19 +278,13 @@ export function AuditLogPanel({ initialEntries, initialTotalCount, users, pageSi
           </SelectContent>
         </Select>
 
-        <Select value={actorId || "all"} onValueChange={(value) => setActorId(value === "all" ? "" : value)}>
-          <SelectTrigger className="h-9 w-full">
-            <SelectValue placeholder="Everyone" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Everyone</SelectItem>
-            {users.map((user) => (
-              <SelectItem key={user.id} value={user.id}>
-                {user.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <SearchableSelect
+          options={actorOptions}
+          value={actorId || "all"}
+          onChange={(value) => setActorId(value === "all" ? "" : value)}
+          placeholder="Everyone"
+          emptyText="No one matches."
+        />
 
         <Input
           type="date"

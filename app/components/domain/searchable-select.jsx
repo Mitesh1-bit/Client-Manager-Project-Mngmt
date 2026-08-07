@@ -15,8 +15,12 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
 import { cn } from "@/app/lib/utils";
 
-/** Use searchable combobox when a plain Select would be unwieldy. */
-export const SEARCHABLE_SELECT_THRESHOLD = 8;
+/**
+ * Kept so any lingering imports don't break — search is now the default for
+ * every entity picker regardless of list length, so this no longer gates
+ * anything. See `shouldUseSearchableSelect`.
+ */
+export const SEARCHABLE_SELECT_THRESHOLD = 0;
 
 /**
  * Single-select combobox with type-to-search. Used for timezones, countries,
@@ -136,13 +140,14 @@ export function SearchableSelect({
 }
 
 /**
- * Picks SearchableSelect for long lists, plain Select for short ones.
- * Pass through `selectProps` for the short-list Radix Select path.
+ * Whether to render a searchable combobox instead of a plain Select. Search
+ * is the default everywhere now — a 3-person list today can be a 1000-person
+ * list next quarter, and switching UI patterns as data grows is worse than
+ * just always having a search box. Pass `useSearchable={false}` for the rare
+ * case a plain Select is genuinely preferable (e.g. a fixed 2-3 option enum).
  *
  * @param {{ options: Array<{ value: string, label: string, searchText?: string }>, useSearchable?: boolean | 'auto', selectRenderer?: React.ReactNode, searchableProps?: object }} props
  */
-export function shouldUseSearchableSelect(options, useSearchable = "auto") {
-  if (useSearchable === true) return true;
-  if (useSearchable === false) return false;
-  return options.length >= SEARCHABLE_SELECT_THRESHOLD;
+export function shouldUseSearchableSelect(_options, useSearchable = "auto") {
+  return useSearchable !== false;
 }

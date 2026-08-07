@@ -7,6 +7,7 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import { LoaderCircle, Plus, Search, Sparkles, Workflow } from "lucide-react";
 import { toast } from "sonner";
 
+import { SearchableSelect } from "@/app/components/domain/searchable-select";
 import { EmptyState } from "@/app/components/domain/states";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -49,7 +50,14 @@ export function SequencesListPanel() {
   const [generatingCompanyId, setGeneratingCompanyId] = useState("");
 
   const { data: optionsData } = useQuery(RetentionFormOptionsDocument);
-  const companies = optionsData?.companies ?? [];
+  const companyOptions = useMemo(
+    () => (optionsData?.companies ?? []).map((company) => ({ value: company.id, label: company.name })),
+    [optionsData],
+  );
+  const companyFilterOptions = useMemo(
+    () => [{ value: "ALL", label: "All companies" }, ...companyOptions],
+    [companyOptions],
+  );
 
   const variables = useMemo(
     () => ({
@@ -109,19 +117,13 @@ export function SequencesListPanel() {
       <div className="mt-4 space-y-4 rounded-2xl border bg-card p-4">
         <form onSubmit={handleSearchSubmit} className="grid gap-3 lg:grid-cols-12">
           <div className="lg:col-span-3">
-            <Select value={companyId} onValueChange={setCompanyId}>
-              <SelectTrigger className="h-10 w-full">
-                <SelectValue placeholder="Client company" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All companies</SelectItem>
-                {companies.map((company) => (
-                  <SelectItem key={company.id} value={company.id}>
-                    {company.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              options={companyFilterOptions}
+              value={companyId}
+              onChange={setCompanyId}
+              placeholder="Client company"
+              emptyText="No client matches."
+            />
           </div>
           <div className="lg:col-span-2">
             <Select value={status} onValueChange={setStatus}>
@@ -171,18 +173,13 @@ export function SequencesListPanel() {
             <p className="text-[0.75rem] text-muted-foreground">
               Analyze client data and create a pending retention sequence for PM approval.
             </p>
-            <Select value={generatingCompanyId} onValueChange={setGeneratingCompanyId}>
-              <SelectTrigger className="h-10 w-full">
-                <SelectValue placeholder="Choose a client company" />
-              </SelectTrigger>
-              <SelectContent>
-                {companies.map((company) => (
-                  <SelectItem key={company.id} value={company.id}>
-                    {company.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              options={companyOptions}
+              value={generatingCompanyId}
+              onChange={setGeneratingCompanyId}
+              placeholder="Choose a client company"
+              emptyText="No client matches."
+            />
           </div>
           <Button onClick={handleGenerate} disabled={generating || !generatingCompanyId}>
             {generating ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : <Sparkles aria-hidden="true" />}

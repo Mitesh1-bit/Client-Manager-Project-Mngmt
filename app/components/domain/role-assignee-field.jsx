@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Controller } from "react-hook-form";
 
 import { FormField } from "@/app/components/domain/form-field";
+import { SearchableSelect } from "@/app/components/domain/searchable-select";
 import {
   Select,
   SelectContent,
@@ -69,6 +70,10 @@ export function RoleAssigneeField({
     () => usersInAssigneeCategory(users, roleCategory),
     [users, roleCategory],
   );
+  const assigneeSelectOptions = useMemo(
+    () => assigneeOptions.map((user) => ({ value: user.id, label: user.name })),
+    [assigneeOptions],
+  );
 
   function handleRoleChange(nextCategory) {
     const category = nextCategory === NONE ? "" : nextCategory;
@@ -117,23 +122,17 @@ export function RoleAssigneeField({
             control={control}
             name={name}
             render={({ field: control_ }) => (
-              <Select
-                value={control_.value || NONE}
-                onValueChange={(value) => control_.onChange(value === NONE ? "" : value)}
+              <SearchableSelect
+                {...field}
+                options={assigneeSelectOptions}
+                value={control_.value ?? ""}
+                onChange={control_.onChange}
+                placeholder={assigneePlaceholder}
+                emptyText="No one matches."
+                allowClear
+                clearLabel={clearAssigneeLabel}
                 disabled={!roleCategory || assigneeOptions.length === 0}
-              >
-                <SelectTrigger {...field} className="h-10 w-full">
-                  <SelectValue placeholder={assigneePlaceholder} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NONE}>{clearAssigneeLabel}</SelectItem>
-                  {assigneeOptions.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             )}
           />
         )}

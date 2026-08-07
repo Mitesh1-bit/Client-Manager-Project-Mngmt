@@ -25,11 +25,11 @@ import { LoaderCircle, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { FormField } from "@/app/components/domain/form-field";
+import { SearchableSelect } from "@/app/components/domain/searchable-select";
 import { SectionCard } from "@/app/components/domain/states";
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
-import { Label } from "@/app/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -227,18 +227,14 @@ export function SequenceBuilder({ mode, sequence, companies = [] }) {
                 control={control}
                 name="companyId"
                 render={({ field: control_ }) => (
-                  <Select value={control_.value} onValueChange={control_.onChange}>
-                    <SelectTrigger {...field} className="h-10 w-full">
-                      <SelectValue placeholder="Choose a client company" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {companyOptions.map((company) => (
-                        <SelectItem key={company.value} value={company.value}>
-                          {company.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <SearchableSelect
+                    {...field}
+                    options={companyOptions}
+                    value={control_.value ?? ""}
+                    onChange={control_.onChange}
+                    placeholder="Choose a client company"
+                    emptyText="No client matches."
+                  />
                 )}
               />
             )}

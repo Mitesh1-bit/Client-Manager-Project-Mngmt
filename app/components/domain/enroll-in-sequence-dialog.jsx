@@ -18,6 +18,7 @@ import {
 import { Button } from "@/app/components/ui/button";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { Label } from "@/app/components/ui/label";
+import { SearchableSelect } from "@/app/components/domain/searchable-select";
 import {
   Select,
   SelectContent,
@@ -59,6 +60,10 @@ export function EnrollInSequenceDialog({
     ) ?? [];
 
   const resolvedCompanyId = companyId ?? selectedCompanyId;
+  const companyOptions = useMemo(
+    () => (companies ?? []).map((company) => ({ value: company.id, label: company.name })),
+    [companies],
+  );
 
   const companyContacts = useMemo(() => {
     if (contacts?.length) return contacts;
@@ -150,24 +155,16 @@ export function EnrollInSequenceDialog({
             </Field>
           ) : (
             <Field label="Client" required>
-              <Select
+              <SearchableSelect
+                options={companyOptions}
                 value={selectedCompanyId}
-                onValueChange={(value) => {
+                onChange={(value) => {
                   setSelectedCompanyId(value);
                   setSelectedContactIds([]);
                 }}
-              >
-                <SelectTrigger className="h-10 w-full">
-                  <SelectValue placeholder="Choose a client" />
-                </SelectTrigger>
-                <SelectContent>
-                  {companies?.map((company) => (
-                    <SelectItem key={company.id} value={company.id}>
-                      {company.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="Choose a client"
+                emptyText="No client matches."
+              />
             </Field>
           )}
 

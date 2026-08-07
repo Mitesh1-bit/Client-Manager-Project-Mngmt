@@ -11,6 +11,7 @@ import { z } from "zod";
 
 import { EntityAvatar } from "@/app/components/domain/entity-avatar";
 import { FormField } from "@/app/components/domain/form-field";
+import { SearchableSelect } from "@/app/components/domain/searchable-select";
 import { EmptyState, SectionCard } from "@/app/components/domain/states";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -97,11 +98,29 @@ export function TeamPanel({
   }, [allUsers, memberIds, isAdmin]);
 
   const createRoleOptions = isAdmin ? ROLE_CATALOG : ROLE_CATALOG.filter((role) => role.value === "team_member");
+  const addableUserOptions = useMemo(
+    () =>
+      addableUsers.map((user) => ({
+        value: user.id,
+        label: `${user.name} · ${humanize(user.role)}`,
+        searchText: user.name,
+      })),
+    [addableUsers],
+  );
 
   const contactIds = useMemo(() => new Set(clientContacts.map((contact) => contact.id)), [clientContacts]);
   const addableContacts = useMemo(
     () => companyContacts.filter((contact) => !contactIds.has(contact.id)),
     [companyContacts, contactIds],
+  );
+  const addableContactOptions = useMemo(
+    () =>
+      addableContacts.map((contact) => ({
+        value: contact.id,
+        label: contact.isPrimary ? `${contactFullName(contact)} (primary)` : contactFullName(contact),
+        searchText: contactFullName(contact),
+      })),
+    [addableContacts],
   );
 
   const refetch = { refetchQueries: [{ query: ProjectTeamDocument, variables: { id: projectId } }] };
@@ -192,24 +211,19 @@ export function TeamPanel({
 
             <TabsContent value="existing">
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                  <SelectTrigger className="h-10 w-full sm:max-w-sm">
-                    <SelectValue placeholder="Choose someone to add" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {addableUsers.length === 0 ? (
-                      <p className="px-2 py-1.5 text-caption text-muted-foreground">
-                        Everyone eligible is already on this project
-                      </p>
-                    ) : (
-                      addableUsers.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.name} · {humanize(user.role)}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
+                <SearchableSelect
+                  className="sm:max-w-sm"
+                  options={addableUserOptions}
+                  value={selectedUserId}
+                  onChange={setSelectedUserId}
+                  placeholder={
+                    addableUsers.length === 0
+                      ? "Everyone eligible is already on this project"
+                      : "Choose someone to add"
+                  }
+                  emptyText="No one matches."
+                  disabled={addableUsers.length === 0}
+                />
                 <Button onClick={handleAddExisting} disabled={!selectedUserId || adding}>
                   <UserPlus aria-hidden="true" />
                   {adding ? "Adding…" : "Add to project"}
@@ -336,29 +350,17 @@ export function TeamPanel({
           ) : (
             <>
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Select
+                <SearchableSelect
+                  className="sm:max-w-sm"
+                  options={addableContactOptions}
                   value={selectedContactId}
-                  onValueChange={setSelectedContactId}
+                  onChange={setSelectedContactId}
+                  placeholder={
+                    addableContacts.length === 0 ? "No contacts left to add" : "Choose a client contact"
+                  }
+                  emptyText="No contacts match."
                   disabled={addableContacts.length === 0}
-                >
-                  <SelectTrigger className="h-10 w-full sm:max-w-sm">
-                    <SelectValue
-                      placeholder={
-                        addableContacts.length === 0
-                          ? "No contacts left to add"
-                          : "Choose a client contact"
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {addableContacts.map((contact) => (
-                      <SelectItem key={contact.id} value={contact.id}>
-                        {contactFullName(contact)}
-                        {contact.isPrimary ? " (primary)" : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                />
                 <Button onClick={handleAddContact} disabled={!selectedContactId || addingContact}>
                   <UserPlus aria-hidden="true" />
                   {addingContact ? "Adding…" : "Add to roster"}

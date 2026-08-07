@@ -25,7 +25,6 @@ import {
 } from "@/app/components/ui/dropdown-menu";
 import { Input } from "@/app/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
-import { SEARCHABLE_SELECT_THRESHOLD } from "@/app/components/domain/searchable-select";
 import { buildListHref, readList, readString } from "@/app/lib/list-params";
 import { cn } from "@/app/lib/utils";
 
@@ -167,10 +166,11 @@ function FilterCount({ count }) {
   );
 }
 
+// Search is the default for every filter now — a short list today can be a
+// long one next quarter. Pass `searchable: false` for the rare fixed-enum
+// filter where a plain checkbox/radio menu is genuinely preferable.
 function filterIsSearchable(filter) {
-  if (filter.searchable === true) return true;
-  if (filter.searchable === false) return false;
-  return filter.options.length >= SEARCHABLE_SELECT_THRESHOLD;
+  return filter.searchable !== false;
 }
 
 function MultiFilter({ filter, values, onChange }) {

@@ -7,15 +7,9 @@ import { toast } from "sonner";
 
 import { DataTable } from "@/app/components/domain/data-table";
 import { EntityAvatar } from "@/app/components/domain/entity-avatar";
+import { SearchableSelect } from "@/app/components/domain/searchable-select";
 import { EmptyState, SectionCard } from "@/app/components/domain/states";
 import { Progress } from "@/app/components/ui/progress";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/app/components/ui/select";
 import { pickList } from "@/app/lib/api/safe-list";
 import { WorkloadDocument } from "@/app/lib/graphql/generated/documents";
 import { cn } from "@/app/lib/utils";
@@ -26,6 +20,10 @@ export function WorkloadPanel({ initialRows, users, projects }) {
   const [runQuery, { loading }] = useLazyQuery(WorkloadDocument, { fetchPolicy: "network-only" });
 
   const usersById = useMemo(() => new Map(users.map((user) => [user.id, user])), [users]);
+  const projectOptions = useMemo(
+    () => [{ value: "all", label: "All projects" }, ...projects.map((p) => ({ value: p.id, label: p.name }))],
+    [projects],
+  );
 
   const sortedRows = useMemo(
     () => [...rows].sort((a, b) => b.totalEstimatedHours - a.totalEstimatedHours),
@@ -113,19 +111,13 @@ export function WorkloadPanel({ initialRows, users, projects }) {
       description={`${sortedRows.length} ${sortedRows.length === 1 ? "person" : "people"} with open tasks`}
     >
       <div className="mb-4 max-w-xs">
-        <Select value={projectId || "all"} onValueChange={handleProjectChange}>
-          <SelectTrigger className="h-9 w-full">
-            <SelectValue placeholder="All projects" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All projects</SelectItem>
-            {projects.map((project) => (
-              <SelectItem key={project.id} value={project.id}>
-                {project.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <SearchableSelect
+          options={projectOptions}
+          value={projectId || "all"}
+          onChange={handleProjectChange}
+          placeholder="All projects"
+          emptyText="No project matches."
+        />
       </div>
 
       {loading ? (

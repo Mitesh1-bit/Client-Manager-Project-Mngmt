@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
 import { LoaderCircle, Plus } from "lucide-react";
@@ -17,6 +17,7 @@ import {
 } from "@/app/components/ui/dialog";
 import { Button } from "@/app/components/ui/button";
 import { Label } from "@/app/components/ui/label";
+import { SearchableSelect } from "@/app/components/domain/searchable-select";
 import {
   Select,
   SelectContent,
@@ -43,6 +44,17 @@ export function LogTouchpointDialog({ companyId, contacts = [] }) {
   const [notes, setNotes] = useState("");
   const [error, setError] = useState(null);
   const [logTouchpoint, { loading }] = useMutation(LogTouchpointDocument);
+  const contactOptions = useMemo(
+    () =>
+      contacts.map((contact) => ({
+        value: contact.id,
+        label: contact.isPrimary
+          ? `${contact.firstName} ${contact.lastName} (primary)`
+          : `${contact.firstName} ${contact.lastName}`,
+        searchText: `${contact.firstName} ${contact.lastName}`,
+      })),
+    [contacts],
+  );
 
   function reset() {
     setContactId("");
@@ -104,25 +116,14 @@ export function LogTouchpointDialog({ companyId, contacts = [] }) {
             <Label className="text-caption font-medium">
               Contact <span aria-hidden="true" className="-ml-1 text-destructive">*</span>
             </Label>
-            <Select value={contactId} onValueChange={setContactId}>
-              <SelectTrigger className="h-10 w-full">
-                <SelectValue placeholder="Who was it with?" />
-              </SelectTrigger>
-              <SelectContent>
-                {contacts.length === 0 ? (
-                  <p className="px-2 py-1.5 text-caption text-muted-foreground">
-                    No contacts on file for this client
-                  </p>
-                ) : (
-                  contacts.map((contact) => (
-                    <SelectItem key={contact.id} value={contact.id}>
-                      {contact.firstName} {contact.lastName}
-                      {contact.isPrimary ? " (primary)" : ""}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              options={contactOptions}
+              value={contactId}
+              onChange={setContactId}
+              placeholder={contacts.length === 0 ? "No contacts on file for this client" : "Who was it with?"}
+              emptyText="No contacts match."
+              disabled={contacts.length === 0}
+            />
           </div>
 
           <div className="space-y-1.5">
