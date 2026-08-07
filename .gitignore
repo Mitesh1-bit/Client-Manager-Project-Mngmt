@@ -43,6 +43,7 @@ next-env.d.ts
 # playwright
 /test-results/
 /playwright-report/
+.dev-port
 
 # internal planning / handoff docs — not part of the shipped repo
 /Client & Project Management Platform — Master Plan (v5).md

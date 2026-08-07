@@ -131,7 +131,7 @@ export const SequenceStepCard = forwardRef(function SequenceStepCard(
             )}
           </FormField>
 
-          <FormField label="Assignee" className="sm:col-span-2">
+          <FormField label="Role" className="sm:col-span-2">
             {(field) => (
               <Controller
                 control={control}

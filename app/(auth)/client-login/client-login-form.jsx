@@ -17,9 +17,10 @@ import { PasswordInput } from "@/app/components/ui/password-input";
 import { establishSession } from "@/app/lib/auth/establish-session";
 import { PortalLoginDocument } from "@/app/lib/graphql/generated/documents";
 import { formatGraphqlError } from "@/app/lib/graphql/format-error";
+import { portalEmailField } from "@/app/lib/validation/email";
 
 const schema = z.object({
-  email: z.string().min(1, "Enter your email.").email("That doesn't look like an email."),
+  email: portalEmailField(),
   password: z.string().min(1, "Enter your password."),
 });
 

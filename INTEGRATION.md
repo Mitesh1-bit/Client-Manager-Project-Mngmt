@@ -11,6 +11,8 @@ Run tests after each phase before continuing.
 
 ## Start services (non-destructive)
 
+Default ports: backend **8000**, frontend **3000**. If a port is already in use, dev scripts pick the next free port and write it to `.dev-port` (backend and frontend each keep their own file). The frontend proxy auto-targets the running backend.
+
 ```powershell
 # Terminal 1 — backend
 cd d:\agency-CRM\backend

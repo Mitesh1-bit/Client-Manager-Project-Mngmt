@@ -6,6 +6,7 @@ import { useMutation } from "@apollo/client/react";
 import { ChevronDown, LoaderCircle, UserRound } from "lucide-react";
 import { toast } from "sonner";
 
+import { RoleAssigneePicker } from "@/app/components/domain/role-assignee-picker";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,12 +22,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/app/components/ui/popover";
 import { Textarea } from "@/app/components/ui/textarea";
 import { allowedTransitions } from "@/app/lib/change-requests";
 import {
@@ -34,6 +36,7 @@ import {
   UpdateChangeRequestStatusDocument,
 } from "@/app/lib/graphql/generated/documents";
 import { getStatusMeta } from "@/app/lib/status";
+import { normalizeWorkspaceRole } from "@/app/lib/assignee-roles";
 
 /**
  * The "move it along" controls that aren't an assessment or a decision:
@@ -53,6 +56,9 @@ export function ChangeRequestActions({ request, users = [] }) {
 
   const transitions = allowedTransitions(request.status);
   const assignedPm = users.find((user) => user.id === request.assignedPmId) ?? null;
+  const pmCandidates = users.filter((user) =>
+    ["admin", "project_manager"].includes(normalizeWorkspaceRole(user.role)),
+  );
 
   async function move(status) {
     setBusy(true);
@@ -93,8 +99,8 @@ export function ChangeRequestActions({ request, users = [] }) {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+      <Popover>
+        <PopoverTrigger asChild>
           <Button variant="outline" size="sm" disabled={assigning}>
             {assigning ? (
               <LoaderCircle aria-hidden="true" className="animate-spin" />
@@ -104,23 +110,18 @@ export function ChangeRequestActions({ request, users = [] }) {
             {assignedPm ? assignedPm.name : "Unassigned"}
             <ChevronDown aria-hidden="true" />
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>Assigned PM</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuRadioGroup
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-[min(100vw-2rem,22rem)]">
+          <p className="mb-3 text-subheading">Assigned PM</p>
+          <RoleAssigneePicker
+            users={pmCandidates}
             value={assignedPm?.id ?? ""}
-            onValueChange={reassign}
-          >
-            <DropdownMenuRadioItem value="">Unassigned</DropdownMenuRadioItem>
-            {users.map((user) => (
-              <DropdownMenuRadioItem key={user.id} value={user.id}>
-                {user.name}
-              </DropdownMenuRadioItem>
-            ))}
-          </DropdownMenuRadioGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            onChange={reassign}
+            allowedCategories={["project_manager", "admin"]}
+            disabled={assigning}
+          />
+        </PopoverContent>
+      </Popover>
 
       {transitions.length > 0 ? (
         <DropdownMenu>

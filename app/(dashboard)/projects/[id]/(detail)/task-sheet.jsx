@@ -23,6 +23,7 @@ import {
   SheetTitle,
 } from "@/app/components/ui/sheet";
 import { formatDate, humanizeType, initials } from "@/app/lib/format";
+import { assigneeCategoryLabel, getUserAssigneeCategory } from "@/app/lib/assignee-roles";
 import {
   AddTaskDependencyDocument,
   RemoveTaskDependencyDocument,
@@ -156,14 +157,19 @@ function TaskDetail({ task, tasks, onEdit, onOpenTask, onAddSubtask }) {
         <dl className="meta-grid gap-x-6 gap-y-3 text-caption">
           <Field label="Assignee">
             {task.assignee ? (
-              <span className="flex items-center gap-1.5">
-                <span
-                  aria-hidden="true"
-                  className="flex size-5 items-center justify-center rounded-full bg-muted text-[0.5625rem] font-medium"
-                >
-                  {initials(task.assignee.name)}
+              <span className="flex flex-col gap-0.5">
+                <span className="flex items-center gap-1.5">
+                  <span
+                    aria-hidden="true"
+                    className="flex size-5 items-center justify-center rounded-full bg-muted text-[0.5625rem] font-medium"
+                  >
+                    {initials(task.assignee.name)}
+                  </span>
+                  {task.assignee.name}
                 </span>
-                {task.assignee.name}
+                <span className="text-[0.6875rem] font-normal text-muted-foreground">
+                  {assigneeCategoryLabel(getUserAssigneeCategory(task.assignee))}
+                </span>
               </span>
             ) : (
               "Unassigned"

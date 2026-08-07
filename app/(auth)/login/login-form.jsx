@@ -20,13 +20,14 @@ import { isMockGraphqlEndpoint } from "@/app/lib/graphql/endpoint";
 import { LoginDocument, PortalLoginDocument } from "@/app/lib/graphql/generated/documents";
 import { formatGraphqlError } from "@/app/lib/graphql/format-error";
 import { DEMO_PASSWORD, demoAccounts } from "@/app/lib/mocks/demo-accounts";
+import { workEmailField } from "@/app/lib/validation/email";
 
 import { authInputClass } from "../auth-shell";
 
 const USING_MOCK_BACKEND = isMockGraphqlEndpoint;
 
 const schema = z.object({
-  email: z.string().min(1, "Enter your work email.").email("That doesn't look like an email."),
+  email: workEmailField(),
   password: z.string().min(1, "Enter your password."),
 });
 
@@ -45,6 +46,7 @@ export function LoginForm() {
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: { email: "", password: "" },
+    reValidateMode: "onChange",
   });
 
   async function onSubmit(values) {

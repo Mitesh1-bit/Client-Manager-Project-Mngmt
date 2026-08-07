@@ -9,6 +9,7 @@ import { LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { FormField } from "@/app/components/domain/form-field";
+import { RoleAssigneeField } from "@/app/components/domain/role-assignee-field";
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -46,6 +47,8 @@ export function TaskForm({ projectId, task, defaults, phases = [], milestones = 
     register,
     control,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(taskSchema),
@@ -136,15 +139,14 @@ export function TaskForm({ projectId, task, defaults, phases = [], milestones = 
             error={errors.priority?.message}
             options={PRIORITY_OPTIONS.map((p) => ({ value: p.value, label: p.label }))}
           />
-          <div data-tour="task-field-assignee">
-            <SelectField
+          <div data-tour="task-field-assignee" className="contents">
+            <RoleAssigneeField
               control={control}
+              setValue={setValue}
+              watch={watch}
               name="assigneeId"
-              label="Assignee"
-              placeholder="Unassigned"
-              clearLabel="Unassigned"
+              users={users}
               error={errors.assigneeId?.message}
-              options={users.map((user) => ({ value: user.id, label: user.name }))}
             />
           </div>
           <SelectField

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SEQUENCE_ASSIGNEE_ROLES } from "@/app/lib/assignee-roles";
 
 /**
  * Client-side validation for the sequence builder. Mirrors the rules the mock
@@ -13,11 +14,9 @@ export const TRIGGER_TYPES = [
   { value: "ON_RENEWAL_APPROACHING", label: "As a renewal approaches" },
 ];
 
-export const ASSIGNEE_ROLES = [
-  { value: "PROJECT_MANAGER", label: "Project manager" },
-  { value: "ADMIN", label: "Admin" },
-  { value: "TEAM_MEMBER", label: "Team member" },
-];
+export const ASSIGNEE_ROLES = SEQUENCE_ASSIGNEE_ROLES;
+
+const ASSIGNEE_ROLE_VALUES = ASSIGNEE_ROLES.map((role) => role.value);
 
 const stepSchema = z.object({
   // Present only in client-side form state, for dnd-kit and RHF field
@@ -40,7 +39,10 @@ const stepSchema = z.object({
     .refine((value) => Number.isInteger(value) && value >= 0, {
       message: "Enter 0 or more whole days.",
     }),
-  assigneeRole: z.string().optional().transform((value) => value || null),
+  assigneeRole: z
+    .enum(ASSIGNEE_ROLE_VALUES)
+    .optional()
+    .transform((value) => value || null),
   templateId: z.string().optional().transform((value) => value || null),
 });
 

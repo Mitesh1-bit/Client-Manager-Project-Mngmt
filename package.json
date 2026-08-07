@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --hostname 0.0.0.0 --port 3000",
+    "dev": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/start_dev.ps1",
+    "dev:clean": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/clean-dev-cache.ps1",
     "build": "next build",
     "start": "next start --hostname 0.0.0.0 --port 3000",
-    "stop": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/kill-port.ps1 -Port 3000",
+    "stop": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/stop_dev.ps1",
     "status": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/status-port.ps1 -Port 3000",
     "lint": "eslint",
     "codegen": "graphql-codegen --config codegen.js",

@@ -1,6 +1,8 @@
 import { networkInterfaces } from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-/** @type {import('next').NextConfig} */
+const frontendRoot = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Next.js 16 blocks cross-origin dev requests (/_next/*, HMR websocket) by default.
@@ -55,12 +57,30 @@ function buildAllowedDevOrigins() {
 const nextConfig = {
   allowedDevOrigins: buildAllowedDevOrigins(),
 
+  experimental: {
+    optimizePackageImports: [
+      "framer-motion",
+      "radix-ui",
+      "@apollo/client",
+      "@tanstack/react-table",
+      "cmdk",
+    ],
+  },
+
+  turbopack: {
+    root: frontendRoot,
+  },
+
   async redirects() {
     return [
       { source: "/pricing", destination: "/", permanent: false },
       { source: "/contact", destination: "/login", permanent: false },
       { source: "/case-studies", destination: "/blog", permanent: false },
-      { source: "/case-studies/:slug", destination: "/blog", permanent: false },
+      {
+        source: "/case-studies/:slug",
+        destination: "/blog",
+        permanent: false,
+      },
     ];
   },
 };

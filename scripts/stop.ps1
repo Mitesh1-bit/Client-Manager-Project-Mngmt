@@ -1,3 +1,2 @@
-# Stop whatever is listening on port 3000 (frontend).
-Set-Location $PSScriptRoot\..
-npm run stop
+# Stop whatever is listening on the frontend dev port (default 3000).
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\stop_dev.ps1

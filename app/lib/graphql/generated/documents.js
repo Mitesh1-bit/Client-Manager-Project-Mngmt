@@ -67,6 +67,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -103,6 +104,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -329,6 +331,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -387,6 +390,8 @@ fragment TaskFields on TaskType {
   assignee {
     id
     name
+    role
+    jobTitle
     avatarUrl
   }
   status
@@ -401,6 +406,8 @@ fragment TaskFields on TaskType {
     assignee {
       id
       name
+      role
+      jobTitle
       avatarUrl
     }
     parentTaskId
@@ -418,6 +425,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -475,6 +483,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -680,6 +689,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -887,6 +897,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -951,6 +962,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -1013,6 +1025,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -1085,6 +1098,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -1277,6 +1291,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -1534,6 +1549,8 @@ fragment TaskFields on TaskType {
   assignee {
     id
     name
+    role
+    jobTitle
     avatarUrl
   }
   status
@@ -1548,6 +1565,8 @@ fragment TaskFields on TaskType {
     assignee {
       id
       name
+      role
+      jobTitle
       avatarUrl
     }
     parentTaskId
@@ -2160,6 +2179,8 @@ fragment TaskFields on TaskType {
   assignee {
     id
     name
+    role
+    jobTitle
     avatarUrl
   }
   status
@@ -2174,6 +2195,8 @@ fragment TaskFields on TaskType {
     assignee {
       id
       name
+      role
+      jobTitle
       avatarUrl
     }
     parentTaskId
@@ -2189,6 +2212,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -2213,6 +2237,8 @@ fragment TaskFields on TaskType {
   assignee {
     id
     name
+    role
+    jobTitle
     avatarUrl
   }
   status
@@ -2227,6 +2253,8 @@ fragment TaskFields on TaskType {
     assignee {
       id
       name
+      role
+      jobTitle
       avatarUrl
     }
     parentTaskId
@@ -2296,6 +2324,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -2350,6 +2379,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -2375,6 +2405,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -2436,6 +2467,8 @@ fragment TaskFields on TaskType {
   assignee {
     id
     name
+    role
+    jobTitle
     avatarUrl
   }
   status
@@ -2450,6 +2483,8 @@ fragment TaskFields on TaskType {
     assignee {
       id
       name
+      role
+      jobTitle
       avatarUrl
     }
     parentTaskId
@@ -2465,6 +2500,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -2510,6 +2546,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -2575,6 +2612,8 @@ fragment TaskFields on TaskType {
   assignee {
     id
     name
+    role
+    jobTitle
     avatarUrl
   }
   status
@@ -2589,6 +2628,8 @@ fragment TaskFields on TaskType {
     assignee {
       id
       name
+      role
+      jobTitle
       avatarUrl
     }
     parentTaskId
@@ -2604,6 +2645,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -2645,6 +2687,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -2994,6 +3037,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -3282,6 +3326,7 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;
 
@@ -3331,6 +3376,8 @@ fragment TaskFields on TaskType {
   assignee {
     id
     name
+    role
+    jobTitle
     avatarUrl
   }
   status
@@ -3345,6 +3392,8 @@ fragment TaskFields on TaskType {
     assignee {
       id
       name
+      role
+      jobTitle
       avatarUrl
     }
     parentTaskId
@@ -3374,6 +3423,8 @@ fragment TaskFields on TaskType {
   assignee {
     id
     name
+    role
+    jobTitle
     avatarUrl
   }
   status
@@ -3388,6 +3439,8 @@ fragment TaskFields on TaskType {
     assignee {
       id
       name
+      role
+      jobTitle
       avatarUrl
     }
     parentTaskId
@@ -3431,5 +3484,6 @@ fragment UserSummaryFields on UserSummaryType {
   name
   email
   role
+  jobTitle
   avatarUrl
 }`;

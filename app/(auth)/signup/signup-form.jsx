@@ -16,6 +16,7 @@ import { PasswordInput } from "@/app/components/ui/password-input";
 import { establishSession } from "@/app/lib/auth/establish-session";
 import { SignupDocument } from "@/app/lib/graphql/generated/documents";
 import { formatGraphqlError } from "@/app/lib/graphql/format-error";
+import { workEmailField } from "@/app/lib/validation/email";
 
 import { authInputClass } from "../auth-shell";
 
@@ -23,7 +24,7 @@ const schema = z
   .object({
     organizationName: z.string().min(2, "Tell us your agency or company name."),
     fullName: z.string().min(2, "Enter your full name."),
-    email: z.string().min(1, "Enter your work email.").email("That doesn't look like an email."),
+    email: workEmailField(),
     password: z
       .string()
       .min(12, "Use at least 12 characters.")

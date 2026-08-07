@@ -216,6 +216,7 @@ type User {
   name: String!
   email: String!
   role: UserRole!
+  jobTitle: String
   status: UserStatus!
   avatarUrl: String
   organization: Organization!
