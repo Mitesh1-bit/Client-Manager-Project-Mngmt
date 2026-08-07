@@ -62,9 +62,9 @@ import {
 } from "@/app/lib/graphql/generated/documents";
 
 import { ContactForm } from "./contact-form";
-import { contactToFormValues, toUpdateContactVariables } from "./contact-schema";
+import { contactToFormValues, PREFERRED_CHANNELS, toUpdateContactVariables } from "./contact-schema";
 
-const CHANNEL_LABELS = { EMAIL: "Email", PHONE: "Phone", MEETING: "Meeting" };
+const CHANNEL_LABELS = Object.fromEntries(PREFERRED_CHANNELS.map(({ value, label }) => [value, label]));
 
 /**
  * Contacts nested under a company. One side panel serves three jobs — view,
@@ -363,6 +363,7 @@ export function ContactsPanel({ companyId, companyName, contacts = [], tags = []
                 <SheetDescription>Contact at {companyName}.</SheetDescription>
               </SheetHeader>
               <ContactForm
+                key={selected.id}
                 companyId={companyId}
                 contact={selected}
                 tags={tags}

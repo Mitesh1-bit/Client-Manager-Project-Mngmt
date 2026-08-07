@@ -10,6 +10,7 @@ import { Button } from "@/app/components/ui/button";
 import { formatCurrency, formatDate, displayUrl } from "@/app/lib/format";
 import { normalizeCompany } from "@/app/lib/api/normalize";
 import { asArray, pickList } from "@/app/lib/api/safe-list";
+import { formatStoredAddress } from "@/app/lib/geo-options";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { CompanyOverviewDocument } from "@/app/lib/graphql/generated/documents";
 import { humanize } from "@/app/lib/status";
@@ -199,7 +200,7 @@ export default async function CompanyOverviewPage({ params }) {
               }
             />
             <Detail label="Account owner" value={company.accountOwner?.name ?? "Unassigned"} />
-            <Detail label="Address" value={formatAddress(company.address)} />
+            <Detail label="Address" value={formatStoredAddress(company.address)} />
           </dl>
         </SectionCard>
       </div>
@@ -216,17 +217,4 @@ function Detail({ label, value }) {
       <dd className="mt-0.5 font-medium text-pretty break-words">{value}</dd>
     </div>
   );
-}
-
-function formatAddress(address) {
-  if (!address) return "—";
-  const parts = [
-    address.line1,
-    address.line2,
-    address.city,
-    address.region,
-    address.postalCode,
-    address.country,
-  ].filter(Boolean);
-  return parts.length ? parts.join(", ") : "—";
 }

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { BackLink } from "@/app/components/domain/back-link";
 import { PageHeader } from "@/app/components/domain/page-header";
+import { normalizeCompany } from "@/app/lib/api/normalize";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   CompanyForEditDocument,
@@ -29,15 +30,18 @@ export default async function EditCompanyPage({ params }) {
 
   if (!data.company) notFound();
 
+  const company = normalizeCompany(data.company);
+
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <BackLink href={`/companies/${id}`}>Back to {data.company.name}</BackLink>
+      <BackLink href={`/companies/${id}`}>Back to {company.name}</BackLink>
 
-      <PageHeader title={`Edit ${data.company.name}`} />
+      <PageHeader title={`Edit ${company.name}`} />
 
       <CompanyForm
+        key={company.id}
         mode="edit"
-        company={data.company}
+        company={company}
         owners={options?.users ?? []}
         tags={options?.tags ?? []}
         sizes={options?.companySizes ?? []}

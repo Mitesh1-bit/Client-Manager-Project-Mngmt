@@ -122,6 +122,7 @@ type ContactType {
   department: String
   isPrimary: Boolean!
   preferredChannel: String
+  bestTimeToContact: String
   timezone: String
   portalAccessEnabled: Boolean!
   portalCanRaiseRequests: Boolean!
@@ -245,8 +246,8 @@ type Mutation {
   createCompany(name: String!, industry: String = null, website: String = null, logoUrl: String = null, size: String = null, timezone: String = null, address: JSON = null, status: String! = "lead", accountOwnerId: ID = null, healthScore: Float = null): CompanyType!
   updateCompany(id: ID!, name: String = null, industry: String = null, website: String = null, logoUrl: String = null, size: String = null, timezone: String = null, address: JSON = null, status: String = null, accountOwnerId: ID = null, healthScore: Float = null): CompanyType!
   deleteCompany(id: ID!): Boolean!
-  createContact(companyId: ID!, firstName: String!, lastName: String!, email: String = null, phone: String = null, title: String = null, department: String = null, isPrimary: Boolean! = false, preferredChannel: String = null, timezone: String = null, portalAccessEnabled: Boolean! = false, portalCanRaiseRequests: Boolean! = false, portalPassword: String = null, linkedinUrl: String = null, status: String! = "active"): ContactType!
-  updateContact(id: ID!, firstName: String = null, lastName: String = null, email: String = null, phone: String = null, title: String = null, department: String = null, isPrimary: Boolean = null, preferredChannel: String = null, timezone: String = null, portalAccessEnabled: Boolean = null, portalCanRaiseRequests: Boolean = null, portalPassword: String = null, linkedinUrl: String = null, status: String = null): ContactType!
+  createContact(companyId: ID!, firstName: String!, lastName: String!, email: String = null, phone: String = null, title: String = null, department: String = null, isPrimary: Boolean! = false, preferredChannel: String = null, bestTimeToContact: String = null, timezone: String = null, portalAccessEnabled: Boolean! = false, portalCanRaiseRequests: Boolean! = false, portalPassword: String = null, linkedinUrl: String = null, status: String! = "active"): ContactType!
+  updateContact(id: ID!, firstName: String = null, lastName: String = null, email: String = null, phone: String = null, title: String = null, department: String = null, isPrimary: Boolean = null, preferredChannel: String = null, bestTimeToContact: String = null, timezone: String = null, portalAccessEnabled: Boolean = null, portalCanRaiseRequests: Boolean = null, portalPassword: String = null, linkedinUrl: String = null, status: String = null): ContactType!
 
   """Set or reset a contact's portal login password."""
   setContactPortalPassword(id: ID!, password: String!): ContactType!
@@ -254,23 +255,23 @@ type Mutation {
   createTag(name: String!): TagType!
   addTag(entityType: String!, entityId: ID!, tagId: ID!): Boolean!
   removeTag(entityType: String!, entityId: ID!, tagId: ID!): Boolean!
-  createProject(companyId: ID!, name: String!, description: String = null, status: String! = "planning", priority: String = null, projectManagerId: ID = null, budget: Float = null, currency: String! = "GBP", health: String = "on_track"): ProjectType!
-  updateProject(id: ID!, name: String = null, description: String = null, status: String = null, priority: String = null, projectManagerId: ID = null, budget: Float = null, currency: String = null, health: String = null): ProjectType!
+  createProject(companyId: ID!, name: String!, description: String = null, status: String! = "planning", priority: String = null, projectManagerId: ID = null, startDate: Date = null, endDate: Date = null, budget: Float = null, currency: String! = "GBP", health: String = "on_track"): ProjectType!
+  updateProject(id: ID!, name: String = null, description: String = null, status: String = null, priority: String = null, projectManagerId: ID = null, startDate: Date = null, endDate: Date = null, budget: Float = null, currency: String = null, health: String = null): ProjectType!
   deleteProject(id: ID!): Boolean!
   addProjectMember(projectId: ID!, userId: ID!): UserSummaryType!
   removeProjectMember(projectId: ID!, userId: ID!): Boolean!
   addProjectContact(projectId: ID!, contactId: ID!): ContactType!
   removeProjectContact(projectId: ID!, contactId: ID!): Boolean!
-  createPhase(projectId: ID!, name: String!, orderIndex: Int!, status: String! = "not_started"): PhaseType!
-  updatePhase(id: ID!, name: String = null, orderIndex: Int = null, status: String = null): PhaseType!
+  createPhase(projectId: ID!, name: String!, orderIndex: Int!, status: String! = "not_started", startDate: Date = null, dueDate: Date = null): PhaseType!
+  updatePhase(id: ID!, name: String = null, orderIndex: Int = null, status: String = null, startDate: Date = null, dueDate: Date = null): PhaseType!
   deletePhase(id: ID!): Boolean!
   reorderPhases(projectId: ID!, orderedPhaseIds: [ID!]!): [PhaseType!]!
-  createMilestone(phaseId: ID!, title: String!, orderIndex: Int!, status: String! = "not_started", requiresClientApproval: Boolean! = false): MilestoneType!
-  updateMilestone(id: ID!, title: String = null, orderIndex: Int = null, status: String = null): MilestoneType!
+  createMilestone(phaseId: ID!, title: String!, orderIndex: Int!, status: String! = "not_started", description: String = null, dueDate: Date = null, requiresClientApproval: Boolean! = false): MilestoneType!
+  updateMilestone(id: ID!, title: String = null, orderIndex: Int = null, status: String = null, description: String = null, dueDate: Date = null, requiresClientApproval: Boolean = null): MilestoneType!
   deleteMilestone(id: ID!): Boolean!
   reorderMilestones(phaseId: ID!, orderedMilestoneIds: [ID!]!): [MilestoneType!]!
-  createTask(projectId: ID!, phaseId: ID!, title: String!, milestoneId: ID = null, parentTaskId: ID = null, assigneeId: ID = null, status: String! = "todo", priority: String! = "medium", estimatedHours: Float = null): TaskType!
-  updateTask(id: ID!, title: String = null, status: String = null, priority: String = null, assigneeId: ID = null, estimatedHours: Float = null, actualHours: Float = null): TaskType!
+  createTask(projectId: ID!, phaseId: ID!, title: String!, milestoneId: ID = null, parentTaskId: ID = null, description: String = null, assigneeId: ID = null, status: String! = "todo", priority: String! = "medium", startDate: Date = null, dueDate: Date = null, estimatedHours: Float = null): TaskType!
+  updateTask(id: ID!, title: String = null, description: String = null, status: String = null, priority: String = null, phaseId: ID = null, milestoneId: ID = null, parentTaskId: ID = null, assigneeId: ID = null, startDate: Date = null, dueDate: Date = null, estimatedHours: Float = null, actualHours: Float = null): TaskType!
   deleteTask(id: ID!): Boolean!
   addTaskDependency(projectId: ID!, taskId: ID!, dependsOnTaskId: ID!, type: String! = "finish_to_start"): TaskDependencyType!
   removeTaskDependency(id: ID!): Boolean!
@@ -392,6 +393,8 @@ type PhaseType {
   name: String!
   orderIndex: Int!
   status: String!
+  startDate: Date
+  dueDate: Date
   milestones: [MilestoneType!]!
   tasks: [TaskType!]!
 }
@@ -444,11 +447,14 @@ type ProjectType {
   actualCost: Float
   currency: String!
   health: String
+  startDate: Date
+  endDate: Date
   projectManager: UserSummaryType
   phases: [PhaseType!]!
   tasks: [TaskType!]!
   members: [UserSummaryType!]!
   clientContacts: [ContactType!]!
+  company: CompanyType
   tags: [TagType!]!
 }
 
@@ -579,6 +585,8 @@ type TaskType {
   priority: String!
   estimatedHours: Float
   actualHours: Float
+  startDate: Date
+  dueDate: Date
   assignee: UserSummaryType
   subtasks: [TaskType!]!
   dependencies: [TaskDependencyType!]!

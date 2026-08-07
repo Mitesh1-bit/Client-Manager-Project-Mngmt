@@ -25,6 +25,56 @@ const TO_UI = {
     at_risk: "AT_RISK",
     delayed: "DELAYED",
   },
+  priority: {
+    low: "LOW",
+    medium: "MEDIUM",
+    high: "HIGH",
+    urgent: "URGENT",
+  },
+  taskStatus: {
+    todo: "TODO",
+    in_progress: "IN_PROGRESS",
+    review: "REVIEW",
+    done: "DONE",
+  },
+  phaseStatus: {
+    not_started: "NOT_STARTED",
+    in_progress: "IN_PROGRESS",
+    at_risk: "AT_RISK",
+    completed: "COMPLETED",
+    on_hold: "ON_HOLD",
+  },
+  milestoneStatus: {
+    not_started: "NOT_STARTED",
+    in_progress: "IN_PROGRESS",
+    at_risk: "AT_RISK",
+    completed: "COMPLETED",
+  },
+  touchpointChannel: {
+    email: "EMAIL",
+    call: "CALL",
+    meeting: "MEETING",
+    internal_task: "INTERNAL_TASK",
+  },
+  preferredChannel: {
+    email: "EMAIL",
+    phone: "PHONE",
+    meeting: "MEETING",
+  },
+  sequenceTriggerType: {
+    manual: "MANUAL",
+    on_company_created: "ON_COMPANY_CREATED",
+    on_project_completed: "ON_PROJECT_COMPLETED",
+    on_renewal_approaching: "ON_RENEWAL_APPROACHING",
+  },
+  changeRequestType: {
+    scope_addition: "SCOPE_ADDITION",
+    scope_reduction: "SCOPE_REDUCTION",
+    timeline_change: "TIMELINE_CHANGE",
+    budget_change: "BUDGET_CHANGE",
+    bugfix: "BUGFIX",
+    other: "OTHER",
+  },
   changeRequestStatus: {
     submitted: "SUBMITTED",
     under_review: "UNDER_REVIEW",
@@ -109,10 +159,15 @@ export function normalizeCompany(company) {
 /** @param {Record<string, unknown> | null | undefined} contact */
 export function normalizeContact(contact) {
   if (!contact) return contact;
+  const preferredChannel = contact.preferredChannel
+    ? toUiStatus("preferredChannel", contact.preferredChannel)
+    : null;
   return {
     ...contact,
     fullName: contact.fullName ?? contactFullName(contact),
     status: toUiStatus("contactStatus", contact.status),
+    preferredChannel,
+    bestTimeToContact: contact.bestTimeToContact ?? null,
     tags: contact.tags ?? [],
     activity: contact.activity ?? [],
     touchpoints: contact.touchpoints ?? [],
@@ -136,6 +191,7 @@ export function normalizeProject(project, usersById, companiesById) {
     ...project,
     status: toUiStatus("projectStatus", project.status),
     health: toUiStatus("projectHealth", project.health),
+    priority: toUiStatus("priority", project.priority) ?? null,
     tags: project.tags ?? [],
     team: project.members ?? [],
     completionPercent: project.completionPercent ?? 0,
@@ -172,9 +228,11 @@ export function normalizeTask(task, usersById, tasksById) {
     ...task,
     assignee,
     orderIndex: task.orderIndex ?? 0,
-    status: task.status ? String(task.status).toUpperCase() : "TODO",
-    priority: task.priority ? String(task.priority).toUpperCase() : "MEDIUM",
+    status: toUiStatus("taskStatus", task.status) ?? "TODO",
+    priority: toUiStatus("priority", task.priority) ?? "MEDIUM",
     phase: task.phase ?? (task.phaseId ? { id: String(task.phaseId) } : null),
+    startDate: task.startDate ?? null,
+    dueDate: task.dueDate ?? null,
     subtasks: (task.subtasks ?? []).map((sub) => normalizeTask(sub, usersById, tasksById)),
     dependencies: (task.dependencies ?? []).map((dep) => {
       const dependsOn =
@@ -185,6 +243,23 @@ export function normalizeTask(task, usersById, tasksById) {
           status: "TODO",
         };
       return { ...dep, dependsOnTask: dependsOn };
+    }),
+  };
+}
+
+/** @param {Record<string, unknown> | null | undefined} sequence */
+export function normalizeRetentionSequence(sequence) {
+  if (!sequence) return sequence;
+  return {
+    ...sequence,
+    triggerType: toUiStatus("sequenceTriggerType", sequence.triggerType) ?? "MANUAL",
+    steps: (sequence.steps ?? []).map((step) => {
+      const channel = toUiStatus("touchpointChannel", step.channel) ?? "CALL";
+      return {
+        ...step,
+        channel: channel === "EMAIL" ? "CALL" : channel,
+        assigneeRole: step.assigneeRole ? String(step.assigneeRole).toUpperCase() : null,
+      };
     }),
   };
 }

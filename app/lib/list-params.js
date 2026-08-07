@@ -93,6 +93,12 @@ export function buildQuery(searchParams, patch) {
   return query ? `?${query}` : "";
 }
 
+/** Full App Router href — required when the query string is empty (Clear all). */
+export function buildListHref(pathname, searchParams, patch) {
+  const query = buildQuery(searchParams, patch);
+  return query ? `${pathname}${query}` : pathname;
+}
+
 /** @param {{ id: string, desc: boolean } | null} sort */
 export function sortToParams(sort) {
   if (!sort) return { sort: null, dir: null };

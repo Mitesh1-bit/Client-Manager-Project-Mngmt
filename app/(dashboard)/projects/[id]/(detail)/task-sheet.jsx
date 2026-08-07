@@ -76,6 +76,7 @@ export function TaskSheet({ projectId, panel, onPanelChange, tasks, phases, mile
               <SheetDescription>Task details and scheduling.</SheetDescription>
             </SheetHeader>
             <TaskForm
+              key={selected.id}
               projectId={projectId}
               task={selected}
               phases={phases}

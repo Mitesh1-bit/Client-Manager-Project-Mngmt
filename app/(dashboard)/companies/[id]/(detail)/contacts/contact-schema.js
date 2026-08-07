@@ -122,7 +122,7 @@ export function contactToFormValues(contact) {
     phone: contact?.phone ?? "",
     title: contact?.title ?? "",
     department: contact?.department ?? "",
-    preferredChannel: contact?.preferredChannel ?? "",
+    preferredChannel: toUiStatus("preferredChannel", contact?.preferredChannel) ?? "",
     bestTimeToContact: contact?.bestTimeToContact ?? "",
     timezone: contact?.timezone ?? "",
     linkedinUrl: contact?.linkedinUrl ?? "",
@@ -150,7 +150,10 @@ export function toCreateContactVariables(values, companyId) {
     title: values.title,
     department: values.department,
     isPrimary: values.isPrimary,
-    preferredChannel: values.preferredChannel?.toLowerCase() ?? null,
+    preferredChannel: values.preferredChannel
+      ? toApiStatus("preferredChannel", values.preferredChannel)
+      : null,
+    bestTimeToContact: values.bestTimeToContact,
     timezone: values.timezone,
     portalAccessEnabled: values.portalAccessEnabled,
     portalCanRaiseRequests: values.portalCanRaiseRequests,
@@ -170,7 +173,10 @@ export function toUpdateContactVariables(id, values) {
     title: values.title,
     department: values.department,
     isPrimary: values.isPrimary,
-    preferredChannel: values.preferredChannel?.toLowerCase() ?? null,
+    preferredChannel: values.preferredChannel
+      ? toApiStatus("preferredChannel", values.preferredChannel)
+      : null,
+    bestTimeToContact: values.bestTimeToContact,
     timezone: values.timezone,
     portalAccessEnabled: values.portalAccessEnabled,
     portalCanRaiseRequests: values.portalCanRaiseRequests,

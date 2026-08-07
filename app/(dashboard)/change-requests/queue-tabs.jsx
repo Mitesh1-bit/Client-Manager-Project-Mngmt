@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
-import { buildQuery } from "@/app/lib/list-params";
+import { buildListHref } from "@/app/lib/list-params";
 import { cn } from "@/app/lib/utils";
 
 /**
@@ -19,6 +19,7 @@ const BUCKETS = [
 ];
 
 export function QueueTabs({ counts, active }) {
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   return (
@@ -32,7 +33,7 @@ export function QueueTabs({ counts, active }) {
             return (
               <li key={bucket.key}>
                 <Link
-                  href={buildQuery(searchParams, {
+                  href={buildListHref(pathname, searchParams, {
                     bucket: bucket.key === "all" ? null : bucket.key,
                     page: null,
                   })}

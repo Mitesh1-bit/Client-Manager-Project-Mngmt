@@ -1,10 +1,10 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/app/components/ui/button";
-import { buildQuery } from "@/app/lib/list-params";
+import { buildListHref } from "@/app/lib/list-params";
 
 /**
  * Pagination for server-driven lists. Navigates rather than holding state, so
@@ -14,6 +14,7 @@ import { buildQuery } from "@/app/lib/list-params";
  */
 export function PaginationBar({ pageInfo, totalCount, itemLabel = "results" }) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   if (totalCount === 0) return null;
@@ -22,7 +23,7 @@ export function PaginationBar({ pageInfo, totalCount, itemLabel = "results" }) {
   const last = Math.min(pageInfo.page * pageInfo.pageSize, totalCount);
 
   function goTo(page) {
-    router.push(buildQuery(searchParams, { page }), { scroll: false });
+    router.push(buildListHref(pathname, searchParams, { page }), { scroll: false });
   }
 
   return (

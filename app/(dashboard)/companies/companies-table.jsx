@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { FolderKanban, GitPullRequestArrow, Users } from "lucide-react";
 
 import { DataTable } from "@/app/components/domain/data-table";
@@ -12,10 +12,11 @@ import { PaginationBar } from "@/app/components/domain/pagination-bar";
 import { StatusBadge } from "@/app/components/domain/status-badge";
 import { TagList } from "@/app/components/domain/tag-list";
 import { formatRelativeDays, initials } from "@/app/lib/format";
-import { buildQuery, sortToParams } from "@/app/lib/list-params";
+import { buildListHref, sortToParams } from "@/app/lib/list-params";
 
 export function CompaniesTable({ connection, sort, emptyState }) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const columns = useMemo(
@@ -141,7 +142,7 @@ export function CompaniesTable({ connection, sort, emptyState }) {
   );
 
   function handleSortChange(next) {
-    router.push(buildQuery(searchParams, sortToParams(next)), { scroll: false });
+    router.push(buildListHref(pathname, searchParams, sortToParams(next)), { scroll: false });
   }
 
   return (

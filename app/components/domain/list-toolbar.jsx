@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Check, LoaderCircle, Search, X } from "lucide-react";
 
 import { Button } from "@/app/components/ui/button";
@@ -26,7 +26,7 @@ import {
 import { Input } from "@/app/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
 import { SEARCHABLE_SELECT_THRESHOLD } from "@/app/components/domain/searchable-select";
-import { buildQuery, readList, readString } from "@/app/lib/list-params";
+import { buildListHref, readList, readString } from "@/app/lib/list-params";
 import { cn } from "@/app/lib/utils";
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -52,6 +52,7 @@ export function ListToolbar({
   children,
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
@@ -74,16 +75,26 @@ export function ListToolbar({
 
     const timer = setTimeout(() => {
       startTransition(() => {
-        router.push(buildQuery(searchParams, { [searchKey]: search || null }), { scroll: false });
+        router.push(buildListHref(pathname, searchParams, { [searchKey]: search || null }), {
+          scroll: false,
+        });
       });
     }, SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
-  }, [search, currentSearch, searchKey, router, searchParams]);
+  }, [search, currentSearch, searchKey, router, searchParams, pathname]);
 
   function update(patch) {
     startTransition(() => {
-      router.push(buildQuery(searchParams, patch), { scroll: false });
+      router.push(buildListHref(pathname, searchParams, patch), { scroll: false });
+    });
+  }
+
+  function clearAll() {
+    setSearch("");
+    update({
+      [searchKey]: null,
+      ...Object.fromEntries(filters.map((filter) => [filter.key, null])),
     });
   }
 
@@ -138,16 +149,7 @@ export function ListToolbar({
       {children}
 
       {activeCount > 0 ? (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() =>
-            update({
-              [searchKey]: null,
-              ...Object.fromEntries(filters.map((filter) => [filter.key, null])),
-            })
-          }
-        >
+        <Button variant="ghost" size="sm" onClick={clearAll}>
           <X aria-hidden="true" />
           Clear
         </Button>

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-import { toApiStatus } from "@/app/lib/api/normalize";
+import { toApiStatus, toUiStatus } from "@/app/lib/api/normalize";
+import { toApiDate, toDateInputValue } from "@/app/lib/date-input";
 
 /**
  * Client-side validation for the project form. Mirrors `ProjectInput`; the API
@@ -80,11 +81,11 @@ export function projectToFormValues(project) {
     companyId: project?.company?.id ?? project?.companyId ?? "",
     name: project?.name ?? "",
     description: project?.description ?? "",
-    status: project?.status ?? "PLANNING",
-    priority: project?.priority ?? "MEDIUM",
+    status: toUiStatus("projectStatus", project?.status) ?? "PLANNING",
+    priority: toUiStatus("priority", project?.priority) ?? "MEDIUM",
     projectManagerId: project?.projectManager?.id ?? project?.projectManagerId ?? "",
-    startDate: project?.startDate ?? "",
-    endDate: project?.endDate ?? "",
+    startDate: toDateInputValue(project?.startDate),
+    endDate: toDateInputValue(project?.endDate),
     budget: project?.budget ?? "",
     currency: project?.currency ?? "GBP",
     tagIds: project?.tags?.map((tag) => tag.id) ?? [],
@@ -100,6 +101,8 @@ export function toCreateProjectVariables(values) {
     status: toApiStatus("projectStatus", values.status),
     priority: values.priority ? String(values.priority).toLowerCase() : null,
     projectManagerId: values.projectManagerId || null,
+    startDate: toApiDate(values.startDate),
+    endDate: toApiDate(values.endDate),
     budget: values.budget,
     currency: values.currency,
     health: toApiStatus("projectHealth", "ON_TRACK"),
@@ -115,6 +118,8 @@ export function toUpdateProjectVariables(id, values) {
     status: toApiStatus("projectStatus", values.status),
     priority: values.priority ? String(values.priority).toLowerCase() : null,
     projectManagerId: values.projectManagerId || null,
+    startDate: toApiDate(values.startDate),
+    endDate: toApiDate(values.endDate),
     budget: values.budget,
     currency: values.currency,
     health: toApiStatus("projectHealth", "ON_TRACK"),

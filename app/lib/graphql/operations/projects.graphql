@@ -22,6 +22,8 @@ fragment ProjectRow on ProjectType {
   actualCost
   currency
   companyId
+  startDate
+  endDate
   projectManagerId
   projectManager {
     id
@@ -44,6 +46,8 @@ fragment ProjectHeader on ProjectType {
   actualCost
   currency
   companyId
+  startDate
+  endDate
   projectManagerId
   projectManager {
     id
@@ -64,6 +68,8 @@ fragment PhaseFields on PhaseType {
   name
   orderIndex
   status
+  startDate
+  dueDate
 }
 
 fragment MilestoneFields on MilestoneType {
@@ -108,6 +114,8 @@ fragment TaskFields on TaskType {
   priority
   estimatedHours
   actualHours
+  startDate
+  dueDate
   subtasks {
     id
     title
@@ -216,6 +224,8 @@ mutation CreateProject(
   $status: String!
   $priority: String
   $projectManagerId: ID
+  $startDate: Date
+  $endDate: Date
   $budget: Float
   $currency: String
   $health: String
@@ -227,6 +237,8 @@ mutation CreateProject(
     status: $status
     priority: $priority
     projectManagerId: $projectManagerId
+    startDate: $startDate
+    endDate: $endDate
     budget: $budget
     currency: $currency
     health: $health
@@ -242,6 +254,8 @@ mutation UpdateProject(
   $status: String
   $priority: String
   $projectManagerId: ID
+  $startDate: Date
+  $endDate: Date
   $budget: Float
   $currency: String
   $health: String
@@ -253,6 +267,8 @@ mutation UpdateProject(
     status: $status
     priority: $priority
     projectManagerId: $projectManagerId
+    startDate: $startDate
+    endDate: $endDate
     budget: $budget
     currency: $currency
     health: $health
@@ -261,14 +277,35 @@ mutation UpdateProject(
   }
 }
 
-mutation CreatePhase($projectId: ID!, $name: String!, $orderIndex: Int!, $status: String!) {
-  createPhase(projectId: $projectId, name: $name, orderIndex: $orderIndex, status: $status) {
+mutation CreatePhase(
+  $projectId: ID!
+  $name: String!
+  $orderIndex: Int!
+  $status: String!
+  $startDate: Date
+  $dueDate: Date
+) {
+  createPhase(
+    projectId: $projectId
+    name: $name
+    orderIndex: $orderIndex
+    status: $status
+    startDate: $startDate
+    dueDate: $dueDate
+  ) {
     ...PhaseFields
   }
 }
 
-mutation UpdatePhase($id: ID!, $name: String, $orderIndex: Int, $status: String) {
-  updatePhase(id: $id, name: $name, orderIndex: $orderIndex, status: $status) {
+mutation UpdatePhase(
+  $id: ID!
+  $name: String
+  $orderIndex: Int
+  $status: String
+  $startDate: Date
+  $dueDate: Date
+) {
+  updatePhase(id: $id, name: $name, orderIndex: $orderIndex, status: $status, startDate: $startDate, dueDate: $dueDate) {
     ...PhaseFields
   }
 }
@@ -278,14 +315,41 @@ mutation CreateMilestone(
   $title: String!
   $orderIndex: Int!
   $status: String!
+  $description: String
+  $dueDate: Date
+  $requiresClientApproval: Boolean
 ) {
-  createMilestone(phaseId: $phaseId, title: $title, orderIndex: $orderIndex, status: $status) {
+  createMilestone(
+    phaseId: $phaseId
+    title: $title
+    orderIndex: $orderIndex
+    status: $status
+    description: $description
+    dueDate: $dueDate
+    requiresClientApproval: $requiresClientApproval
+  ) {
     ...MilestoneFields
   }
 }
 
-mutation UpdateMilestone($id: ID!, $title: String, $orderIndex: Int, $status: String) {
-  updateMilestone(id: $id, title: $title, orderIndex: $orderIndex, status: $status) {
+mutation UpdateMilestone(
+  $id: ID!
+  $title: String
+  $orderIndex: Int
+  $status: String
+  $description: String
+  $dueDate: Date
+  $requiresClientApproval: Boolean
+) {
+  updateMilestone(
+    id: $id
+    title: $title
+    orderIndex: $orderIndex
+    status: $status
+    description: $description
+    dueDate: $dueDate
+    requiresClientApproval: $requiresClientApproval
+  ) {
     ...MilestoneFields
   }
 }
@@ -303,9 +367,12 @@ mutation CreateTask(
   $title: String!
   $milestoneId: ID
   $parentTaskId: ID
+  $description: String
   $assigneeId: ID
   $status: String!
   $priority: String!
+  $startDate: Date
+  $dueDate: Date
   $estimatedHours: Float
 ) {
   createTask(
@@ -314,9 +381,12 @@ mutation CreateTask(
     title: $title
     milestoneId: $milestoneId
     parentTaskId: $parentTaskId
+    description: $description
     assigneeId: $assigneeId
     status: $status
     priority: $priority
+    startDate: $startDate
+    dueDate: $dueDate
     estimatedHours: $estimatedHours
   ) {
     ...TaskFields
@@ -326,18 +396,30 @@ mutation CreateTask(
 mutation UpdateTask(
   $id: ID!
   $title: String
+  $description: String
   $status: String
   $priority: String
+  $phaseId: ID
+  $milestoneId: ID
+  $parentTaskId: ID
   $assigneeId: ID
+  $startDate: Date
+  $dueDate: Date
   $estimatedHours: Float
   $actualHours: Float
 ) {
   updateTask(
     id: $id
     title: $title
+    description: $description
     status: $status
     priority: $priority
+    phaseId: $phaseId
+    milestoneId: $milestoneId
+    parentTaskId: $parentTaskId
     assigneeId: $assigneeId
+    startDate: $startDate
+    dueDate: $dueDate
     estimatedHours: $estimatedHours
     actualHours: $actualHours
   ) {
@@ -386,20 +468,20 @@ query ProjectTeam($id: ID!) {
       title
       isPrimary
     }
+    company {
+      id
+      contacts {
+        id
+        firstName
+        lastName
+        email
+        title
+        isPrimary
+      }
+    }
   }
   users {
     ...UserSummaryFields
-  }
-  companies {
-    id
-    contacts {
-      id
-      firstName
-      lastName
-      email
-      title
-      isPrimary
-    }
   }
 }
 

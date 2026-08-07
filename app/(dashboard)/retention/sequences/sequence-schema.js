@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { SEQUENCE_ASSIGNEE_ROLES } from "@/app/lib/assignee-roles";
+import { toUiStatus } from "@/app/lib/api/normalize";
 
 /**
  * Client-side validation for the sequence builder. Mirrors the rules the mock
@@ -86,20 +87,23 @@ export function sequenceToFormValues(sequence) {
   return {
     name: sequence?.name ?? "",
     description: sequence?.description ?? "",
-    triggerType: sequence?.triggerType ?? "MANUAL",
+    triggerType: toUiStatus("sequenceTriggerType", sequence?.triggerType) ?? "MANUAL",
     isActive: sequence?.isActive ?? true,
     steps: sequence?.steps?.length
       ? [...sequence.steps]
           .sort((a, b) => a.stepOrder - b.stepOrder)
-          .map((step) => ({
-            clientId: nextClientId(),
-            id: step.id,
-            name: step.name ?? "",
-            channel: step.channel === "EMAIL" ? "CALL" : step.channel,
-            offsetDays: step.offsetDays,
-            assigneeRole: step.assigneeRole ?? "",
-            templateId: step.channel === "EMAIL" ? "" : (step.templateId ?? ""),
-          }))
+          .map((step) => {
+            const channel = toUiStatus("touchpointChannel", step.channel) ?? "CALL";
+            return {
+              clientId: nextClientId(),
+              id: step.id,
+              name: step.name ?? "",
+              channel: channel === "EMAIL" ? "CALL" : channel,
+              offsetDays: step.offsetDays,
+              assigneeRole: step.assigneeRole ? String(step.assigneeRole).toUpperCase() : "",
+              templateId: channel === "EMAIL" ? "" : (step.templateId ?? ""),
+            };
+          })
       : [
           {
             clientId: nextClientId(),

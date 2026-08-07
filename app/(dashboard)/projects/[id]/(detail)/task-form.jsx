@@ -90,6 +90,8 @@ export function TaskForm({ projectId, task, defaults, phases = [], milestones = 
       } else {
         const { data } = await updateTask({
           variables: toUpdateTaskVariables(task.id, values),
+          update: (cache) =>
+            cache.evict({ id: cache.identify({ __typename: "ProjectType", id: projectId }) }),
         });
         toast.success(`“${data.updateTask.title}” updated`);
       }

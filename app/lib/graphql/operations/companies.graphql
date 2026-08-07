@@ -37,6 +37,7 @@ fragment ContactFields on ContactType {
   department
   isPrimary
   preferredChannel
+  bestTimeToContact
   timezone
   portalAccessEnabled
   portalCanRaiseRequests
@@ -278,6 +279,7 @@ mutation CreateContact(
   $department: String
   $isPrimary: Boolean!
   $preferredChannel: String
+  $bestTimeToContact: String
   $timezone: String
   $portalAccessEnabled: Boolean!
   $portalCanRaiseRequests: Boolean!
@@ -295,6 +297,7 @@ mutation CreateContact(
     department: $department
     isPrimary: $isPrimary
     preferredChannel: $preferredChannel
+    bestTimeToContact: $bestTimeToContact
     timezone: $timezone
     portalAccessEnabled: $portalAccessEnabled
     portalCanRaiseRequests: $portalCanRaiseRequests
@@ -316,6 +319,7 @@ mutation UpdateContact(
   $department: String
   $isPrimary: Boolean
   $preferredChannel: String
+  $bestTimeToContact: String
   $timezone: String
   $portalAccessEnabled: Boolean
   $portalCanRaiseRequests: Boolean
@@ -333,6 +337,7 @@ mutation UpdateContact(
     department: $department
     isPrimary: $isPrimary
     preferredChannel: $preferredChannel
+    bestTimeToContact: $bestTimeToContact
     timezone: $timezone
     portalAccessEnabled: $portalAccessEnabled
     portalCanRaiseRequests: $portalCanRaiseRequests

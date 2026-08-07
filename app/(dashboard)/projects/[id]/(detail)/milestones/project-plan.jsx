@@ -388,6 +388,7 @@ function PlanSheet({ projectId, panel, phases, milestones, onClose }) {
 
             {isPhase ? (
               <PhaseForm
+                key={phase?.id ?? "create"}
                 projectId={projectId}
                 phase={panel.mode === "phase-edit" ? phase : null}
                 orderIndex={phase?.orderIndex ?? phases.length}
@@ -396,6 +397,7 @@ function PlanSheet({ projectId, panel, phases, milestones, onClose }) {
               />
             ) : (
               <MilestoneForm
+                key={milestone?.id ?? "create"}
                 milestone={panel.mode === "milestone-edit" ? milestone : null}
                 defaults={panel.defaults}
                 phases={phases}

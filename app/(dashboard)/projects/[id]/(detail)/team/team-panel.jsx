@@ -329,31 +329,48 @@ export function TeamPanel({
           title="Add a client contact"
           description="A roster entry only — it doesn't change what this contact can see in their portal."
         >
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Select value={selectedContactId} onValueChange={setSelectedContactId}>
-              <SelectTrigger className="h-10 w-full sm:max-w-sm">
-                <SelectValue placeholder="Choose a client contact" />
-              </SelectTrigger>
-              <SelectContent>
-                {addableContacts.length === 0 ? (
-                  <p className="px-2 py-1.5 text-caption text-muted-foreground">
-                    No more contacts to add for this client
-                  </p>
-                ) : (
-                  addableContacts.map((contact) => (
-                    <SelectItem key={contact.id} value={contact.id}>
-                      {contactFullName(contact)}
-                      {contact.isPrimary ? " (primary)" : ""}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-            <Button onClick={handleAddContact} disabled={!selectedContactId || addingContact}>
-              <UserPlus aria-hidden="true" />
-              {addingContact ? "Adding…" : "Add to roster"}
-            </Button>
-          </div>
+          {companyContacts.length === 0 ? (
+            <p className="text-caption text-muted-foreground">
+              This client has no contacts yet. Add them from the client&apos;s Contacts tab first.
+            </p>
+          ) : (
+            <>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Select
+                  value={selectedContactId}
+                  onValueChange={setSelectedContactId}
+                  disabled={addableContacts.length === 0}
+                >
+                  <SelectTrigger className="h-10 w-full sm:max-w-sm">
+                    <SelectValue
+                      placeholder={
+                        addableContacts.length === 0
+                          ? "No contacts left to add"
+                          : "Choose a client contact"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {addableContacts.map((contact) => (
+                      <SelectItem key={contact.id} value={contact.id}>
+                        {contactFullName(contact)}
+                        {contact.isPrimary ? " (primary)" : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button onClick={handleAddContact} disabled={!selectedContactId || addingContact}>
+                  <UserPlus aria-hidden="true" />
+                  {addingContact ? "Adding…" : "Add to roster"}
+                </Button>
+              </div>
+              {addableContacts.length === 0 ? (
+                <p className="mt-2 text-caption text-muted-foreground">
+                  Every contact for this client is already on the project roster.
+                </p>
+              ) : null}
+            </>
+          )}
         </SectionCard>
       ) : null}
 

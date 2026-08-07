@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+import { toApiStatus, toUiStatus } from "@/app/lib/api/normalize";
+import { toApiDate, toDateInputValue } from "@/app/lib/date-input";
+
 /** Client-side validation for the task form. Mirrors `TaskInput`. */
 
 const optionalText = (max, message) =>
@@ -53,14 +56,14 @@ export function taskToFormValues(task, defaults = {}) {
   return {
     title: task?.title ?? "",
     description: task?.description ?? "",
-    status: task?.status ?? defaults.status ?? "TODO",
-    priority: task?.priority ?? "MEDIUM",
+    status: toUiStatus("taskStatus", task?.status) ?? defaults.status ?? "TODO",
+    priority: toUiStatus("priority", task?.priority) ?? "MEDIUM",
     assigneeId: task?.assigneeId ?? "",
     phaseId: task?.phaseId ?? defaults.phaseId ?? "",
     milestoneId: task?.milestoneId ?? defaults.milestoneId ?? "",
     parentTaskId: task?.parentTaskId ?? defaults.parentTaskId ?? "",
-    startDate: task?.startDate ?? "",
-    dueDate: task?.dueDate ?? "",
+    startDate: toDateInputValue(task?.startDate),
+    dueDate: toDateInputValue(task?.dueDate),
     estimatedHours: task?.estimatedHours ?? "",
   };
 }
@@ -70,11 +73,14 @@ export function toCreateTaskVariables(values, projectId, phaseId) {
     projectId,
     phaseId,
     title: values.title,
+    description: values.description,
     milestoneId: values.milestoneId || undefined,
     parentTaskId: values.parentTaskId || undefined,
     assigneeId: values.assigneeId || undefined,
     status: mapTaskStatus(values.status),
     priority: mapPriority(values.priority),
+    startDate: toApiDate(values.startDate),
+    dueDate: toApiDate(values.dueDate),
     estimatedHours: values.estimatedHours ?? undefined,
   };
 }
@@ -83,9 +89,15 @@ export function toUpdateTaskVariables(taskId, values) {
   return {
     id: taskId,
     title: values.title,
+    description: values.description,
     status: mapTaskStatus(values.status),
     priority: mapPriority(values.priority),
+    phaseId: values.phaseId || undefined,
+    milestoneId: values.milestoneId || undefined,
+    parentTaskId: values.parentTaskId || undefined,
     assigneeId: values.assigneeId || undefined,
+    startDate: toApiDate(values.startDate),
+    dueDate: toApiDate(values.dueDate),
     estimatedHours: values.estimatedHours ?? undefined,
   };
 }

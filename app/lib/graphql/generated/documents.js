@@ -120,6 +120,7 @@ fragment ContactFields on ContactType {
   department
   isPrimary
   preferredChannel
+  bestTimeToContact
   timezone
   portalAccessEnabled
   portalCanRaiseRequests
@@ -226,6 +227,8 @@ fragment PhaseFields on PhaseType {
   name
   orderIndex
   status
+  startDate
+  dueDate
 }`;
 
 export const PortalChangeRequestFieldsFragmentDoc = gql`
@@ -309,6 +312,8 @@ fragment ProjectHeader on ProjectType {
   actualCost
   currency
   companyId
+  startDate
+  endDate
   projectManagerId
   projectManager {
     id
@@ -346,6 +351,8 @@ fragment ProjectRow on ProjectType {
   actualCost
   currency
   companyId
+  startDate
+  endDate
   projectManagerId
   projectManager {
     id
@@ -398,6 +405,8 @@ fragment TaskFields on TaskType {
   priority
   estimatedHours
   actualHours
+  startDate
+  dueDate
   subtasks {
     id
     title
@@ -842,6 +851,7 @@ fragment ContactFields on ContactType {
   department
   isPrimary
   preferredChannel
+  bestTimeToContact
   timezone
   portalAccessEnabled
   portalCanRaiseRequests
@@ -1080,6 +1090,7 @@ fragment ContactFields on ContactType {
   department
   isPrimary
   preferredChannel
+  bestTimeToContact
   timezone
   portalAccessEnabled
   portalCanRaiseRequests
@@ -1296,7 +1307,7 @@ fragment UserSummaryFields on UserSummaryType {
 }`;
 
 export const CreateContactDocument = gql`
-mutation CreateContact($companyId: ID!, $firstName: String!, $lastName: String!, $email: String, $phone: String, $title: String, $department: String, $isPrimary: Boolean!, $preferredChannel: String, $timezone: String, $portalAccessEnabled: Boolean!, $portalCanRaiseRequests: Boolean!, $portalPassword: String, $linkedinUrl: String, $status: String!) {
+mutation CreateContact($companyId: ID!, $firstName: String!, $lastName: String!, $email: String, $phone: String, $title: String, $department: String, $isPrimary: Boolean!, $preferredChannel: String, $bestTimeToContact: String, $timezone: String, $portalAccessEnabled: Boolean!, $portalCanRaiseRequests: Boolean!, $portalPassword: String, $linkedinUrl: String, $status: String!) {
   createContact(
     companyId: $companyId
     firstName: $firstName
@@ -1307,6 +1318,7 @@ mutation CreateContact($companyId: ID!, $firstName: String!, $lastName: String!,
     department: $department
     isPrimary: $isPrimary
     preferredChannel: $preferredChannel
+    bestTimeToContact: $bestTimeToContact
     timezone: $timezone
     portalAccessEnabled: $portalAccessEnabled
     portalCanRaiseRequests: $portalCanRaiseRequests
@@ -1328,6 +1340,7 @@ fragment ContactFields on ContactType {
   department
   isPrimary
   preferredChannel
+  bestTimeToContact
   timezone
   portalAccessEnabled
   portalCanRaiseRequests
@@ -1399,12 +1412,15 @@ fragment InvoiceFields on InvoiceType {
 }`;
 
 export const CreateMilestoneDocument = gql`
-mutation CreateMilestone($phaseId: ID!, $title: String!, $orderIndex: Int!, $status: String!) {
+mutation CreateMilestone($phaseId: ID!, $title: String!, $orderIndex: Int!, $status: String!, $description: String, $dueDate: Date, $requiresClientApproval: Boolean) {
   createMilestone(
     phaseId: $phaseId
     title: $title
     orderIndex: $orderIndex
     status: $status
+    description: $description
+    dueDate: $dueDate
+    requiresClientApproval: $requiresClientApproval
   ) {
     ...MilestoneFields
   }
@@ -1432,12 +1448,14 @@ fragment MilestoneFields on MilestoneType {
 }`;
 
 export const CreatePhaseDocument = gql`
-mutation CreatePhase($projectId: ID!, $name: String!, $orderIndex: Int!, $status: String!) {
+mutation CreatePhase($projectId: ID!, $name: String!, $orderIndex: Int!, $status: String!, $startDate: Date, $dueDate: Date) {
   createPhase(
     projectId: $projectId
     name: $name
     orderIndex: $orderIndex
     status: $status
+    startDate: $startDate
+    dueDate: $dueDate
   ) {
     ...PhaseFields
   }
@@ -1448,10 +1466,12 @@ fragment PhaseFields on PhaseType {
   name
   orderIndex
   status
+  startDate
+  dueDate
 }`;
 
 export const CreateProjectDocument = gql`
-mutation CreateProject($companyId: ID!, $name: String!, $description: String, $status: String!, $priority: String, $projectManagerId: ID, $budget: Float, $currency: String, $health: String) {
+mutation CreateProject($companyId: ID!, $name: String!, $description: String, $status: String!, $priority: String, $projectManagerId: ID, $startDate: Date, $endDate: Date, $budget: Float, $currency: String, $health: String) {
   createProject(
     companyId: $companyId
     name: $name
@@ -1459,6 +1479,8 @@ mutation CreateProject($companyId: ID!, $name: String!, $description: String, $s
     status: $status
     priority: $priority
     projectManagerId: $projectManagerId
+    startDate: $startDate
+    endDate: $endDate
     budget: $budget
     currency: $currency
     health: $health
@@ -1476,6 +1498,8 @@ fragment ProjectRow on ProjectType {
   actualCost
   currency
   companyId
+  startDate
+  endDate
   projectManagerId
   projectManager {
     id
@@ -1522,16 +1546,19 @@ fragment TagFields on TagType {
 }`;
 
 export const CreateTaskDocument = gql`
-mutation CreateTask($projectId: ID!, $phaseId: ID!, $title: String!, $milestoneId: ID, $parentTaskId: ID, $assigneeId: ID, $status: String!, $priority: String!, $estimatedHours: Float) {
+mutation CreateTask($projectId: ID!, $phaseId: ID!, $title: String!, $milestoneId: ID, $parentTaskId: ID, $description: String, $assigneeId: ID, $status: String!, $priority: String!, $startDate: Date, $dueDate: Date, $estimatedHours: Float) {
   createTask(
     projectId: $projectId
     phaseId: $phaseId
     title: $title
     milestoneId: $milestoneId
     parentTaskId: $parentTaskId
+    description: $description
     assigneeId: $assigneeId
     status: $status
     priority: $priority
+    startDate: $startDate
+    dueDate: $dueDate
     estimatedHours: $estimatedHours
   ) {
     ...TaskFields
@@ -1557,6 +1584,8 @@ fragment TaskFields on TaskType {
   priority
   estimatedHours
   actualHours
+  startDate
+  dueDate
   subtasks {
     id
     title
@@ -2187,6 +2216,8 @@ fragment TaskFields on TaskType {
   priority
   estimatedHours
   actualHours
+  startDate
+  dueDate
   subtasks {
     id
     title
@@ -2245,6 +2276,8 @@ fragment TaskFields on TaskType {
   priority
   estimatedHours
   actualHours
+  startDate
+  dueDate
   subtasks {
     id
     title
@@ -2302,6 +2335,8 @@ fragment ProjectHeader on ProjectType {
   actualCost
   currency
   companyId
+  startDate
+  endDate
   projectManagerId
   projectManager {
     id
@@ -2357,6 +2392,8 @@ fragment ProjectHeader on ProjectType {
   actualCost
   currency
   companyId
+  startDate
+  endDate
   projectManagerId
   projectManager {
     id
@@ -2454,6 +2491,8 @@ fragment PhaseFields on PhaseType {
   name
   orderIndex
   status
+  startDate
+  dueDate
 }
 fragment TaskFields on TaskType {
   id
@@ -2475,6 +2514,8 @@ fragment TaskFields on TaskType {
   priority
   estimatedHours
   actualHours
+  startDate
+  dueDate
   subtasks {
     id
     title
@@ -2527,6 +2568,8 @@ fragment ProjectRow on ProjectType {
   actualCost
   currency
   companyId
+  startDate
+  endDate
   projectManagerId
   projectManager {
     id
@@ -2599,6 +2642,8 @@ fragment PhaseFields on PhaseType {
   name
   orderIndex
   status
+  startDate
+  dueDate
 }
 fragment TaskFields on TaskType {
   id
@@ -2620,6 +2665,8 @@ fragment TaskFields on TaskType {
   priority
   estimatedHours
   actualHours
+  startDate
+  dueDate
   subtasks {
     id
     title
@@ -2666,20 +2713,20 @@ query ProjectTeam($id: ID!) {
       title
       isPrimary
     }
+    company {
+      id
+      contacts {
+        id
+        firstName
+        lastName
+        email
+        title
+        isPrimary
+      }
+    }
   }
   users {
     ...UserSummaryFields
-  }
-  companies {
-    id
-    contacts {
-      id
-      firstName
-      lastName
-      email
-      title
-      isPrimary
-    }
   }
 }
 fragment UserSummaryFields on UserSummaryType {
@@ -3042,7 +3089,7 @@ fragment UserSummaryFields on UserSummaryType {
 }`;
 
 export const UpdateContactDocument = gql`
-mutation UpdateContact($id: ID!, $firstName: String, $lastName: String, $email: String, $phone: String, $title: String, $department: String, $isPrimary: Boolean, $preferredChannel: String, $timezone: String, $portalAccessEnabled: Boolean, $portalCanRaiseRequests: Boolean, $portalPassword: String, $linkedinUrl: String, $status: String) {
+mutation UpdateContact($id: ID!, $firstName: String, $lastName: String, $email: String, $phone: String, $title: String, $department: String, $isPrimary: Boolean, $preferredChannel: String, $bestTimeToContact: String, $timezone: String, $portalAccessEnabled: Boolean, $portalCanRaiseRequests: Boolean, $portalPassword: String, $linkedinUrl: String, $status: String) {
   updateContact(
     id: $id
     firstName: $firstName
@@ -3053,6 +3100,7 @@ mutation UpdateContact($id: ID!, $firstName: String, $lastName: String, $email: 
     department: $department
     isPrimary: $isPrimary
     preferredChannel: $preferredChannel
+    bestTimeToContact: $bestTimeToContact
     timezone: $timezone
     portalAccessEnabled: $portalAccessEnabled
     portalCanRaiseRequests: $portalCanRaiseRequests
@@ -3074,6 +3122,7 @@ fragment ContactFields on ContactType {
   department
   isPrimary
   preferredChannel
+  bestTimeToContact
   timezone
   portalAccessEnabled
   portalCanRaiseRequests
@@ -3145,12 +3194,15 @@ fragment InvoiceFields on InvoiceType {
 }`;
 
 export const UpdateMilestoneDocument = gql`
-mutation UpdateMilestone($id: ID!, $title: String, $orderIndex: Int, $status: String) {
+mutation UpdateMilestone($id: ID!, $title: String, $orderIndex: Int, $status: String, $description: String, $dueDate: Date, $requiresClientApproval: Boolean) {
   updateMilestone(
     id: $id
     title: $title
     orderIndex: $orderIndex
     status: $status
+    description: $description
+    dueDate: $dueDate
+    requiresClientApproval: $requiresClientApproval
   ) {
     ...MilestoneFields
   }
@@ -3264,8 +3316,15 @@ fragment OrgSettingsFields on OrgSettingsType {
 }`;
 
 export const UpdatePhaseDocument = gql`
-mutation UpdatePhase($id: ID!, $name: String, $orderIndex: Int, $status: String) {
-  updatePhase(id: $id, name: $name, orderIndex: $orderIndex, status: $status) {
+mutation UpdatePhase($id: ID!, $name: String, $orderIndex: Int, $status: String, $startDate: Date, $dueDate: Date) {
+  updatePhase(
+    id: $id
+    name: $name
+    orderIndex: $orderIndex
+    status: $status
+    startDate: $startDate
+    dueDate: $dueDate
+  ) {
     ...PhaseFields
   }
 }
@@ -3275,10 +3334,12 @@ fragment PhaseFields on PhaseType {
   name
   orderIndex
   status
+  startDate
+  dueDate
 }`;
 
 export const UpdateProjectDocument = gql`
-mutation UpdateProject($id: ID!, $name: String, $description: String, $status: String, $priority: String, $projectManagerId: ID, $budget: Float, $currency: String, $health: String) {
+mutation UpdateProject($id: ID!, $name: String, $description: String, $status: String, $priority: String, $projectManagerId: ID, $startDate: Date, $endDate: Date, $budget: Float, $currency: String, $health: String) {
   updateProject(
     id: $id
     name: $name
@@ -3286,6 +3347,8 @@ mutation UpdateProject($id: ID!, $name: String, $description: String, $status: S
     status: $status
     priority: $priority
     projectManagerId: $projectManagerId
+    startDate: $startDate
+    endDate: $endDate
     budget: $budget
     currency: $currency
     health: $health
@@ -3304,6 +3367,8 @@ fragment ProjectHeader on ProjectType {
   actualCost
   currency
   companyId
+  startDate
+  endDate
   projectManagerId
   projectManager {
     id
@@ -3351,13 +3416,19 @@ fragment RetentionSequenceRow on RetentionSequenceType {
 }`;
 
 export const UpdateTaskDocument = gql`
-mutation UpdateTask($id: ID!, $title: String, $status: String, $priority: String, $assigneeId: ID, $estimatedHours: Float, $actualHours: Float) {
+mutation UpdateTask($id: ID!, $title: String, $description: String, $status: String, $priority: String, $phaseId: ID, $milestoneId: ID, $parentTaskId: ID, $assigneeId: ID, $startDate: Date, $dueDate: Date, $estimatedHours: Float, $actualHours: Float) {
   updateTask(
     id: $id
     title: $title
+    description: $description
     status: $status
     priority: $priority
+    phaseId: $phaseId
+    milestoneId: $milestoneId
+    parentTaskId: $parentTaskId
     assigneeId: $assigneeId
+    startDate: $startDate
+    dueDate: $dueDate
     estimatedHours: $estimatedHours
     actualHours: $actualHours
   ) {
@@ -3384,6 +3455,8 @@ fragment TaskFields on TaskType {
   priority
   estimatedHours
   actualHours
+  startDate
+  dueDate
   subtasks {
     id
     title
@@ -3431,6 +3504,8 @@ fragment TaskFields on TaskType {
   priority
   estimatedHours
   actualHours
+  startDate
+  dueDate
   subtasks {
     id
     title

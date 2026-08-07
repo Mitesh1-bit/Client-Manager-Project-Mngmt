@@ -47,14 +47,19 @@ const websiteField = z
     "Enter a valid website, like northwind.health",
   );
 
-export const addressSchema = z.object({
-  line1: optionalText(120, "Keep this under 120 characters."),
-  line2: optionalText(120, "Keep this under 120 characters."),
-  city: optionalText(80, "Keep this under 80 characters."),
-  region: optionalText(80, "Keep this under 80 characters."),
-  postalCode: optionalText(20, "Keep this under 20 characters."),
-  country: optionalText(60, "Keep this under 60 characters."),
-});
+export const addressSchema = z
+  .object({
+    line1: optionalText(120, "Keep this under 120 characters."),
+    line2: optionalText(120, "Keep this under 120 characters."),
+    city: optionalText(80, "Keep this under 80 characters."),
+    region: optionalText(80, "Keep this under 80 characters."),
+    postalCode: optionalText(20, "Keep this under 20 characters."),
+    country: optionalText(60, "Keep this under 60 characters."),
+  })
+  .refine((values) => !values.country || values.city, {
+    path: ["city"],
+    message: "Choose a city from the list.",
+  });
 
 export const companySchema = z.object({
   name: z

@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+import { toUiStatus } from "@/app/lib/api/normalize";
+import { toApiDate, toDateInputValue } from "@/app/lib/date-input";
+
 /** Validation for the phase and milestone forms. Mirrors `PhaseInput` / `MilestoneInput`. */
 
 const optionalDate = z
@@ -47,9 +50,9 @@ export const milestoneSchema = z.object({
 export function phaseToFormValues(phase) {
   return {
     name: phase?.name ?? "",
-    status: phase?.status ?? "NOT_STARTED",
-    startDate: phase?.startDate ?? "",
-    dueDate: phase?.dueDate ?? "",
+    status: toUiStatus("phaseStatus", phase?.status) ?? "NOT_STARTED",
+    startDate: toDateInputValue(phase?.startDate),
+    dueDate: toDateInputValue(phase?.dueDate),
   };
 }
 
@@ -58,7 +61,7 @@ export function milestoneToFormValues(milestone, defaults = {}) {
     phaseId: milestone?.phase?.id ?? defaults.phaseId ?? "",
     title: milestone?.title ?? "",
     description: milestone?.description ?? "",
-    dueDate: milestone?.dueDate ?? "",
+    dueDate: toDateInputValue(milestone?.dueDate),
     requiresClientApproval: milestone?.requiresClientApproval ?? false,
   };
 }
@@ -74,6 +77,8 @@ export function toCreatePhaseVariables(values, projectId, orderIndex) {
     name: values.name,
     orderIndex,
     status: planStatusToApi(values.status),
+    startDate: toApiDate(values.startDate),
+    dueDate: toApiDate(values.dueDate),
   };
 }
 
@@ -84,6 +89,8 @@ export function toUpdatePhaseVariables(id, values, orderIndex) {
     name: values.name,
     orderIndex,
     status: planStatusToApi(values.status),
+    startDate: toApiDate(values.startDate),
+    dueDate: toApiDate(values.dueDate),
   };
 }
 
@@ -92,8 +99,11 @@ export function toCreateMilestoneVariables(values, orderIndex) {
   return {
     phaseId: values.phaseId,
     title: values.title,
+    description: values.description,
     orderIndex,
     status: "not_started",
+    dueDate: toApiDate(values.dueDate),
+    requiresClientApproval: values.requiresClientApproval,
   };
 }
 
@@ -102,6 +112,9 @@ export function toUpdateMilestoneVariables(id, values) {
   return {
     id,
     title: values.title,
+    description: values.description,
+    dueDate: toApiDate(values.dueDate),
+    requiresClientApproval: values.requiresClientApproval,
   };
 }
 

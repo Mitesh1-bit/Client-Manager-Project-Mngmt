@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { BackLink } from "@/app/components/domain/back-link";
 import { PageHeader } from "@/app/components/domain/page-header";
+import { normalizeProject } from "@/app/lib/api/normalize";
 import { pickList } from "@/app/lib/api/safe-list";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
@@ -27,17 +28,24 @@ export default async function EditProjectPage({ params }) {
 
   if (!data.project) notFound();
 
+  const companies = pickList(options, "companies");
+  const users = pickList(options, "users");
+  const companiesById = new Map(companies.map((company) => [String(company.id), company]));
+  const usersById = new Map(users.map((user) => [String(user.id), user]));
+  const project = normalizeProject(data.project, usersById, companiesById);
+
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <BackLink href={`/projects/${id}`}>Back to {data.project.name}</BackLink>
+      <BackLink href={`/projects/${id}`}>Back to {project.name}</BackLink>
 
-      <PageHeader title={`Edit ${data.project.name}`} />
+      <PageHeader title={`Edit ${project.name}`} />
 
       <ProjectForm
+        key={project.id}
         mode="edit"
-        project={data.project}
-        companies={pickList(options, "companies")}
-        users={pickList(options, "users")}
+        project={project}
+        companies={companies}
+        users={users}
         tags={pickList(options, "tags")}
       />
     </div>

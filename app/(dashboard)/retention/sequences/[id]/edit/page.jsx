@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { BackLink } from "@/app/components/domain/back-link";
 import { PageHeader } from "@/app/components/domain/page-header";
+import { normalizeRetentionSequence } from "@/app/lib/api/normalize";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { RetentionSequenceDetailDocument } from "@/app/lib/graphql/generated/documents";
 
@@ -25,13 +26,15 @@ export default async function EditSequencePage({ params }) {
 
   if (!data.retentionSequence) notFound();
 
+  const sequence = normalizeRetentionSequence(data.retentionSequence);
+
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <BackLink href={`/retention/sequences/${id}`}>Back to {data.retentionSequence.name}</BackLink>
+      <BackLink href={`/retention/sequences/${id}`}>Back to {sequence.name}</BackLink>
 
-      <PageHeader title={`Edit ${data.retentionSequence.name}`} />
+      <PageHeader title={`Edit ${sequence.name}`} />
 
-      <SequenceBuilder mode="edit" sequence={data.retentionSequence} />
+      <SequenceBuilder key={sequence.id} mode="edit" sequence={sequence} />
     </div>
   );
 }

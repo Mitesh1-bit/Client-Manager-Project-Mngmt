@@ -2,14 +2,14 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Building2, Clock, TriangleAlert } from "lucide-react";
 
 import { DataTable } from "@/app/components/domain/data-table";
 import { PaginationBar } from "@/app/components/domain/pagination-bar";
 import { StatusBadge } from "@/app/components/domain/status-badge";
 import { formatCurrency, formatRelativeDays, humanizeType, initials } from "@/app/lib/format";
-import { buildQuery, sortToParams } from "@/app/lib/list-params";
+import { buildListHref, sortToParams } from "@/app/lib/list-params";
 import { cn } from "@/app/lib/utils";
 
 const AWAITING = {
@@ -20,6 +20,7 @@ const AWAITING = {
 
 export function ChangeRequestsTable({ connection, sort, emptyState }) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const columns = useMemo(
@@ -164,7 +165,7 @@ export function ChangeRequestsTable({ connection, sort, emptyState }) {
         columns={columns}
         sort={sort}
         onSortChange={(next) =>
-          router.push(buildQuery(searchParams, sortToParams(next)), { scroll: false })
+          router.push(buildListHref(pathname, searchParams, sortToParams(next)), { scroll: false })
         }
         getRowId={(row) => row.id}
         getRowHref={(row) => `/change-requests/${row.id}`}

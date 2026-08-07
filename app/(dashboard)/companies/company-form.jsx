@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
@@ -58,24 +58,8 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
   const [serverError, setServerError] = useState(null);
   const [timezoneOptions, setTimezoneOptions] = useState([]);
   const [countryOptions, setCountryOptions] = useState([]);
-
-  useEffect(() => {
-    let active = true;
-    import("@/app/lib/geo-options")
-      .then((mod) => {
-        if (!active) return;
-        setTimezoneOptions(mod.getTimezoneOptions());
-        setCountryOptions(mod.getCountryOptions());
-      })
-      .catch(() => {
-        if (!active) return;
-        setTimezoneOptions([]);
-        setCountryOptions([]);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+  const [stateOptions, setStateOptions] = useState([]);
+  const [cityOptions, setCityOptions] = useState([]);
 
   const [createCompany] = useMutation(CreateCompanyDocument);
   const [updateCompany] = useMutation(UpdateCompanyDocument);
@@ -88,11 +72,102 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
     register,
     control,
     handleSubmit,
+    reset,
+    setValue,
+    watch,
     formState: { errors, isSubmitting, isDirty },
   } = useForm({
     resolver: zodResolver(companySchema),
     defaultValues: companyToFormValues(company),
   });
+
+  const selectedCountry = watch("address.country");
+  const selectedRegion = watch("address.region");
+
+  useEffect(() => {
+    let active = true;
+    import("@/app/lib/geo-options")
+      .then(async (mod) => {
+        if (!active) return;
+        setTimezoneOptions(mod.getTimezoneOptions());
+        setCountryOptions(mod.getCountryOptions());
+
+        if (company?.address) {
+          const resolved = await mod.resolveAddressFormValues(company.address);
+          reset({
+            ...companyToFormValues(company),
+            address: resolved,
+          });
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        setTimezoneOptions([]);
+        setCountryOptions([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [company, reset]);
+
+  useEffect(() => {
+    let active = true;
+    if (!selectedCountry) {
+      setStateOptions([]);
+      return undefined;
+    }
+    import("@/app/lib/geo-options")
+      .then((mod) => mod.getStateOptions(selectedCountry))
+      .then((options) => {
+        if (active) setStateOptions(options);
+      })
+      .catch(() => {
+        if (active) setStateOptions([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [selectedCountry]);
+
+  useEffect(() => {
+    let active = true;
+    if (!selectedCountry) {
+      setCityOptions([]);
+      return undefined;
+    }
+    import("@/app/lib/geo-options")
+      .then(async (mod) => {
+        const states = await mod.getStateOptions(selectedCountry);
+        if (!active) return;
+        if (states.length > 0 && !selectedRegion) {
+          setCityOptions([]);
+          return;
+        }
+        const options = await mod.getCityOptions(
+          selectedCountry,
+          states.length > 0 ? selectedRegion : undefined,
+        );
+        if (active) setCityOptions(options);
+      })
+      .catch(() => {
+        if (active) setCityOptions([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [selectedCountry, selectedRegion, stateOptions.length]);
+
+  const industryOptions = useMemo(
+    () =>
+      industries
+        .map((industry) => ({
+          value: industry.name,
+          label: industry.name,
+          searchText: industry.name.toLowerCase(),
+        }))
+        .sort((left, right) => left.label.localeCompare(right.label)),
+    [industries],
+  );
 
   const tagOptions = tagList.map((tag) => ({ value: tag.id, label: tag.name }));
   const ownerOptions = owners.map((owner) => ({ value: owner.id, label: owner.name }));
@@ -109,17 +184,21 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
     setServerError(null);
 
     try {
+      const geo = await import("@/app/lib/geo-options");
+      const address = await geo.normalizeAddressForStorage(values.address);
+      const payload = { ...values, address: address ?? values.address };
+
       let entityId;
       if (mode === "create") {
         const { data } = await createCompany({
-          variables: toCreateCompanyVariables(values),
+          variables: toCreateCompanyVariables(payload),
           update: (cache) => cache.evict({ fieldName: "companies" }),
         });
         entityId = data.createCompany.id;
         toast.success(`${data.createCompany.name} created`);
         router.push(`/companies/${entityId}`);
       } else {
-        const { data } = await updateCompany({ variables: toUpdateCompanyVariables(company.id, values) });
+        const { data } = await updateCompany({ variables: toUpdateCompanyVariables(company.id, payload) });
         entityId = company.id;
         toast.success(`${data.updateCompany.name} updated`);
         router.push(`/companies/${entityId}`);
@@ -157,18 +236,16 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
                 control={control}
                 name="industry"
                 render={({ field: control_ }) => (
-                  <Select value={control_.value} onValueChange={control_.onChange}>
-                    <SelectTrigger {...field} className="h-10 w-full">
-                      <SelectValue placeholder="Not set" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {industries.map((industry) => (
-                        <SelectItem key={industry.id} value={industry.name}>
-                          {industry.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <SearchableSelect
+                    {...field}
+                    options={industryOptions}
+                    value={control_.value ?? ""}
+                    onChange={control_.onChange}
+                    placeholder="Search industries…"
+                    emptyText="No industry matches."
+                    allowClear
+                    clearLabel="Not set"
+                  />
                 )}
               />
             )}
@@ -336,15 +413,7 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
           <FormField label="Address line 2" error={errors.address?.line2?.message} className="sm:col-span-2">
             {(field) => <Input {...field} {...register("address.line2")} className="h-10" />}
           </FormField>
-          <FormField label="City" error={errors.address?.city?.message}>
-            {(field) => <Input {...field} {...register("address.city")} className="h-10" />}
-          </FormField>
-          <FormField label="Region or state" error={errors.address?.region?.message}>
-            {(field) => <Input {...field} {...register("address.region")} className="h-10" />}
-          </FormField>
-          <FormField label="Postal code" error={errors.address?.postalCode?.message}>
-            {(field) => <Input {...field} {...register("address.postalCode")} className="h-10" />}
-          </FormField>
+
           <FormField label="Country" error={errors.address?.country?.message}>
             {(field) => (
               <Controller
@@ -355,7 +424,11 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
                     {...field}
                     options={countryOptions}
                     value={control_.value ?? ""}
-                    onChange={control_.onChange}
+                    onChange={(value) => {
+                      control_.onChange(value);
+                      setValue("address.region", "");
+                      setValue("address.city", "");
+                    }}
                     placeholder="Search countries…"
                     emptyText="No country matches."
                     allowClear
@@ -364,6 +437,71 @@ export function CompanyForm({ mode, company, owners = [], tags = [], sizes = [],
                 )}
               />
             )}
+          </FormField>
+
+          <FormField label="Region or state" error={errors.address?.region?.message}>
+            {(field) => (
+              <Controller
+                control={control}
+                name="address.region"
+                render={({ field: control_ }) => (
+                  <SearchableSelect
+                    {...field}
+                    options={stateOptions}
+                    value={control_.value ?? ""}
+                    onChange={(value) => {
+                      control_.onChange(value);
+                      setValue("address.city", "");
+                    }}
+                    placeholder={
+                      !selectedCountry
+                        ? "Choose a country first"
+                        : stateOptions.length === 0
+                          ? "Not required for this country"
+                          : "Search states…"
+                    }
+                    emptyText="No state matches."
+                    allowClear
+                    clearLabel="Not set"
+                    disabled={!selectedCountry || stateOptions.length === 0}
+                  />
+                )}
+              />
+            )}
+          </FormField>
+
+          <FormField label="City" error={errors.address?.city?.message}>
+            {(field) => (
+              <Controller
+                control={control}
+                name="address.city"
+                render={({ field: control_ }) => (
+                  <SearchableSelect
+                    {...field}
+                    options={cityOptions}
+                    value={control_.value ?? ""}
+                    onChange={control_.onChange}
+                    placeholder={
+                      !selectedCountry
+                        ? "Choose a country first"
+                        : stateOptions.length > 0 && !selectedRegion
+                          ? "Choose a state first"
+                          : "Search cities…"
+                    }
+                    emptyText="No city matches."
+                    allowClear
+                    clearLabel="Not set"
+                    disabled={
+                      !selectedCountry || (stateOptions.length > 0 && !selectedRegion)
+                    }
+                  />
+                )}
+              />
+            )}
+          </FormField>
+
+          <FormField label="Postal code" error={errors.address?.postalCode?.message}>
+            {(field) => <Input {...field} {...register("address.postalCode")} className="h-10" />}
           </FormField>
         </div>
       </SectionCard>

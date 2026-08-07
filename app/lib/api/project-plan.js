@@ -76,6 +76,13 @@ export function normalizeProjectPlan(project, usersById) {
   }
 
   const milestones = phases.flatMap((phase) => phase.milestones);
+  const milestonesById = new Map(milestones.map((milestone) => [String(milestone.id), milestone]));
+  const tasksWithMilestones = tasks.map((task) => ({
+    ...task,
+    milestone:
+      task.milestone ??
+      (task.milestoneId ? milestonesById.get(String(task.milestoneId)) ?? null : null),
+  }));
 
   const base = normalizeProject(project, usersById);
   return {
@@ -88,7 +95,7 @@ export function normalizeProjectPlan(project, usersById) {
       completionPercent: base.completionPercent ?? 0,
     },
     phases,
-    tasks,
+    tasks: tasksWithMilestones,
     milestones,
   };
 }
