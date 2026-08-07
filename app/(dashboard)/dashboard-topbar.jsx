@@ -1,16 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search } from "lucide-react";
 
 import { CrmTourTrigger } from "@/app/components/domain/crm-tour-trigger";
 import { NotificationBell } from "@/app/components/domain/notification-bell";
-import { Button } from "@/app/components/ui/button";
 import { Separator } from "@/app/components/ui/separator";
 import { SidebarTrigger } from "@/app/components/ui/sidebar";
 
 import { FOOTER_NAV, NAV_GROUPS, isNavItemActive } from "./nav-config";
+import { QuickSearchDialog } from "./search/quick-search-dialog";
 
 const ALL_ITEMS = [...NAV_GROUPS.flatMap((group) => group.items), ...FOOTER_NAV];
 
@@ -25,12 +23,7 @@ export function DashboardTopbar() {
       <span className="min-w-0 truncate font-medium">{current?.label ?? "Meridian"}</span>
 
       <div className="ml-auto flex items-center gap-1.5">
-        <Button variant="outline" size="sm" className="gap-2 text-muted-foreground" asChild data-tour="topbar-search">
-          <Link href="/search">
-            <Search aria-hidden="true" />
-            <span className="hidden sm:inline">Search</span>
-          </Link>
-        </Button>
+        <QuickSearchDialog />
         <CrmTourTrigger />
         <NotificationBell />
       </div>

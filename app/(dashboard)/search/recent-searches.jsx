@@ -7,7 +7,7 @@ import { Search } from "lucide-react";
 const STORAGE_KEY = "crm-recent-searches-v1";
 const MAX_RECENT = 8;
 
-function loadRecent() {
+export function loadRecent() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
