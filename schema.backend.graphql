@@ -74,6 +74,9 @@ type ChangeRequestType {
   createdAt: DateTime!
   updatedAt: DateTime!
   approvals: [ChangeRequestApprovalType!]!
+
+  """Tasks created from this change request, if any."""
+  tasks: [TaskType!]!
   responseDueAt: DateTime
   isOverdue: Boolean!
 }
@@ -270,7 +273,7 @@ type Mutation {
   updateMilestone(id: ID!, title: String = null, orderIndex: Int = null, status: String = null, description: String = null, dueDate: Date = null, requiresClientApproval: Boolean = null): MilestoneType!
   deleteMilestone(id: ID!): Boolean!
   reorderMilestones(phaseId: ID!, orderedMilestoneIds: [ID!]!): [MilestoneType!]!
-  createTask(projectId: ID!, phaseId: ID!, title: String!, milestoneId: ID = null, parentTaskId: ID = null, description: String = null, assigneeId: ID = null, status: String! = "todo", priority: String! = "medium", startDate: Date = null, dueDate: Date = null, estimatedHours: Float = null): TaskType!
+  createTask(projectId: ID!, phaseId: ID!, title: String!, milestoneId: ID = null, parentTaskId: ID = null, changeRequestId: ID = null, description: String = null, assigneeId: ID = null, status: String! = "todo", priority: String! = "medium", startDate: Date = null, dueDate: Date = null, estimatedHours: Float = null): TaskType!
   updateTask(id: ID!, title: String = null, description: String = null, status: String = null, priority: String = null, phaseId: ID = null, milestoneId: ID = null, parentTaskId: ID = null, assigneeId: ID = null, startDate: Date = null, dueDate: Date = null, estimatedHours: Float = null, actualHours: Float = null): TaskType!
   deleteTask(id: ID!): Boolean!
   addTaskDependency(projectId: ID!, taskId: ID!, dependsOnTaskId: ID!, type: String! = "finish_to_start"): TaskDependencyType!
@@ -598,6 +601,7 @@ type TaskType {
   phaseId: ID!
   milestoneId: ID
   parentTaskId: ID
+  changeRequestId: ID
   title: String!
   description: String
   assigneeId: ID

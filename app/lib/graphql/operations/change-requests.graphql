@@ -102,6 +102,16 @@ query ChangeRequestsByProject($projectId: ID!, $status: String) {
 query ChangeRequestDetail($id: ID!) {
   changeRequest(id: $id) {
     ...ChangeRequestDetailFields
+    tasks {
+      id
+      title
+      status
+      assignee {
+        id
+        name
+        avatarUrl
+      }
+    }
   }
   projects {
     id
@@ -119,6 +129,16 @@ query ChangeRequestDetail($id: ID!) {
     role
     jobTitle
     avatarUrl
+  }
+}
+
+query ChangeRequestTaskOptions($projectId: ID!) {
+  project(id: $projectId) {
+    id
+    phases {
+      id
+      name
+    }
   }
 }
 

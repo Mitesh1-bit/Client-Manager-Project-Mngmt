@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { toApiStatus, toUiStatus } from "@/app/lib/api/normalize";
+import { toUiStatus } from "@/app/lib/api/normalize";
 import { toApiDate, toDateInputValue } from "@/app/lib/date-input";
 
 /** Client-side validation for the task form. Mirrors `TaskInput`. */
@@ -46,6 +46,16 @@ export const taskSchema = z
       .refine((value) => value === null || (Number.isFinite(value) && value >= 0), {
         message: "Enter an estimate of 0 or more hours.",
       }),
+    actualHours: z
+      .union([z.string(), z.number()])
+      .optional()
+      .transform((value) => {
+        if (value === "" || value === null || value === undefined) return null;
+        return Number(value);
+      })
+      .refine((value) => value === null || (Number.isFinite(value) && value >= 0), {
+        message: "Enter 0 or more hours.",
+      }),
   })
   .refine((values) => !(values.startDate && values.dueDate) || values.dueDate >= values.startDate, {
     path: ["dueDate"],
@@ -65,6 +75,10 @@ export function taskToFormValues(task, defaults = {}) {
     startDate: toDateInputValue(task?.startDate),
     dueDate: toDateInputValue(task?.dueDate),
     estimatedHours: task?.estimatedHours ?? "",
+    // Not offered on create — nobody's logged work on a task that doesn't
+    // exist yet. Still needs a default so react-hook-form has a defined
+    // initial value once the field appears after the task is saved.
+    actualHours: task?.actualHours ?? "",
   };
 }
 
@@ -99,6 +113,7 @@ export function toUpdateTaskVariables(taskId, values) {
     startDate: toApiDate(values.startDate),
     dueDate: toApiDate(values.dueDate),
     estimatedHours: values.estimatedHours ?? undefined,
+    actualHours: values.actualHours ?? undefined,
   };
 }
 

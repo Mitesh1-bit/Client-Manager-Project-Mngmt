@@ -204,6 +204,24 @@ export function TaskForm({ projectId, task, defaults, phases = [], milestones = 
               />
             )}
           </FormField>
+          {mode === "edit" ? (
+            <FormField
+              label="Actual hours"
+              hint="Time actually spent so far."
+              error={errors.actualHours?.message}
+            >
+              {(field) => (
+                <Input
+                  {...field}
+                  {...register("actualHours")}
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  className="h-10"
+                />
+              )}
+            </FormField>
+          ) : null}
         </div>
       </div>
 

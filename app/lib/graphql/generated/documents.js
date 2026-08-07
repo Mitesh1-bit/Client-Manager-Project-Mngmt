@@ -423,6 +423,7 @@ fragment TaskFields on TaskType {
   phaseId
   milestoneId
   parentTaskId
+  changeRequestId
   title
   description
   assigneeId
@@ -793,6 +794,16 @@ export const ChangeRequestDetailDocument = gql`
 query ChangeRequestDetail($id: ID!) {
   changeRequest(id: $id) {
     ...ChangeRequestDetailFields
+    tasks {
+      id
+      title
+      status
+      assignee {
+        id
+        name
+        avatarUrl
+      }
+    }
   }
   projects {
     id
@@ -914,6 +925,17 @@ fragment ChangeRequestRow on ChangeRequestType {
   updatedAt
   responseDueAt
   isOverdue
+}`;
+
+export const ChangeRequestTaskOptionsDocument = gql`
+query ChangeRequestTaskOptions($projectId: ID!) {
+  project(id: $projectId) {
+    id
+    phases {
+      id
+      name
+    }
+  }
 }`;
 
 export const CompanyContactsDocument = gql`
@@ -1659,13 +1681,14 @@ fragment TagFields on TagType {
 }`;
 
 export const CreateTaskDocument = gql`
-mutation CreateTask($projectId: ID!, $phaseId: ID!, $title: String!, $milestoneId: ID, $parentTaskId: ID, $description: String, $assigneeId: ID, $status: String!, $priority: String!, $startDate: Date, $dueDate: Date, $estimatedHours: Float) {
+mutation CreateTask($projectId: ID!, $phaseId: ID!, $title: String!, $milestoneId: ID, $parentTaskId: ID, $changeRequestId: ID, $description: String, $assigneeId: ID, $status: String!, $priority: String!, $startDate: Date, $dueDate: Date, $estimatedHours: Float) {
   createTask(
     projectId: $projectId
     phaseId: $phaseId
     title: $title
     milestoneId: $milestoneId
     parentTaskId: $parentTaskId
+    changeRequestId: $changeRequestId
     description: $description
     assigneeId: $assigneeId
     status: $status
@@ -1683,6 +1706,7 @@ fragment TaskFields on TaskType {
   phaseId
   milestoneId
   parentTaskId
+  changeRequestId
   title
   description
   assigneeId
@@ -2399,6 +2423,7 @@ fragment TaskFields on TaskType {
   phaseId
   milestoneId
   parentTaskId
+  changeRequestId
   title
   description
   assigneeId
@@ -2459,6 +2484,7 @@ fragment TaskFields on TaskType {
   phaseId
   milestoneId
   parentTaskId
+  changeRequestId
   title
   description
   assigneeId
@@ -2697,6 +2723,7 @@ fragment TaskFields on TaskType {
   phaseId
   milestoneId
   parentTaskId
+  changeRequestId
   title
   description
   assigneeId
@@ -2848,6 +2875,7 @@ fragment TaskFields on TaskType {
   phaseId
   milestoneId
   parentTaskId
+  changeRequestId
   title
   description
   assigneeId
@@ -3819,6 +3847,7 @@ fragment TaskFields on TaskType {
   phaseId
   milestoneId
   parentTaskId
+  changeRequestId
   title
   description
   assigneeId
@@ -3868,6 +3897,7 @@ fragment TaskFields on TaskType {
   phaseId
   milestoneId
   parentTaskId
+  changeRequestId
   title
   description
   assigneeId

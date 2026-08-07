@@ -8,18 +8,29 @@ import { ChangeRequestDecisionPanel } from "@/app/components/domain/change-reque
 import { ChangeRequestStatusPanel } from "@/app/components/domain/change-request-status-panel";
 import { ChangeRequestTimeline } from "@/app/components/domain/change-request-timeline";
 import { CommentThread } from "@/app/components/domain/comment-thread";
+import { EntityAvatar } from "@/app/components/domain/entity-avatar";
 import { SectionCard } from "@/app/components/domain/states";
+import { StatusBadge } from "@/app/components/domain/status-badge";
 import { formatBytes, formatDate, humanizeType } from "@/app/lib/format";
-import { normalizeChangeRequest } from "@/app/lib/api/normalize";
-import { pickList } from "@/app/lib/api/safe-list";
+import { normalizeChangeRequest, toUiStatus } from "@/app/lib/api/normalize";
+import { asArray, pickList } from "@/app/lib/api/safe-list";
+import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   ChangeRequestDetailDocument,
   ChangeRequestFormOptionsDocument,
+  ChangeRequestTaskOptionsDocument,
 } from "@/app/lib/graphql/generated/documents";
 
 import { AssessmentPanel } from "./assessment-panel";
 import { ChangeRequestActions } from "./change-request-actions";
+import { CreateTaskFromChangeRequestDialog } from "./create-task-dialog";
+
+// Once it's agreed and either building or about to start, a PM can spin work
+// off it. Before Approved there's nothing agreed to build yet; after
+// Implemented/Closed the work this request was for is already done.
+const TASK_CREATABLE_STATUSES = ["APPROVED", "IN_PROGRESS"];
+const TASK_CREATOR_ROLES = ["admin", "project_manager"];
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
@@ -46,6 +57,19 @@ export default async function ChangeRequestDetailPage({ params }) {
   // Cost impact is billed in whatever the project itself is billed in, same
   // rule contracts already inherit — there's no separate currency on a CR.
   request.currency = project?.currency ?? "GBP";
+
+  const claims = await getSessionClaims();
+  const canCreateTask =
+    TASK_CREATOR_ROLES.includes(claims?.role) && TASK_CREATABLE_STATUSES.includes(request.status);
+  let phases = [];
+  if (canCreateTask) {
+    const { data: taskOptions } = await getClient().query({
+      query: ChangeRequestTaskOptionsDocument,
+      variables: { projectId: request.projectId },
+    });
+    phases = asArray(taskOptions?.project?.phases);
+  }
+  const linkedTasks = asArray(request.tasks);
 
   return (
     <div className="mx-auto w-full max-w-4xl">
@@ -104,6 +128,52 @@ export default async function ChangeRequestDetailPage({ params }) {
         <div data-tour="cr-assessment">
           <AssessmentPanel request={request} threshold={threshold} />
         </div>
+
+        {canCreateTask || linkedTasks.length > 0 ? (
+          <SectionCard
+            data-tour="cr-linked-tasks"
+            title="Linked tasks"
+            description="Work created on the project board from this request."
+            actions={
+              canCreateTask ? (
+                <CreateTaskFromChangeRequestDialog
+                  request={request}
+                  projectId={request.projectId}
+                  phases={phases}
+                  users={pickList(options, "users")}
+                />
+              ) : null
+            }
+          >
+            {linkedTasks.length === 0 ? (
+              <p className="text-caption text-muted-foreground">
+                No tasks created from this request yet.
+              </p>
+            ) : (
+              <ul className="divide-y rounded-xl border">
+                {linkedTasks.map((task) => (
+                  <li key={task.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <EntityAvatar name={task.assignee?.name ?? "Unassigned"} size="sm" />
+                      <div className="min-w-0">
+                        <Link
+                          href={`/projects/${request.projectId}/board`}
+                          className="truncate font-medium hover:underline focus-ring rounded-sm"
+                        >
+                          {task.title}
+                        </Link>
+                        <p className="truncate text-caption text-muted-foreground">
+                          {task.assignee?.name ?? "Unassigned"}
+                        </p>
+                      </div>
+                    </div>
+                    <StatusBadge kind="taskStatus" value={toUiStatus("taskStatus", task.status)} size="sm" />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </SectionCard>
+        ) : null}
 
         {/* Renders the decide-now form when internal sign-off is outstanding,
             otherwise falls back to decision history if there is any. */}
