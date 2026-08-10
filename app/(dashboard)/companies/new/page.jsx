@@ -1,13 +1,20 @@
+import { redirect } from "next/navigation";
+
 import { BackLink } from "@/app/components/domain/back-link";
 import { PageHeader } from "@/app/components/domain/page-header";
+import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { CompanyFormOptionsDocument } from "@/app/lib/graphql/generated/documents";
+import { canManageClients } from "@/app/lib/rbac";
 
 import { CompanyForm } from "../company-form";
 
 export const metadata = { title: "New client" };
 
 export default async function NewCompanyPage() {
+  const claims = await getSessionClaims();
+  if (!canManageClients(claims?.role)) redirect("/companies");
+
   let owners = [];
   let tags = [];
   let sizes = [];

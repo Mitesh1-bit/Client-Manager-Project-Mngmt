@@ -5,6 +5,7 @@ import { Building2, Plus, SearchX } from "lucide-react";
 import { PageHeader } from "@/app/components/domain/page-header";
 import { EmptyState, TableSkeleton } from "@/app/components/domain/states";
 import { Button } from "@/app/components/ui/button";
+import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   CompanyFormOptionsDocument,
@@ -13,6 +14,7 @@ import {
 import { paginateList } from "@/app/lib/api/connection";
 import { filterCompanies, normalizeCompany } from "@/app/lib/api/normalize";
 import { hasActiveFilters, parseListParams, readList, readString } from "@/app/lib/list-params";
+import { canManageClients } from "@/app/lib/rbac";
 
 import { CompaniesTable } from "./companies-table";
 import { CompaniesToolbar } from "./companies-toolbar";
@@ -36,6 +38,9 @@ export default async function CompaniesPage({ searchParams }) {
     tags = [];
   }
 
+  const claims = await getSessionClaims();
+  const canManage = canManageClients(claims?.role);
+
   return (
     <>
       <PageHeader
@@ -43,12 +48,14 @@ export default async function CompaniesPage({ searchParams }) {
         title="Clients"
         description="Every account you work with, their contacts, health score and open work."
         actions={
-          <Button asChild data-tour="companies-new-btn">
-            <Link href="/companies/new">
-              <Plus aria-hidden="true" />
-              New client
-            </Link>
-          </Button>
+          canManage ? (
+            <Button asChild data-tour="companies-new-btn">
+              <Link href="/companies/new">
+                <Plus aria-hidden="true" />
+                New client
+              </Link>
+            </Button>
+          ) : null
         }
       />
 
@@ -58,14 +65,14 @@ export default async function CompaniesPage({ searchParams }) {
         {/* Keyed on the query so changing a filter re-suspends and shows the
             skeleton, rather than leaving stale rows on screen. */}
         <Suspense key={JSON.stringify(params)} fallback={<TableSkeleton rows={8} columns={7} />}>
-          <CompaniesResults params={params} />
+          <CompaniesResults params={params} canManage={canManage} />
         </Suspense>
       </div>
     </>
   );
 }
 
-async function CompaniesResults({ params }) {
+async function CompaniesResults({ params, canManage }) {
   const { sort, pageInput } = parseListParams(params, {
     sortable: SORTABLE,
     defaultSort: "name",
@@ -96,7 +103,7 @@ async function CompaniesResults({ params }) {
     <CompaniesTable
       connection={connection}
       sort={sort}
-      emptyState={filteredActive ? <NoMatches /> : <NoCompanies />}
+      emptyState={filteredActive ? <NoMatches /> : <NoCompanies canManage={canManage} />}
     />
   );
 }
@@ -116,19 +123,21 @@ function NoMatches() {
   );
 }
 
-function NoCompanies() {
+function NoCompanies({ canManage }) {
   return (
     <EmptyState
       icon={Building2}
       title="No clients yet"
       description="Add your first client to start tracking contacts, projects and touchpoints against it."
       action={
-        <Button asChild>
-          <Link href="/companies/new">
-            <Plus aria-hidden="true" />
-            New client
-          </Link>
-        </Button>
+        canManage ? (
+          <Button asChild>
+            <Link href="/companies/new">
+              <Plus aria-hidden="true" />
+              New client
+            </Link>
+          </Button>
+        ) : null
       }
     />
   );

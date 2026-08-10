@@ -69,7 +69,7 @@ export default async function ProjectDetailLayout({ children, params }) {
     { href: `/projects/${id}/milestones`, label: "Milestones" },
     { href: `/projects/${id}/team`, label: "Team" },
     { href: `/projects/${id}/change-requests`, label: "Change requests" },
-    { href: `/projects/${id}/documents`, label: "Documents" },
+    ...(canEdit ? [{ href: `/projects/${id}/documents`, label: "Documents" }] : []),
   ];
 
   const overBudget = project.budget ? project.actualCost > project.budget : false;
@@ -151,21 +151,23 @@ export default async function ProjectDetailLayout({ children, params }) {
             </dd>
           </div>
 
-          <div>
-            <dt className="text-caption text-muted-foreground">Budget</dt>
-            <dd className="mt-1.5 text-caption font-medium">
-              <span className={cn("tabular", overBudget && "text-tone-critical-fg")}>
-                {formatCurrency(project.actualCost, project.currency)}
-              </span>
-              <span className="tabular font-normal text-muted-foreground">
-                {" "}
-                of {formatCurrency(project.budget, project.currency)}
-              </span>
-              {overBudget ? (
-                <span className="ml-1.5 text-tone-critical-fg">over</span>
-              ) : null}
-            </dd>
-          </div>
+          {canEdit ? (
+            <div>
+              <dt className="text-caption text-muted-foreground">Budget</dt>
+              <dd className="mt-1.5 text-caption font-medium">
+                <span className={cn("tabular", overBudget && "text-tone-critical-fg")}>
+                  {formatCurrency(project.actualCost, project.currency)}
+                </span>
+                <span className="tabular font-normal text-muted-foreground">
+                  {" "}
+                  of {formatCurrency(project.budget, project.currency)}
+                </span>
+                {overBudget ? (
+                  <span className="ml-1.5 text-tone-critical-fg">over</span>
+                ) : null}
+              </dd>
+            </div>
+          ) : null}
 
           <div>
             <dt className="text-caption text-muted-foreground">Team</dt>

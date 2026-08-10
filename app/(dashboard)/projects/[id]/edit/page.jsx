@@ -1,14 +1,16 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { BackLink } from "@/app/components/domain/back-link";
 import { PageHeader } from "@/app/components/domain/page-header";
 import { normalizeProject } from "@/app/lib/api/normalize";
 import { pickList } from "@/app/lib/api/safe-list";
+import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   ProjectForEditDocument,
   ProjectFormOptionsDocument,
 } from "@/app/lib/graphql/generated/documents";
+import { canManageProjects } from "@/app/lib/rbac";
 
 import { ProjectForm } from "../../project-form";
 
@@ -20,6 +22,9 @@ export async function generateMetadata({ params }) {
 
 export default async function EditProjectPage({ params }) {
   const { id } = await params;
+
+  const claims = await getSessionClaims();
+  if (!canManageProjects(claims?.role)) redirect(`/projects/${id}`);
 
   const [{ data }, { data: options }] = await Promise.all([
     getClient().query({ query: ProjectForEditDocument, variables: { id } }),

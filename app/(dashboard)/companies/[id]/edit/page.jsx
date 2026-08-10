@@ -1,13 +1,15 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { BackLink } from "@/app/components/domain/back-link";
 import { PageHeader } from "@/app/components/domain/page-header";
 import { normalizeCompany } from "@/app/lib/api/normalize";
+import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   CompanyForEditDocument,
   CompanyFormOptionsDocument,
 } from "@/app/lib/graphql/generated/documents";
+import { canManageClients } from "@/app/lib/rbac";
 
 import { CompanyForm } from "../../company-form";
 
@@ -22,6 +24,9 @@ export async function generateMetadata({ params }) {
 
 export default async function EditCompanyPage({ params }) {
   const { id } = await params;
+
+  const claims = await getSessionClaims();
+  if (!canManageClients(claims?.role)) redirect(`/companies/${id}`);
 
   const [{ data }, { data: options }] = await Promise.all([
     getClient().query({ query: CompanyForEditDocument, variables: { id } }),

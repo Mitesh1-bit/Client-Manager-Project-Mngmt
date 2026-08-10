@@ -70,7 +70,7 @@ const CHANNEL_LABELS = Object.fromEntries(PREFERRED_CHANNELS.map(({ value, label
  * Contacts nested under a company. One side panel serves three jobs — view,
  * create and edit — so the user never loses their place in the list.
  */
-export function ContactsPanel({ companyId, companyName, contacts = [], tags = [] }) {
+export function ContactsPanel({ companyId, companyName, contacts = [], tags = [], canManage = false }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [panel, setPanel] = useState(null); // { mode: 'view' | 'edit' | 'create', contactId? }
@@ -253,25 +253,31 @@ export function ContactsPanel({ companyId, companyName, contacts = [], tags = []
               >
                 View details
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={() => setPanel({ mode: "edit", contactId: row.original.id })}
-              >
-                Edit
-              </DropdownMenuItem>
-              {!row.original.isPrimary && row.original.status === "ACTIVE" ? (
+              {canManage ? (
+                <DropdownMenuItem
+                  onSelect={() => setPanel({ mode: "edit", contactId: row.original.id })}
+                >
+                  Edit
+                </DropdownMenuItem>
+              ) : null}
+              {canManage && !row.original.isPrimary && row.original.status === "ACTIVE" ? (
                 <DropdownMenuItem onSelect={() => makePrimary(row.original)}>
                   Make primary contact
                 </DropdownMenuItem>
               ) : null}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                variant="destructive"
-                disabled={row.original.isPrimary || row.original.status === "INACTIVE"}
-                onSelect={() => setArchiveTarget(row.original)}
-              >
-                <Archive />
-                Archive
-              </DropdownMenuItem>
+              {canManage ? (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    variant="destructive"
+                    disabled={row.original.isPrimary || row.original.status === "INACTIVE"}
+                    onSelect={() => setArchiveTarget(row.original)}
+                  >
+                    <Archive />
+                    Archive
+                  </DropdownMenuItem>
+                </>
+              ) : null}
             </DropdownMenuContent>
           </DropdownMenu>
         ),
@@ -290,10 +296,12 @@ export function ContactsPanel({ companyId, companyName, contacts = [], tags = []
           <p className="text-caption text-muted-foreground" aria-live="polite">
             {totalCount} {totalCount === 1 ? "contact" : "contacts"} at {companyName}
           </p>
-          <Button size="sm" onClick={() => setPanel({ mode: "create" })}>
-            <Plus aria-hidden="true" />
-            Add contact
-          </Button>
+          {canManage ? (
+            <Button size="sm" onClick={() => setPanel({ mode: "create" })}>
+              <Plus aria-hidden="true" />
+              Add contact
+            </Button>
+          ) : null}
         </div>
         <ListToolbar
           searchPlaceholder="Search contacts…"
@@ -328,10 +336,12 @@ export function ContactsPanel({ companyId, companyName, contacts = [], tags = []
             title="No contacts yet"
             description="Add the people you work with at this client so touchpoints and portal access have somewhere to hang."
             action={
-              <Button onClick={() => setPanel({ mode: "create" })}>
-                <Plus aria-hidden="true" />
-                Add contact
-              </Button>
+              canManage ? (
+                <Button onClick={() => setPanel({ mode: "create" })}>
+                  <Plus aria-hidden="true" />
+                  Add contact
+                </Button>
+              ) : null
             }
           />
         }
@@ -376,6 +386,7 @@ export function ContactsPanel({ companyId, companyName, contacts = [], tags = []
           {panel?.mode === "view" && selected ? (
             <ContactDetail
               contact={selected}
+              canManage={canManage}
               onEdit={() => setPanel({ mode: "edit", contactId: selected.id })}
             />
           ) : null}
@@ -404,7 +415,7 @@ export function ContactsPanel({ companyId, companyName, contacts = [], tags = []
   );
 }
 
-function ContactDetail({ contact, onEdit }) {
+function ContactDetail({ contact, onEdit, canManage = false }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {/* pr-12 keeps the header clear of the sheet's own close button. */}
@@ -420,9 +431,11 @@ function ContactDetail({ contact, onEdit }) {
             </SheetTitle>
             <SheetDescription>{contact.title ?? "No title recorded"}</SheetDescription>
           </div>
-          <Button variant="outline" size="sm" onClick={onEdit}>
-            Edit
-          </Button>
+          {canManage ? (
+            <Button variant="outline" size="sm" onClick={onEdit}>
+              Edit
+            </Button>
+          ) : null}
         </div>
       </SheetHeader>
 

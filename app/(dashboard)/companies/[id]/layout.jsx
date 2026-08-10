@@ -12,6 +12,7 @@ import { getSessionClaims } from "@/app/lib/auth/session";
 import { displayUrl } from "@/app/lib/format";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { CompanyDetailHeaderDocument } from "@/app/lib/graphql/generated/documents";
+import { canManageClients } from "@/app/lib/rbac";
 
 import { CompanyStatusMenu } from "./company-status-menu";
 
@@ -55,14 +56,15 @@ export default async function CompanyLayout({ children, params }) {
 
   const claims = await getSessionClaims();
   const canViewInvoices = INVOICE_ROLES.includes(claims?.role);
+  const canManage = canManageClients(claims?.role);
 
   const tabs = [
     { href: `/companies/${id}`, label: "Overview" },
     { href: `/companies/${id}/contacts`, label: "Contacts" },
     { href: `/companies/${id}/projects`, label: "Projects" },
     { href: `/companies/${id}/touchpoints`, label: "Touchpoints" },
-    { href: `/companies/${id}/docs`, label: "Documents" },
-    { href: `/companies/${id}/contracts`, label: "Contracts" },
+    ...(canManage ? [{ href: `/companies/${id}/docs`, label: "Documents" }] : []),
+    ...(canManage ? [{ href: `/companies/${id}/contracts`, label: "Contracts" }] : []),
     ...(canViewInvoices ? [{ href: `/companies/${id}/invoices`, label: "Invoices" }] : []),
     { href: `/companies/${id}/change-log`, label: "Change log" },
   ];
@@ -107,19 +109,21 @@ export default async function CompanyLayout({ children, params }) {
             </div>
           </div>
 
-          <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:shrink-0">
-            <CompanyStatusMenu
-              companyId={company.id}
-              companyName={company.name}
-              status={company.status}
-            />
-            <Button variant="outline" asChild>
-              <Link href={`/companies/${id}/edit`}>
-                <Pencil aria-hidden="true" />
-                Edit
-              </Link>
-            </Button>
-          </div>
+          {canManage ? (
+            <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:shrink-0">
+              <CompanyStatusMenu
+                companyId={company.id}
+                companyName={company.name}
+                status={company.status}
+              />
+              <Button variant="outline" asChild>
+                <Link href={`/companies/${id}/edit`}>
+                  <Pencil aria-hidden="true" />
+                  Edit
+                </Link>
+              </Button>
+            </div>
+          ) : null}
         </div>
       </div>
 

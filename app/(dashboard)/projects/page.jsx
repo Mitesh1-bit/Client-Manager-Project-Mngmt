@@ -9,12 +9,14 @@ import { Button } from "@/app/components/ui/button";
 import { paginateList } from "@/app/lib/api/connection";
 import { filterProjects, normalizeProject } from "@/app/lib/api/normalize";
 import { pickList } from "@/app/lib/api/safe-list";
+import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   ProjectFormOptionsDocument,
   ProjectListDocument,
 } from "@/app/lib/graphql/generated/documents";
 import { hasActiveFilters, parseListParams, readList, readString } from "@/app/lib/list-params";
+import { canManageProjects } from "@/app/lib/rbac";
 import { listStatuses } from "@/app/lib/status";
 
 import { ProjectsTable } from "./projects-table";
@@ -40,6 +42,9 @@ export default async function ProjectsPage({ searchParams }) {
     companies = [];
     tags = [];
   }
+
+  const claims = await getSessionClaims();
+  const canManage = canManageProjects(claims?.role);
 
   const filters = [
     { key: "status", label: "Status", options: toOptions(listStatuses("projectStatus")) },
@@ -76,12 +81,14 @@ export default async function ProjectsPage({ searchParams }) {
         title="Projects"
         description="Every engagement in flight, with health, progress and budget at a glance."
         actions={
-          <Button asChild data-tour="projects-new-btn">
-            <Link href="/projects/new">
-              <Plus aria-hidden="true" />
-              New project
-            </Link>
-          </Button>
+          canManage ? (
+            <Button asChild data-tour="projects-new-btn">
+              <Link href="/projects/new">
+                <Plus aria-hidden="true" />
+                New project
+              </Link>
+            </Button>
+          ) : null
         }
       />
 
@@ -95,14 +102,14 @@ export default async function ProjectsPage({ searchParams }) {
         {/* Keyed on the query so changing a filter re-suspends and shows the
             skeleton, rather than leaving stale rows on screen. */}
         <Suspense key={JSON.stringify(params)} fallback={<TableSkeleton rows={8} columns={8} />}>
-          <ProjectResults params={params} />
+          <ProjectResults params={params} canManage={canManage} />
         </Suspense>
       </div>
     </>
   );
 }
 
-async function ProjectResults({ params }) {
+async function ProjectResults({ params, canManage }) {
   const { sort, pageInput } = parseListParams(params, {
     sortable: SORTABLE,
     defaultSort: "endDate",
@@ -136,7 +143,7 @@ async function ProjectResults({ params }) {
     <ProjectsTable
       connection={connection}
       sort={sort}
-      emptyState={hasActiveFilters(params, FILTER_KEYS) ? <NoMatches /> : <NoProjects />}
+      emptyState={hasActiveFilters(params, FILTER_KEYS) ? <NoMatches /> : <NoProjects canManage={canManage} />}
     />
   );
 }
@@ -159,19 +166,21 @@ function NoMatches() {
   );
 }
 
-function NoProjects() {
+function NoProjects({ canManage }) {
   return (
     <EmptyState
       icon={FolderKanban}
       title="No projects yet"
       description="Create a project to start planning phases, milestones and tasks against a client."
       action={
-        <Button asChild>
-          <Link href="/projects/new">
-            <Plus aria-hidden="true" />
-            New project
-          </Link>
-        </Button>
+        canManage ? (
+          <Button asChild>
+            <Link href="/projects/new">
+              <Plus aria-hidden="true" />
+              New project
+            </Link>
+          </Button>
+        ) : null
       }
     />
   );
