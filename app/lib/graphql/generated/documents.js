@@ -1912,6 +1912,14 @@ query FoundationSummary {
     name
     status
     health
+    priority
+    completionPercent
+    endDate
+    projectManager {
+      id
+      name
+      avatarUrl
+    }
   }
   changeRequestDashboard {
     openCount
