@@ -32,6 +32,7 @@ export default async function WorkloadPage() {
         initialRows={pickList(data, "workload")}
         users={pickList(data, "users")}
         projects={pickList(data, "projects")}
+        companies={pickList(data, "companies")}
         viewerRole={viewer.role}
       />
     </>

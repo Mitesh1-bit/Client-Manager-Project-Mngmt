@@ -708,4 +708,6 @@ type WorkloadType {
   openTaskCount: Int!
   projectCount: Int!
   clientCount: Int!
+  projectIds: [ID!]!
+  clientIds: [ID!]!
 }

@@ -4483,11 +4483,18 @@ query Workload($projectId: ID) {
     openTaskCount
     projectCount
     clientCount
+    projectIds
+    clientIds
   }
   users {
     ...UserSummaryFields
   }
   projects {
+    id
+    name
+    companyId
+  }
+  companies {
     id
     name
   }
