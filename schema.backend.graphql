@@ -74,6 +74,7 @@ type ChangeRequestType {
   createdAt: DateTime!
   updatedAt: DateTime!
   approvals: [ChangeRequestApprovalType!]!
+  attachments: [DocumentType!]!
 
   """Tasks created from this change request, if any."""
   tasks: [TaskType!]!
@@ -173,8 +174,23 @@ type DocumentType {
   entityType: String!
   entityId: ID!
   fileUrl: String!
+  filename: String!
+  contentType: String!
+  sizeBytes: Int!
+  encoding: String
   version: Int!
   uploadedBy: ID!
+  uploadedByName: String!
+  uploadedByActorType: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  thumbnailUrl: String
+  previewPath: String
+  previewStatus: String!
+  category: String!
+  canPreview: Boolean!
+  canPreviewInline: Boolean!
+  lineCount: Int
 }
 
 type HealthScoreType {
@@ -318,7 +334,7 @@ type Mutation {
   skipTouchpoint(id: ID!, notes: String = null): TouchpointType!
 
   """
-  Record a touchpoint that already happened — a call made, a meeting held.
+  Record a touchpoint that already happened Â— a call made, a meeting held.
   """
   logTouchpoint(companyId: ID!, contactId: ID!, type: String!, outcome: String = null, notes: String = null, projectId: ID = null, occurredAt: DateTime = null): TouchpointType!
   createContract(companyId: ID!, name: String!, startDate: Date!, endDate: Date!, value: Float = null, autoRenew: Boolean! = false, status: String! = "draft"): ContractType!
@@ -502,6 +518,7 @@ type Query {
   portalChangeRequest(id: ID!): ChangeRequestType
   portalDocuments: [DocumentType!]!
   documents(entityType: String!, entityId: ID!): [DocumentType!]!
+  document(id: ID!): DocumentType
   companyDocuments(companyId: ID!): [DocumentType!]!
   changeRequests(projectId: ID!, status: String = null): [ChangeRequestType!]!
   changeRequest(id: ID!): ChangeRequestType
@@ -511,7 +528,7 @@ type Query {
   upcomingTouchpoints: [TouchpointType!]!
 
   """
-  Full touchpoint history for a company — scheduled, completed and skipped.
+  Full touchpoint history for a company Â— scheduled, completed and skipped.
   """
   companyTouchpoints(companyId: ID!): [TouchpointType!]!
   companyRetentionEligibility(companyId: ID!): CompanyRetentionEligibilityType!

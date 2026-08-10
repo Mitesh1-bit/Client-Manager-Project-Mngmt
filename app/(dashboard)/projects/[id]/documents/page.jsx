@@ -6,8 +6,7 @@ import { getClient } from "@/app/lib/graphql/apollo-client";
 import { ProjectDocumentsDocument } from "@/app/lib/graphql/generated/documents";
 import { canManageProjects } from "@/app/lib/rbac";
 
-import { DocumentList } from "./document-list";
-import { DocumentUpload } from "./document-upload";
+import { ProjectDocumentsPanel } from "./project-documents-panel";
 
 export const metadata = { title: "Documents" };
 
@@ -25,12 +24,15 @@ export default async function ProjectDocumentsPage({ params }) {
 
   return (
     <div data-tour="project-documents" className="space-y-4">
-      <div className="toolbar-row">
-        <p className="text-caption text-muted-foreground">{documents.length} file{documents.length === 1 ? "" : "s"}</p>
-        <DocumentUpload projectId={id} />
-      </div>
-
-      <DocumentList documents={documents} viewerId={claims?.sub} viewerRole={claims?.role} />
+      <p className="text-caption text-muted-foreground">
+        {documents.length} file{documents.length === 1 ? "" : "s"}
+      </p>
+      <ProjectDocumentsPanel
+        projectId={id}
+        documents={documents}
+        viewerId={claims?.sub}
+        viewerRole={claims?.role}
+      />
     </div>
   );
 }

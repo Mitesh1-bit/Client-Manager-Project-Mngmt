@@ -28,6 +28,32 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   updatedAt
   responseDueAt
   isOverdue
+  attachments {
+    ...DocumentFields
+  }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }`;
 
 export const ChangeRequestRowFragmentDoc = gql`
@@ -148,6 +174,31 @@ fragment ContractFields on ContractType {
   status
 }`;
 
+export const DocumentFieldsFragmentDoc = gql`
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
+}`;
+
 export const InvoiceFieldsFragmentDoc = gql`
 fragment InvoiceFields on InvoiceType {
   id
@@ -262,6 +313,32 @@ fragment PortalChangeRequestFields on ChangeRequestType {
     decidedAt
     approverName
   }
+  attachments {
+    ...DocumentFields
+  }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }`;
 
 export const PortalMilestoneFieldsFragmentDoc = gql`
@@ -661,6 +738,32 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   updatedAt
   responseDueAt
   isOverdue
+  attachments {
+    ...DocumentFields
+  }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }`;
 
 export const AssignChangeRequestDocument = gql`
@@ -693,6 +796,32 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   updatedAt
   responseDueAt
   isOverdue
+  attachments {
+    ...DocumentFields
+  }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }`;
 
 export const AtRiskDashboardDocument = gql`
@@ -849,6 +978,32 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   updatedAt
   responseDueAt
   isOverdue
+  attachments {
+    ...DocumentFields
+  }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }`;
 
 export const ChangeRequestFormOptionsDocument = gql`
@@ -1027,11 +1182,31 @@ fragment UserSummaryFields on UserSummaryType {
 export const CompanyDocumentsDocument = gql`
 query CompanyDocuments($companyId: ID!) {
   companyDocuments(companyId: $companyId) {
-    id
-    fileUrl
-    version
-    uploadedBy
+    ...DocumentFields
   }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }`;
 
 export const CompanyForEditDocument = gql`
@@ -1153,7 +1328,7 @@ fragment UserSummaryFields on UserSummaryType {
 }`;
 
 export const CompanyOverviewDocument = gql`
-query CompanyOverview($id: ID!, $canViewContracts: Boolean!) {
+query CompanyOverview($id: ID!, $canViewContracts: Boolean!, $canViewDocuments: Boolean!) {
   company(id: $id) {
     id
     name
@@ -1188,6 +1363,9 @@ query CompanyOverview($id: ID!, $canViewContracts: Boolean!) {
     autoRenew
     status
   }
+  companyDocuments(companyId: $id) @include(if: $canViewDocuments) {
+    ...DocumentFields
+  }
   users {
     ...UserSummaryFields
   }
@@ -1212,6 +1390,29 @@ fragment ContactFields on ContactType {
   tags {
     ...TagFields
   }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }
 fragment TagFields on TagType {
   id
@@ -1326,10 +1527,31 @@ mutation CompleteTouchpoint($id: ID!, $outcome: String, $notes: String) {
 export const ConfirmProjectUploadDocument = gql`
 mutation ConfirmProjectUpload($entityId: ID!, $fileUrl: String!) {
   confirmUpload(entityType: "project", entityId: $entityId, fileUrl: $fileUrl) {
-    id
-    fileUrl
-    version
+    ...DocumentFields
   }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }`;
 
 export const ConfirmTotpDocument = gql`
@@ -1340,10 +1562,31 @@ mutation ConfirmTotp($code: String!) {
 export const ConfirmUploadDocument = gql`
 mutation ConfirmUpload($entityType: String!, $entityId: ID!, $fileUrl: String!) {
   confirmUpload(entityType: $entityType, entityId: $entityId, fileUrl: $fileUrl) {
-    id
-    fileUrl
-    version
+    ...DocumentFields
   }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }`;
 
 export const CreateChangeRequestDocument = gql`
@@ -1383,6 +1626,32 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   updatedAt
   responseDueAt
   isOverdue
+  attachments {
+    ...DocumentFields
+  }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }`;
 
 export const CreateCompanyDocument = gql`
@@ -1812,6 +2081,32 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   updatedAt
   responseDueAt
   isOverdue
+  attachments {
+    ...DocumentFields
+  }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }`;
 
 export const DeleteContractDocument = gql`
@@ -1837,6 +2132,36 @@ mutation DeleteUser($id: ID!) {
 export const DisableTotpDocument = gql`
 mutation DisableTotp {
   disableTotp
+}`;
+
+export const DocumentDetailDocument = gql`
+query DocumentDetail($id: ID!) {
+  document(id: $id) {
+    ...DocumentFields
+  }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }`;
 
 export const DuplicateRetentionSequenceDocument = gql`
@@ -2142,12 +2467,38 @@ query PortalApprovalsInbox {
     createdAt
     projectId
   }
+  portalDocuments {
+    ...DocumentFields
+  }
   me {
     contact {
       firstName
       lastName
     }
   }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }
 fragment PortalMilestoneFields on MilestoneType {
   id
@@ -2178,52 +2529,28 @@ query PortalChangeRequestDetail($id: ID!) {
     currency
   }
 }
-fragment PortalChangeRequestFields on ChangeRequestType {
+fragment DocumentFields on DocumentType {
   id
-  projectId
-  companyId
-  title
-  type
-  description
-  status
-  priority
-  impactCost
-  impactTimelineDays
-  impactHours
-  assessmentNotes
-  requiresClientApproval
-  requiresInternalApproval
-  revisionCount
-  desiredDueDate
-  submittedAt
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
   createdAt
   updatedAt
-  responseDueAt
-  isOverdue
-  approvals {
-    id
-    approverType
-    status
-    comment
-    decidedAt
-    approverName
-  }
-}`;
-
-export const PortalChangeRequestListDocument = gql`
-query PortalChangeRequestList {
-  portalChangeRequests {
-    ...PortalChangeRequestFields
-  }
-  portalProjects {
-    ...PortalProjectRow
-  }
-  me {
-    contact {
-      firstName
-      lastName
-    }
-  }
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }
 fragment PortalChangeRequestFields on ChangeRequestType {
   id
@@ -2254,6 +2581,82 @@ fragment PortalChangeRequestFields on ChangeRequestType {
     comment
     decidedAt
     approverName
+  }
+  attachments {
+    ...DocumentFields
+  }
+}`;
+
+export const PortalChangeRequestListDocument = gql`
+query PortalChangeRequestList {
+  portalChangeRequests {
+    ...PortalChangeRequestFields
+  }
+  portalProjects {
+    ...PortalProjectRow
+  }
+  me {
+    contact {
+      firstName
+      lastName
+    }
+  }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
+}
+fragment PortalChangeRequestFields on ChangeRequestType {
+  id
+  projectId
+  companyId
+  title
+  type
+  description
+  status
+  priority
+  impactCost
+  impactTimelineDays
+  impactHours
+  assessmentNotes
+  requiresClientApproval
+  requiresInternalApproval
+  revisionCount
+  desiredDueDate
+  submittedAt
+  createdAt
+  updatedAt
+  responseDueAt
+  isOverdue
+  approvals {
+    id
+    approverType
+    status
+    comment
+    decidedAt
+    approverName
+  }
+  attachments {
+    ...DocumentFields
   }
 }
 fragment PortalProjectRow on PortalProjectType {
@@ -2275,17 +2678,35 @@ fragment PortalProjectRow on PortalProjectType {
 export const PortalDocumentsDocument = gql`
 query PortalDocuments {
   portalDocuments {
-    id
-    entityType
-    entityId
-    fileUrl
-    version
-    uploadedBy
+    ...DocumentFields
   }
   portalProjects {
     id
     name
   }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }`;
 
 export const PortalLoginDocument = gql`
@@ -2358,11 +2779,7 @@ query PortalProject($id: ID!) {
       ...PortalMilestoneFields
     }
     documents {
-      id
-      fileUrl
-      version
-      entityType
-      entityId
+      ...DocumentFields
     }
     changeRequests {
       id
@@ -2378,6 +2795,29 @@ query PortalProject($id: ID!) {
       lastName
     }
   }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }
 fragment PortalMilestoneFields on MilestoneType {
   id
@@ -2620,13 +3060,31 @@ fragment UserSummaryFields on UserSummaryType {
 export const ProjectDocumentsDocument = gql`
 query ProjectDocuments($projectId: ID!) {
   documents(entityType: "project", entityId: $projectId) {
-    id
-    entityType
-    entityId
-    fileUrl
-    version
-    uploadedBy
+    ...DocumentFields
   }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }`;
 
 export const ProjectForEditDocument = gql`
@@ -3412,6 +3870,32 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   updatedAt
   responseDueAt
   isOverdue
+  attachments {
+    ...DocumentFields
+  }
+}
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
 }`;
 
 export const UpdateCompanyDocument = gql`

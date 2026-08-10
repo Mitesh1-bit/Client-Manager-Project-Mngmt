@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FolderKanban, GitPullRequestArrow, Plus, ShieldCheck } from "lucide-react";
+import { FolderKanban, GitPullRequestArrow, Plus, ShieldCheck, FileText } from "lucide-react";
 
 import { ErrorState } from "@/app/components/domain/states";
 import { StatusBadge } from "@/app/components/domain/status-badge";
@@ -13,6 +13,7 @@ import {
   normalizePortalProjects,
   portalContactName,
 } from "@/app/lib/api/portal";
+import { normalizeDocumentRecords } from "@/app/lib/documents/normalize";
 import { formatRelativeDays, humanizeType } from "@/app/lib/format";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { PortalApprovalsInboxDocument } from "@/app/lib/graphql/generated/documents";
@@ -27,6 +28,10 @@ import {
   PortalStatTile,
   PortalWelcomeHero,
 } from "./portal-ui";
+import {
+  PortalDocumentsStatHint,
+  PortalRecentDocumentsPanel,
+} from "./portal-recent-documents-panel";
 
 export const metadata = { title: "Overview" };
 
@@ -37,6 +42,7 @@ export default async function PortalOverviewPage() {
 
   let projects = [];
   let requests = [];
+  let documents = [];
   let viewerName = null;
   let loadError = null;
 
@@ -44,6 +50,7 @@ export default async function PortalOverviewPage() {
     const { data } = await getClient().query({ query: PortalApprovalsInboxDocument });
     projects = normalizePortalProjects(data.portalProjects);
     requests = normalizePortalChangeRequests(data.portalChangeRequests ?? []);
+    documents = normalizeDocumentRecords(data.portalDocuments ?? []);
     viewerName = portalContactName(data.me?.contact);
   } catch (error) {
     loadError = error;
@@ -96,7 +103,7 @@ export default async function PortalOverviewPage() {
         awaitingCount={awaitingCount}
       />
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <PortalStatTile
           label="Active projects"
           value={projects.length}
@@ -118,6 +125,13 @@ export default async function PortalOverviewPage() {
           hint="Changes outside the original plan"
           href="/portal/change-requests"
           icon={GitPullRequestArrow}
+        />
+        <PortalStatTile
+          label="Shared files"
+          value={documents.length}
+          hint={<PortalDocumentsStatHint count={documents.length} />}
+          href="/portal/documents"
+          icon={FileText}
         />
       </div>
 
@@ -217,6 +231,10 @@ export default async function PortalOverviewPage() {
           )}
         </PortalCard>
       </div>
+
+      {documents.length > 0 ? (
+        <PortalRecentDocumentsPanel documents={documents} maxItems={5} />
+      ) : null}
     </div>
   );
 }

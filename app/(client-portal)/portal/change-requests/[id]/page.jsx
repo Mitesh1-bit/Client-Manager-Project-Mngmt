@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { ChangeRequestDecisionPanel } from "@/app/components/domain/change-request-decision-panel";
 import { ChangeRequestStatusPanel } from "@/app/components/domain/change-request-status-panel";
+import { ChangeRequestAttachmentsPanel } from "@/app/components/domain/documents/change-request-attachments-panel";
 import { isOpen } from "@/app/lib/change-requests";
 import { normalizePortalChangeRequest } from "@/app/lib/api/portal";
 import { humanizeType } from "@/app/lib/format";
@@ -71,6 +72,13 @@ export default async function PortalChangeRequestDetailPage({ params }) {
           <PortalCard>
             <PortalSectionHeader title="What this involves" />
             <p className="text-sm leading-relaxed text-pretty">{request.assessmentNotes}</p>
+          </PortalCard>
+        ) : null}
+
+        {request.attachments?.length > 0 ? (
+          <PortalCard>
+            <PortalSectionHeader title="Attachments" />
+            <ChangeRequestAttachmentsPanel attachments={request.attachments} />
           </PortalCard>
         ) : null}
 

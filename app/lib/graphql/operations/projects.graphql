@@ -563,12 +563,7 @@ mutation RemoveTaskDependency($id: ID!) {
 
 query ProjectDocuments($projectId: ID!) {
   documents(entityType: "project", entityId: $projectId) {
-    id
-    entityType
-    entityId
-    fileUrl
-    version
-    uploadedBy
+    ...DocumentFields
   }
 }
 
@@ -587,9 +582,7 @@ mutation RequestProjectUploadUrl($entityId: ID!, $filename: String!, $contentTyp
 
 mutation ConfirmProjectUpload($entityId: ID!, $fileUrl: String!) {
   confirmUpload(entityType: "project", entityId: $entityId, fileUrl: $fileUrl) {
-    id
-    fileUrl
-    version
+    ...DocumentFields
   }
 }
 

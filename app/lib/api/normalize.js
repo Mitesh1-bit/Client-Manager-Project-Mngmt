@@ -2,6 +2,8 @@
  * Maps backend snake_case / lowercase status values to UI enum keys.
  */
 
+import { normalizeDocumentRecords } from "@/app/lib/documents/normalize";
+
 const TO_UI = {
   companyStatus: {
     lead: "LEAD",
@@ -288,7 +290,7 @@ export function normalizeChangeRequest(cr) {
     updatedAt: cr.updatedAt ?? cr.createdAt,
     comments: cr.comments ?? [],
     approvals: cr.approvals ?? [],
-    attachments: cr.attachments ?? [],
+    attachments: normalizeDocumentRecords(cr.attachments ?? []),
   };
 }
 

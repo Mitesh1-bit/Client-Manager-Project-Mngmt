@@ -40,6 +40,9 @@ fragment ChangeRequestDetailFields on ChangeRequestType {
   updatedAt
   responseDueAt
   isOverdue
+  attachments {
+    ...DocumentFields
+  }
 }
 
 query ChangeRequestFormOptions {

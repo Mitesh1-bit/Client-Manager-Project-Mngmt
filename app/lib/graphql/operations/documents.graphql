@@ -1,0 +1,29 @@
+fragment DocumentFields on DocumentType {
+  id
+  entityType
+  entityId
+  fileUrl
+  filename
+  contentType
+  sizeBytes
+  encoding
+  version
+  uploadedBy
+  uploadedByName
+  uploadedByActorType
+  createdAt
+  updatedAt
+  thumbnailUrl
+  previewPath
+  previewStatus
+  category
+  canPreview
+  canPreviewInline
+  lineCount
+}
+
+query DocumentDetail($id: ID!) {
+  document(id: $id) {
+    ...DocumentFields
+  }
+}

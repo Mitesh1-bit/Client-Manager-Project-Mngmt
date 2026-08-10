@@ -7,8 +7,6 @@ import {
   CircleCheck,
   CircleDashed,
   Clock,
-  Download,
-  FileText,
   LoaderCircle,
   MessageSquareWarning,
   ShieldCheck,
@@ -21,8 +19,8 @@ import { Button } from "@/app/components/ui/button";
 import { Label } from "@/app/components/ui/label";
 import { Textarea } from "@/app/components/ui/textarea";
 import { APPROVAL_STATE, approvalNextAction, getMilestoneApprovalState } from "@/app/lib/approvals";
-import { portalDocumentHref, portalDocumentName } from "@/app/lib/api/portal-ui";
-import { formatBytes, formatDate, formatDateTime, initials } from "@/app/lib/format";
+import { DocumentEmbedPanel } from "@/app/components/domain/documents/document-embed-panel";
+import { formatDate, formatDateTime, initials } from "@/app/lib/format";
 import { ApproveMilestoneDocument, RequestMilestoneChangesDocument } from "@/app/lib/graphql/generated/documents";
 import { cn } from "@/app/lib/utils";
 
@@ -308,30 +306,7 @@ function Deliverables({ documents }) {
   return (
     <div className="mt-4">
       <h4 className="text-caption font-medium">What you&apos;re reviewing</h4>
-      <ul className="mt-2 space-y-1.5">
-        {documents.map((document) => (
-          <li key={document.id}>
-            <a
-              href={portalDocumentHref(document.fileUrl)}
-              download
-              className="flex items-center gap-2.5 rounded-lg border bg-background/70 px-3 py-2.5 transition-colors hover:bg-background focus-ring"
-            >
-              <FileText aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-caption font-medium">
-                  {document.name ?? portalDocumentName(document.fileUrl)}
-                </span>
-                <span className="block text-[0.75rem] text-muted-foreground">
-                  v{document.version} · {formatBytes(document.sizeBytes)} ·{" "}
-                  {document.uploadedByName}
-                </span>
-              </span>
-              <Download aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
-              <span className="sr-only">Download {document.name}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
+      <DocumentEmbedPanel documents={documents} className="mt-2" />
     </div>
   );
 }

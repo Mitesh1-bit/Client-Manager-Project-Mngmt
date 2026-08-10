@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Download, FileText, XCircle } from "lucide-react";
+import { XCircle } from "lucide-react";
 
 import { BackLink } from "@/app/components/domain/back-link";
 
@@ -8,10 +8,11 @@ import { ChangeRequestDecisionPanel } from "@/app/components/domain/change-reque
 import { ChangeRequestStatusPanel } from "@/app/components/domain/change-request-status-panel";
 import { ChangeRequestTimeline } from "@/app/components/domain/change-request-timeline";
 import { CommentThread } from "@/app/components/domain/comment-thread";
+import { ChangeRequestAttachmentsPanel } from "@/app/components/domain/documents/change-request-attachments-panel";
 import { EntityAvatar } from "@/app/components/domain/entity-avatar";
 import { SectionCard } from "@/app/components/domain/states";
 import { StatusBadge } from "@/app/components/domain/status-badge";
-import { formatBytes, formatDate, humanizeType } from "@/app/lib/format";
+import { formatDate, humanizeType } from "@/app/lib/format";
 import { normalizeChangeRequest, toUiStatus } from "@/app/lib/api/normalize";
 import { asArray, pickList } from "@/app/lib/api/safe-list";
 import { getSessionClaims } from "@/app/lib/auth/session";
@@ -183,28 +184,7 @@ export default async function ChangeRequestDetailPage({ params }) {
 
         {request.attachments.length > 0 ? (
           <SectionCard data-tour="cr-attachments" title="Attachments">
-            <ul className="space-y-1.5">
-              {request.attachments.map((attachment) => (
-                <li key={attachment.id}>
-                  <a
-                    href={attachment.fileUrl}
-                    download
-                    className="flex items-center gap-2.5 rounded-lg border px-3 py-2.5 transition-colors hover:bg-accent focus-ring"
-                  >
-                    <FileText aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-caption font-medium">
-                        {attachment.name}
-                      </span>
-                      <span className="block text-[0.75rem] text-muted-foreground">
-                        {formatBytes(attachment.sizeBytes)} · {formatDate(attachment.createdAt)}
-                      </span>
-                    </span>
-                    <Download aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <ChangeRequestAttachmentsPanel attachments={request.attachments} />
           </SectionCard>
         ) : null}
 

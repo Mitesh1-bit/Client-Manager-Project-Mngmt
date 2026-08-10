@@ -15,6 +15,9 @@ import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { CompanyOverviewDocument } from "@/app/lib/graphql/generated/documents";
 import { humanize } from "@/app/lib/status";
+import { canManageClients } from "@/app/lib/rbac";
+
+import { CompanyRecentDocumentsPanel } from "./company-recent-documents-panel";
 
 const TIMELINE_LIMIT = 12;
 // Mirrors the backend's `contracts` query gate — skipped via @include so team
@@ -54,9 +57,10 @@ export default async function CompanyOverviewPage({ params }) {
   const { id } = await params;
   const claims = await getSessionClaims();
   const canViewContracts = CONTRACT_ROLES.includes(claims?.role);
+  const canViewDocuments = canManageClients(claims?.role);
   const { data } = await getClient().query({
     query: CompanyOverviewDocument,
-    variables: { id, canViewContracts },
+    variables: { id, canViewContracts, canViewDocuments },
   });
 
   const company = normalizeCompany(data.company);
@@ -69,6 +73,7 @@ export default async function CompanyOverviewPage({ params }) {
   );
   const usersById = new Map(pickList(data, "users").map((user) => [user.id, user]));
   const activity = (company.activity ?? []).map((entry) => summarizeActivity(entry, usersById));
+  const recentDocuments = asArray(data.companyDocuments);
 
   return (
     <div className="grid gap-5 lg:grid-cols-3">
@@ -106,6 +111,10 @@ export default async function CompanyOverviewPage({ params }) {
             </dl>
           </div>
         </SectionCard>
+
+        {canViewDocuments ? (
+          <CompanyRecentDocumentsPanel companyId={id} documents={recentDocuments} />
+        ) : null}
 
         <SectionCard
           data-tour="company-activity"

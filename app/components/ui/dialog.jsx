@@ -52,6 +52,8 @@ const dialogSizeClasses = {
   lg: "sm:max-w-lg",
   xl: "sm:max-w-xl",
   form: "sm:max-w-lg",
+  /** Wide modals (document viewer) — do not apply the default sm:max-w-sm cap. */
+  viewer: "sm:max-w-none",
 };
 
 function DialogContent({

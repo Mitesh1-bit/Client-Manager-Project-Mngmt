@@ -97,7 +97,7 @@ query CompanyDetailHeader($id: ID!) {
   }
 }
 
-query CompanyOverview($id: ID!, $canViewContracts: Boolean!) {
+query CompanyOverview($id: ID!, $canViewContracts: Boolean!, $canViewDocuments: Boolean!) {
   company(id: $id) {
     id
     name
@@ -131,6 +131,9 @@ query CompanyOverview($id: ID!, $canViewContracts: Boolean!) {
     value
     autoRenew
     status
+  }
+  companyDocuments(companyId: $id) @include(if: $canViewDocuments) {
+    ...DocumentFields
   }
   users {
     ...UserSummaryFields
@@ -379,10 +382,7 @@ query CompanyTouchpointContext($id: ID!) {
 
 query CompanyDocuments($companyId: ID!) {
   companyDocuments(companyId: $companyId) {
-    id
-    fileUrl
-    version
-    uploadedBy
+    ...DocumentFields
   }
 }
 

@@ -62,6 +62,9 @@ fragment PortalChangeRequestFields on ChangeRequestType {
     decidedAt
     approverName
   }
+  attachments {
+    ...DocumentFields
+  }
 }
 
 query PortalChangeRequestList {
@@ -107,6 +110,9 @@ query PortalApprovalsInbox {
     createdAt
     projectId
   }
+  portalDocuments {
+    ...DocumentFields
+  }
   me {
     contact {
       firstName
@@ -129,11 +135,7 @@ query PortalProject($id: ID!) {
       ...PortalMilestoneFields
     }
     documents {
-      id
-      fileUrl
-      version
-      entityType
-      entityId
+      ...DocumentFields
     }
     changeRequests {
       id
@@ -186,12 +188,7 @@ query PortalProjects {
 
 query PortalDocuments {
   portalDocuments {
-    id
-    entityType
-    entityId
-    fileUrl
-    version
-    uploadedBy
+    ...DocumentFields
   }
   portalProjects {
     id
@@ -253,8 +250,6 @@ mutation RequestUploadUrl(
 
 mutation ConfirmUpload($entityType: String!, $entityId: ID!, $fileUrl: String!) {
   confirmUpload(entityType: $entityType, entityId: $entityId, fileUrl: $fileUrl) {
-    id
-    fileUrl
-    version
+    ...DocumentFields
   }
 }

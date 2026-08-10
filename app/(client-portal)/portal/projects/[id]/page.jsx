@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FileText, GitPullRequestArrow, Mail, Plus, ShieldCheck } from "lucide-react";
+import { GitPullRequestArrow, Mail, Plus, ShieldCheck } from "lucide-react";
 
 import { MilestoneApprovalPanel } from "@/app/components/domain/milestone-approval-panel";
 import { StatusBadge } from "@/app/components/domain/status-badge";
@@ -8,7 +8,7 @@ import { Button } from "@/app/components/ui/button";
 import { Progress } from "@/app/components/ui/progress";
 import { APPROVAL_STATE, getMilestoneApprovalState } from "@/app/lib/approvals";
 import { normalizePortalProject, portalContactName } from "@/app/lib/api/portal";
-import { portalDocumentHref, portalDocumentName } from "@/app/lib/api/portal-ui";
+import { PortalProjectFilesPanel } from "./portal-project-files-panel";
 import { formatDate, formatRelativeDays, initials } from "@/app/lib/format";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { PortalProjectDocument } from "@/app/lib/graphql/generated/documents";
@@ -204,33 +204,7 @@ export default async function PortalProjectPage({ params }) {
         <div className="grid gap-5 lg:grid-cols-2">
           <PortalCard>
             <PortalSectionHeader id="deliverables" title="Files for this project" />
-            {project.documents.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Nothing shared yet. Deliverables will show up here as we finish them.
-              </p>
-            ) : (
-              <ul className="space-y-2">
-                {project.documents.map((document) => (
-                  <li key={document.id}>
-                    <a
-                      href={portalDocumentHref(document.fileUrl)}
-                      download
-                      className="portal-link-row group"
-                    >
-                      <span className="portal-link-row__icon">
-                        <FileText className="size-4" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate font-medium">
-                          {document.name ?? portalDocumentName(document.fileUrl)}
-                        </span>
-                        <span className="block text-sm text-muted-foreground">v{document.version}</span>
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <PortalProjectFilesPanel documents={project.documents} viewerId={data.me?.contact?.id} />
           </PortalCard>
 
           <PortalCard>

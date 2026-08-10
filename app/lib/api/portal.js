@@ -1,5 +1,6 @@
 import { asArray } from "@/app/lib/api/safe-list";
 import { toUiStatus } from "@/app/lib/api/normalize";
+import { normalizeDocumentRecord, normalizeDocumentRecords } from "@/app/lib/documents/normalize";
 import { awaitingParty, isOverdue, responseDueAt } from "@/app/lib/change-requests";
 
 function upperEnum(value) {
@@ -54,12 +55,7 @@ export function normalizePortalProject(project) {
       );
       return {
         ...normalized,
-        documents: milestoneDocs.map((doc) => ({
-          ...doc,
-          name: doc.fileUrl?.split("/").pop() ?? "Document",
-          sizeBytes: doc.sizeBytes ?? 0,
-          uploadedByName: doc.uploadedBy ?? "Team",
-        })),
+        documents: milestoneDocs.map((doc) => normalizeDocumentRecord(doc)),
       };
     }),
     phases: (project.phases ?? []).map((phase) => ({
@@ -67,12 +63,7 @@ export function normalizePortalProject(project) {
       milestones: (phase.milestones ?? []).map(normalizePortalMilestone),
     })),
     tasks: project.tasks ?? [],
-    documents: (project.documents ?? []).map((doc) => ({
-      ...doc,
-      name: doc.fileUrl?.split("/").pop() ?? "Document",
-      sizeBytes: doc.sizeBytes ?? 0,
-      createdAt: doc.createdAt ?? null,
-    })),
+    documents: normalizeDocumentRecords(project.documents ?? []),
     changeRequests: (project.changeRequests ?? []).map(normalizePortalChangeRequest),
     projectManager: project.projectManager ?? null,
   };
@@ -98,7 +89,7 @@ export function normalizePortalChangeRequest(cr) {
     impactHours: cr.impactHours ?? null,
     project: cr.project ?? { id: cr.projectId, name: "Project" },
     approvals: (cr.approvals ?? []).map(normalizeApproval),
-    attachments: cr.attachments ?? [],
+    attachments: normalizeDocumentRecords(cr.attachments ?? []),
     comments: cr.comments ?? [],
   };
   normalized.awaitingParty = awaitingParty(normalized);
