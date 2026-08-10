@@ -136,6 +136,7 @@ export default async function SequenceDetailPage({ params }) {
           <EnrollInSequenceDialog
             sequenceId={sequence.id}
             sequenceName={sequence.name}
+            sequenceTriggerType={sequence.triggerType}
             companyId={sequence.companyId}
             companyName={sequence.company?.name}
             companies={enrollableCompanies}

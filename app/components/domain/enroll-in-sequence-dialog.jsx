@@ -44,7 +44,10 @@ export function EnrollInSequenceDialog({
   contacts,
   enrolledContactIds = [],
   retentionEligible = true,
+  sequenceTriggerType,
 }) {
+  const autoTrigger =
+    String(sequenceTriggerType ?? "").toLowerCase().replace(/-/g, "_") === "on_project_completed";
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState(companyId ?? "");
@@ -253,6 +256,13 @@ export function EnrollInSequenceDialog({
               </ul>
             )}
           </Field>
+
+          {autoTrigger && retentionEligible ? (
+            <p className="rounded-lg border bg-muted/50 px-3 py-2.5 text-caption text-muted-foreground">
+              This sequence also starts automatically when a project is marked completed. You can
+              enroll now if follow-ups did not start on their own.
+            </p>
+          ) : null}
 
           {error ? <p className="text-caption font-medium text-destructive">{error}</p> : null}
         </div>
