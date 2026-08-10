@@ -248,9 +248,11 @@ export function TaskForm({ projectId, task, defaults, phases = [], milestones = 
 
 /**
  * Radix Select can't hold an empty-string value, so "none" travels as a
- * sentinel and is mapped back to "" for the form.
+ * sentinel and is mapped back to "" for the form. Shared with the
+ * change-request "create task" dialog, which offers the same optional
+ * phase/milestone/parent-task fields.
  */
-function SelectField({ control, name, label, options, placeholder, clearLabel, error, required }) {
+export function SelectField({ control, name, label, options, placeholder, clearLabel, error, required }) {
   return (
     <FormField label={label} error={error} required={required}>
       {(field) => (

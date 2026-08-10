@@ -1091,6 +1091,15 @@ query ChangeRequestTaskOptions($projectId: ID!) {
     phases {
       id
       name
+      milestones {
+        id
+        title
+      }
+    }
+    tasks {
+      id
+      title
+      parentTaskId
     }
   }
 }`;

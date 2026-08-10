@@ -2,13 +2,16 @@
  * Approval state derivation.
  *
  * The portal's whole job on this flow is answering one question without
- * ambiguity: *is this waiting on me, on my colleague, or on the agency?* That
- * answer is derived here rather than in a component, so it can be unit tested
- * and so the inbox, the project page and the panel can never disagree.
+ * ambiguity: *is this waiting on me, or on the agency?* That answer is
+ * derived here rather than in a component, so it can be unit tested and so
+ * the inbox, the project page and the panel can never disagree.
  *
- * Approvals are polymorphic and carry `approverName` as a flat string (see
- * NEEDED_SCHEMA_CHANGES.md §7.3), so "is this mine" is a name comparison. That
- * is fragile and the schema should give us an id — flagged, not hidden.
+ * There is no per-contact assignment on a client approval — the backend
+ * reports every one with the same generic `approverName` ("Client contact",
+ * see MilestoneApprovalType.from_model), not a specific person. So once
+ * internal review has cleared, any portal contact at the company is treated
+ * as able to act — `WAITING_OTHER` is kept as a state for possible future use
+ * if per-contact assignment is ever added, but is never produced today.
  */
 
 export const APPROVAL_STATE = {
@@ -72,11 +75,15 @@ export function getMilestoneApprovalState(milestone, viewerName) {
       });
     }
 
-    const isYours = Boolean(viewerName) && pending.approverName === viewerName;
-    return present(isYours ? APPROVAL_STATE.YOUR_TURN : APPROVAL_STATE.WAITING_OTHER, {
+    // Client approvals aren't assigned to one named contact — the backend
+    // reports a generic "Client contact" placeholder for all of them (see
+    // MilestoneApprovalType.from_model), which can never equal a real
+    // viewer's name. Any portal contact at the company (already scoped by
+    // the portalProjects query) is entitled to act on a pending one.
+    return present(APPROVAL_STATE.YOUR_TURN, {
       ...base,
-      waitingOn: pending.approverName ?? "your team",
-      yourApproval: isYours ? pending : null,
+      waitingOn: viewerName ?? "your team",
+      yourApproval: pending,
     });
   }
 
