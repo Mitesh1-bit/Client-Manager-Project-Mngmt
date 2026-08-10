@@ -4481,6 +4481,8 @@ query Workload($projectId: ID) {
     totalEstimatedHours
     totalActualHours
     openTaskCount
+    projectCount
+    clientCount
   }
   users {
     ...UserSummaryFields
