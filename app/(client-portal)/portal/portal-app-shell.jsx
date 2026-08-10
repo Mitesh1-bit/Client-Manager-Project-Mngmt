@@ -19,6 +19,7 @@ import { PortalNavBar, PortalTabBar } from "./portal-nav";
  */
 export function PortalAppShell({ viewer, companyName, badges, children }) {
   return (
+    // eslint-disable-next-line jsx-a11y/aria-role -- `role` is CrmTourProvider's viewer-role prop, not a DOM ARIA role
     <CrmTourProvider scope="PORTAL" role="contact">
       <div data-surface="portal" className="flex min-h-svh flex-1 flex-col">
         <header className="portal-shell-header">

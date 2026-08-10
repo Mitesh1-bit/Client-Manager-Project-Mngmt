@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { BackLink } from "@/app/components/domain/back-link";
 import { EmptyState } from "@/app/components/domain/states";
 import { PageHeader } from "@/app/components/domain/page-header";
@@ -30,7 +32,7 @@ export default async function NewSequencePage() {
           className="mt-6"
           action={
             <Button asChild variant="outline">
-              <a href="/projects">View projects</a>
+              <Link href="/projects">View projects</Link>
             </Button>
           }
         />

@@ -1,7 +1,6 @@
 import { PageHeader } from "@/app/components/domain/page-header";
 import { RETENTION_MODULE_DESCRIPTION } from "@/app/lib/retention";
 
-import { RetentionTabs } from "../retention-tabs";
 import { SequencesListPanel } from "./sequences-list-panel";
 
 export const metadata = { title: "Sequences" };

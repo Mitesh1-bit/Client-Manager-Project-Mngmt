@@ -134,7 +134,7 @@ export function CrmTourProvider({ scope, role, children }) {
   }, [close]);
 
   const navigateWithTour = useCallback(
-    (href) => {
+    (_href) => {
       if (stepId) persistStep(stepId, true);
       setOpen(true);
     },

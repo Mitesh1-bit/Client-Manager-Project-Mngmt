@@ -12,7 +12,7 @@ import { ChangeRequestAttachmentsPanel } from "@/app/components/domain/documents
 import { EntityAvatar } from "@/app/components/domain/entity-avatar";
 import { SectionCard } from "@/app/components/domain/states";
 import { StatusBadge } from "@/app/components/domain/status-badge";
-import { formatDate, humanizeType } from "@/app/lib/format";
+import { humanizeType } from "@/app/lib/format";
 import { normalizeChangeRequest, toUiStatus } from "@/app/lib/api/normalize";
 import { asArray, pickList } from "@/app/lib/api/safe-list";
 import { getSessionClaims } from "@/app/lib/auth/session";
