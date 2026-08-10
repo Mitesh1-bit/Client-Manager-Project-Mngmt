@@ -1,7 +1,10 @@
+import { redirect } from "next/navigation";
+
 import { asArray } from "@/app/lib/api/safe-list";
 import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { ProjectDocumentsDocument } from "@/app/lib/graphql/generated/documents";
+import { canManageProjects } from "@/app/lib/rbac";
 
 import { DocumentList } from "./document-list";
 import { DocumentUpload } from "./document-upload";
@@ -10,12 +13,15 @@ export const metadata = { title: "Documents" };
 
 export default async function ProjectDocumentsPage({ params }) {
   const { id } = await params;
+
+  const claims = await getSessionClaims();
+  if (!canManageProjects(claims?.role)) redirect(`/projects/${id}`);
+
   const { data } = await getClient().query({
     query: ProjectDocumentsDocument,
     variables: { projectId: id },
   });
   const documents = asArray(data.documents);
-  const claims = await getSessionClaims();
 
   return (
     <div data-tour="project-documents" className="space-y-4">

@@ -36,6 +36,7 @@ export function ProjectGantt({
   tasks = [],
   milestones = [],
   users = [],
+  canManage = false,
 }) {
   const [panel, setPanel] = useState(null);
   const scrollRef = useRef(null);
@@ -111,9 +112,11 @@ export function ProjectGantt({
           title="Nothing to plot yet"
           description="Once tasks and milestones have dates, the timeline shows how they line up."
           action={
-            <Button onClick={() => setPanel({ mode: "create" })}>
-              Add a task
-            </Button>
+            canManage ? (
+              <Button onClick={() => setPanel({ mode: "create" })}>
+                Add a task
+              </Button>
+            ) : null
           }
         />
         <TaskSheet
@@ -124,6 +127,7 @@ export function ProjectGantt({
           phases={phases}
           milestones={milestones}
           users={users}
+          canManage={canManage}
         />
       </>
     );
@@ -308,6 +312,7 @@ export function ProjectGantt({
         phases={phases}
         milestones={milestones}
         users={users}
+        canManage={canManage}
       />
     </>
   );

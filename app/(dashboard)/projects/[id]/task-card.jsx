@@ -18,7 +18,7 @@ import { cn } from "@/app/lib/utils";
  * builder's step card in Phase 6.
  */
 export const TaskCard = forwardRef(function TaskCard(
-  { task, onOpen, dragging, overlay, className, style, listeners, attributes, actions },
+  { task, onOpen, dragging, overlay, className, style, listeners, attributes, actions, movable = true },
   ref,
 ) {
   const blocked = isTaskBlocked(task);
@@ -40,15 +40,24 @@ export const TaskCard = forwardRef(function TaskCard(
       )}
     >
       <div className="flex items-start gap-2">
-        <button
-          type="button"
-          {...attributes}
-          {...listeners}
-          className="relative z-10 -ml-1 flex size-6 shrink-0 cursor-grab touch-none items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground focus-ring active:cursor-grabbing"
-          aria-label={`Reorder "${task.title}"`}
-        >
-          <GripVertical aria-hidden="true" className="size-4" />
-        </button>
+        {movable ? (
+          <button
+            type="button"
+            {...attributes}
+            {...listeners}
+            className="relative z-10 -ml-1 flex size-6 shrink-0 cursor-grab touch-none items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground focus-ring active:cursor-grabbing"
+            aria-label={`Reorder "${task.title}"`}
+          >
+            <GripVertical aria-hidden="true" className="size-4" />
+          </button>
+        ) : (
+          <span
+            aria-hidden="true"
+            className="relative z-10 -ml-1 flex size-6 shrink-0 items-center justify-center text-muted-foreground/30"
+          >
+            <GripVertical className="size-4" />
+          </span>
+        )}
 
         <div className="flex min-w-0 flex-1 items-start justify-between gap-2">
           <button

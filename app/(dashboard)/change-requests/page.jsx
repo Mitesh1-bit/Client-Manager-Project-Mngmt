@@ -9,12 +9,14 @@ import { Button } from "@/app/components/ui/button";
 import { paginateList } from "@/app/lib/api/connection";
 import { fetchChangeRequestQueue } from "@/app/lib/api/change-requests";
 import { pickList } from "@/app/lib/api/safe-list";
+import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   ChangeRequestFormOptionsDocument,
   ChangeRequestQueueCountsDocument,
 } from "@/app/lib/graphql/generated/documents";
 import { hasActiveFilters, parseListParams, readList, readString } from "@/app/lib/list-params";
+import { canManageProjects } from "@/app/lib/rbac";
 import { listStatuses } from "@/app/lib/status";
 
 import { ChangeRequestsTable } from "./change-requests-table";
@@ -46,6 +48,9 @@ export default async function ChangeRequestsPage({ searchParams }) {
   const companies = pickList(optionsResult.data, "companies");
   const projects = pickList(optionsResult.data, "projects");
 
+  const claims = await getSessionClaims();
+  const canCreate = canManageProjects(claims?.role);
+
   const countShape = {
     all: { totalCount: counts.changeRequestDashboard?.openCount ?? 0 },
     submitted: { totalCount: counts.changeRequestDashboard?.openCount ?? 0 },
@@ -59,7 +64,7 @@ export default async function ChangeRequestsPage({ searchParams }) {
         eyebrow="Operations"
         title="Change requests"
         description="Everything clients have asked for, what needs assessing, and what's waiting on a decision."
-        actions={<NewChangeRequestDialog projects={projects} />}
+        actions={canCreate ? <NewChangeRequestDialog projects={projects} /> : null}
       />
 
       <div className="space-y-4">
@@ -130,14 +135,14 @@ export default async function ChangeRequestsPage({ searchParams }) {
         </div>
 
         <Suspense key={JSON.stringify(params)} fallback={<TableSkeleton rows={8} columns={8} />}>
-          <QueueResults params={params} bucket={bucket} />
+          <QueueResults params={params} bucket={bucket} canCreate={canCreate} />
         </Suspense>
       </div>
     </>
   );
 }
 
-async function QueueResults({ params, bucket }) {
+async function QueueResults({ params, bucket, canCreate }) {
   const { sort, pageInput } = parseListParams(params, {
     sortable: SORTABLE,
     defaultSort: "age",
@@ -189,7 +194,13 @@ async function QueueResults({ params, bucket }) {
     <ChangeRequestsTable
       connection={connection}
       sort={sort}
-      emptyState={filteredActive ? <NothingInBucket bucket={bucket} /> : <NoRequests projects={projects} />}
+      emptyState={
+        filteredActive ? (
+          <NothingInBucket bucket={bucket} />
+        ) : (
+          <NoRequests projects={projects} canCreate={canCreate} />
+        )
+      }
     />
   );
 }
@@ -234,13 +245,13 @@ function NothingInBucket({ bucket }) {
   );
 }
 
-function NoRequests({ projects }) {
+function NoRequests({ projects, canCreate }) {
   return (
     <EmptyState
       icon={GitPullRequestArrow}
       title="No change requests yet"
       description="When a client asks for something outside the agreed scope, it lands here for assessment."
-      action={<NewChangeRequestDialog projects={projects} />}
+      action={canCreate ? <NewChangeRequestDialog projects={projects} /> : null}
     />
   );
 }

@@ -51,9 +51,11 @@ export function ProjectBoard({
   milestones = [],
   users = [],
   canManage = false,
+  viewerId = null,
 }) {
   const router = useRouter();
   const [updateTaskStatus] = useMutation(UpdateTaskStatusDocument);
+  const canMoveTask = (task) => canManage || task.assigneeId === viewerId;
 
   const [columns, setColumns] = useState(() => groupTasksByStatus(tasks));
   const [activeId, setActiveId] = useState(null);
@@ -92,6 +94,8 @@ export function ProjectBoard({
   }
 
   function handleDragStart({ active }) {
+    const task = tasks.find((item) => item.id === active.id);
+    if (task && !canMoveTask(task)) return;
     rollbackRef.current = columns;
     setActiveId(active.id);
   }
@@ -172,7 +176,9 @@ export function ProjectBoard({
     <>
       <div className="mb-4 toolbar-row">
         <p className="text-caption text-muted-foreground">
-          Drag a card, or use its menu, to move it between columns.
+          {canManage
+            ? "Drag a card, or use its menu, to move it between columns."
+            : "Drag your own cards, or use their menu, to move them between columns."}
         </p>
         {canManage ? (
           <Button size="sm" onClick={() => setPanel({ mode: "create" })} data-tour="board-add-task">
@@ -206,6 +212,7 @@ export function ProjectBoard({
               tasks={columns[column.status]}
               onOpen={openTask}
               onMove={moveVia}
+              canMoveTask={canMoveTask}
               onAdd={canManage ? () => setPanel({ mode: "create", defaults: { status: column.status } }) : null}
               columnSizes={Object.fromEntries(
                 TASK_STATUSES.map((status) => [status, columns[status].length]),
@@ -227,12 +234,13 @@ export function ProjectBoard({
         phases={phases}
         milestones={milestones}
         users={users}
+        canManage={canManage}
       />
     </>
   );
 }
 
-function BoardColumn({ column, tasks, onOpen, onMove, onAdd, columnSizes }) {
+function BoardColumn({ column, tasks, onOpen, onMove, canMoveTask, onAdd, columnSizes }) {
   const { setNodeRef, isOver } = useDroppable({ id: column.status });
 
   return (
@@ -276,6 +284,7 @@ function BoardColumn({ column, tasks, onOpen, onMove, onAdd, columnSizes }) {
               columnSizes={columnSizes}
               onOpen={onOpen}
               onMove={onMove}
+              movable={canMoveTask(task)}
             />
           ))}
         </SortableContext>
@@ -290,9 +299,10 @@ function BoardColumn({ column, tasks, onOpen, onMove, onAdd, columnSizes }) {
   );
 }
 
-function SortableTaskCard({ task, index, columnStatus, columnLength, columnSizes, onOpen, onMove }) {
+function SortableTaskCard({ task, index, columnStatus, columnLength, columnSizes, onOpen, onMove, movable }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
+    disabled: !movable,
   });
 
   return (
@@ -301,18 +311,21 @@ function SortableTaskCard({ task, index, columnStatus, columnLength, columnSizes
       task={task}
       onOpen={onOpen}
       dragging={isDragging}
-      attributes={attributes}
-      listeners={listeners}
+      movable={movable}
+      attributes={movable ? attributes : undefined}
+      listeners={movable ? listeners : undefined}
       style={{ transform: CSS.Translate.toString(transform), transition }}
       actions={
-        <TaskCardMenu
-          task={task}
-          index={index}
-          columnStatus={columnStatus}
-          columnLength={columnLength}
-          columnSizes={columnSizes}
-          onMove={onMove}
-        />
+        movable ? (
+          <TaskCardMenu
+            task={task}
+            index={index}
+            columnStatus={columnStatus}
+            columnLength={columnLength}
+            columnSizes={columnSizes}
+            onMove={onMove}
+          />
+        ) : null
       }
     />
   );

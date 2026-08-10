@@ -299,14 +299,14 @@ function MilestoneRow({ milestone, canManage, onEdit }) {
       </div>
 
       {milestone.requiresClientApproval ? (
-        <ApprovalState milestone={milestone} />
+        <ApprovalState milestone={milestone} canManage={canManage} />
       ) : null}
     </li>
   );
 }
 
 /** Where the client sign-off has got to. Phase 4 owns actually deciding it. */
-function ApprovalState({ milestone }) {
+function ApprovalState({ milestone, canManage }) {
   const router = useRouter();
   const [sendForReview, { loading }] = useMutation(MarkMilestoneReadyForReviewDocument);
 
@@ -339,7 +339,7 @@ function ApprovalState({ milestone }) {
           ? `Waiting on ${pending.map((approval) => approval.approverName ?? "the client").join(", ")}`
           : "Not yet sent for client approval"}
       </span>
-      {pending.length === 0 ? (
+      {canManage && pending.length === 0 ? (
         <Button
           type="button"
           variant="outline"

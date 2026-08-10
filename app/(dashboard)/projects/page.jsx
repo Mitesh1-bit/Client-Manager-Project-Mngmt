@@ -144,6 +144,7 @@ async function ProjectResults({ params, canManage }) {
       connection={connection}
       sort={sort}
       emptyState={hasActiveFilters(params, FILTER_KEYS) ? <NoMatches /> : <NoProjects canManage={canManage} />}
+      canManage={canManage}
     />
   );
 }

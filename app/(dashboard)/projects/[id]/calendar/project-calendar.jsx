@@ -40,6 +40,7 @@ export function ProjectCalendar({
   phases = [],
   milestones = [],
   users = [],
+  canManage = false,
 }) {
   const [panel, setPanel] = useState(null);
   const [expandedDay, setExpandedDay] = useState(null);
@@ -267,6 +268,7 @@ export function ProjectCalendar({
         phases={phases}
         milestones={milestones}
         users={users}
+        canManage={canManage}
       />
     </>
   );

@@ -41,8 +41,8 @@ export const ROLE_CATALOG = [
     summary: "Contributes on assigned work — tasks and project boards.",
     access: [
       "Sees only the clients and projects they've been added to",
-      "Update tasks and board columns",
-      "View and create change requests — deciding them needs a PM or admin",
+      "Update the status of tasks assigned to them — not other people's tasks",
+      "View change requests raised on their projects — creating and deciding them needs a PM or admin",
     ],
   },
 ];

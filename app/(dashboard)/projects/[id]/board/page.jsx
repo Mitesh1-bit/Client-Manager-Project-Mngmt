@@ -13,8 +13,9 @@ import {
 import { ProjectBoard } from "./project-board";
 
 // Mirrors the backend's createTask/deleteTask gate (require_role in
-// app/graphql/planning/schema.py) — updateTask stays open to any internal
-// role since team members are meant to move their own cards.
+// app/graphql/planning/schema.py). updateTask stays open to team members but
+// backend-restricted to the status field on tasks assigned to them (see
+// update_task_record in app/graphql/planning/service.py).
 const PLAN_MANAGE_ROLES = ["admin", "project_manager"];
 
 export const metadata = { title: "Board" };
@@ -51,6 +52,7 @@ export default async function ProjectBoardPage({ params }) {
       milestones={plan.milestones}
       users={pickList(options, "users")}
       canManage={canManage}
+      viewerId={claims?.sub}
     />
   );
 }

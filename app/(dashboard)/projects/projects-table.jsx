@@ -14,7 +14,7 @@ import { buildListHref, sortToParams } from "@/app/lib/list-params";
 import { parseDay, startOfDay } from "@/app/lib/project";
 import { cn } from "@/app/lib/utils";
 
-export function ProjectsTable({ connection, sort, emptyState }) {
+export function ProjectsTable({ connection, sort, emptyState, canManage = false }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -70,13 +70,17 @@ export function ProjectsTable({ connection, sort, emptyState }) {
         header: "Due",
         cell: ({ row }) => <DueCell project={row.original} />,
       },
-      {
-        id: "budget",
-        header: "Budget",
-        enableSorting: false,
-        meta: { className: "text-right" },
-        cell: ({ row }) => <BudgetCell project={row.original} />,
-      },
+      ...(canManage
+        ? [
+            {
+              id: "budget",
+              header: "Budget",
+              enableSorting: false,
+              meta: { className: "text-right" },
+              cell: ({ row }) => <BudgetCell project={row.original} />,
+            },
+          ]
+        : []),
       {
         id: "projectManager",
         header: "PM",
@@ -121,7 +125,7 @@ export function ProjectsTable({ connection, sort, emptyState }) {
         ),
       },
     ],
-    [],
+    [canManage],
   );
 
   return (

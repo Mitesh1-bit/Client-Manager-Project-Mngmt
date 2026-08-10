@@ -37,9 +37,11 @@ export function TaskList({
   milestones = [],
   users = [],
   canManage = false,
+  viewerId = null,
 }) {
   const router = useRouter();
   const [updateTaskStatus] = useMutation(UpdateTaskStatusDocument);
+  const canEditStatus = (task) => canManage || task.assigneeId === viewerId;
 
   const [panel, setPanel] = useState(null);
   const [collapsed, setCollapsed] = useState(() => new Set());
@@ -99,6 +101,7 @@ export function TaskList({
           phases={phases}
           milestones={milestones}
           users={users}
+          canManage={canManage}
         />
       </>
     );
@@ -155,15 +158,19 @@ export function TaskList({
                       pendingStatus={pendingStatus[task.id]}
                       onOpen={() => setPanel({ mode: "view", taskId: task.id })}
                       onStatusChange={changeStatus}
-                      onAddSubtask={() =>
-                        setPanel({
-                          mode: "create",
-                          defaults: {
-                            parentTaskId: task.id,
-                            phaseId: task.phase?.id,
-                            milestoneId: task.milestone?.id,
-                          },
-                        })
+                      canEditStatus={canEditStatus(task)}
+                      onAddSubtask={
+                        canManage
+                          ? () =>
+                              setPanel({
+                                mode: "create",
+                                defaults: {
+                                  parentTaskId: task.id,
+                                  phaseId: task.phase?.id,
+                                  milestoneId: task.milestone?.id,
+                                },
+                              })
+                          : null
                       }
                       subtaskRows={task.subtasks.map((subtask) => {
                         const full = tasks.find((row) => row.id === subtask.id);
@@ -171,6 +178,7 @@ export function TaskList({
                       })}
                       onOpenSubtask={(subtaskId) => setPanel({ mode: "view", taskId: subtaskId })}
                       onSubtaskStatusChange={changeStatus}
+                      canEditSubtaskStatus={(subtask) => canEditStatus(subtask)}
                     />
                   ))}
                 </ul>
@@ -188,6 +196,7 @@ export function TaskList({
         phases={phases}
         milestones={milestones}
         users={users}
+        canManage={canManage}
       />
     </>
   );
@@ -198,10 +207,12 @@ function TaskRow({
   pendingStatus,
   onOpen,
   onStatusChange,
+  canEditStatus,
   onAddSubtask,
   subtaskRows,
   onOpenSubtask,
   onSubtaskStatusChange,
+  canEditSubtaskStatus,
 }) {
   const [showSubtasks, setShowSubtasks] = useState(true);
   const blocked = isTaskBlocked(task);
@@ -282,23 +293,29 @@ function TaskRow({
           <span className="w-6 shrink-0" aria-hidden="true" />
         )}
 
-        <Select value={status} onValueChange={(value) => onStatusChange(task, value)}>
-          <SelectTrigger className="h-8 w-36" aria-label={`Status of ${task.title}`}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {STATUS_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {canEditStatus ? (
+          <Select value={status} onValueChange={(value) => onStatusChange(task, value)}>
+            <SelectTrigger className="h-8 w-36" aria-label={`Status of ${task.title}`}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <StatusBadge kind="taskStatus" value={status} size="sm" />
+        )}
 
-        <Button variant="ghost" size="icon-sm" onClick={onAddSubtask}>
-          <Plus aria-hidden="true" />
-          <span className="sr-only">Add a subtask to {task.title}</span>
-        </Button>
+        {onAddSubtask ? (
+          <Button variant="ghost" size="icon-sm" onClick={onAddSubtask}>
+            <Plus aria-hidden="true" />
+            <span className="sr-only">Add a subtask to {task.title}</span>
+          </Button>
+        ) : null}
       </div>
 
       {showSubtasks && subtaskRows.length > 0 ? (
@@ -327,21 +344,25 @@ function TaskRow({
                   <span className="sr-only">Assigned to {subtask.assignee.name}</span>
                 </span>
               ) : null}
-              <Select
-                value={subtask.status}
-                onValueChange={(value) => onSubtaskStatusChange(subtask, value)}
-              >
-                <SelectTrigger className="h-7 w-32 text-[0.75rem]" aria-label={`Status of ${subtask.title}`}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STATUS_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {canEditSubtaskStatus?.(subtask) ? (
+                <Select
+                  value={subtask.status}
+                  onValueChange={(value) => onSubtaskStatusChange(subtask, value)}
+                >
+                  <SelectTrigger className="h-7 w-32 text-[0.75rem]" aria-label={`Status of ${subtask.title}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STATUS_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <StatusBadge kind="taskStatus" value={subtask.status} size="sm" />
+              )}
             </li>
           ))}
         </ul>

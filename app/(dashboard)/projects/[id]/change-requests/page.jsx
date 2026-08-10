@@ -4,11 +4,13 @@ import { EmptyState } from "@/app/components/domain/states";
 import { StatusBadge } from "@/app/components/domain/status-badge";
 import { formatCurrency, formatRelativeDays, humanizeType } from "@/app/lib/format";
 import { normalizeChangeRequest } from "@/app/lib/api/normalize";
+import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   ChangeRequestsByProjectDocument,
   ProjectDetailHeaderDocument,
 } from "@/app/lib/graphql/generated/documents";
+import { canManageProjects } from "@/app/lib/rbac";
 import { cn } from "@/app/lib/utils";
 
 import { NewChangeRequestDialog } from "@/app/(dashboard)/change-requests/new-change-request-dialog";
@@ -17,18 +19,20 @@ export const metadata = { title: "Change requests" };
 
 export default async function ProjectChangeRequestsPage({ params }) {
   const { id } = await params;
-  const [{ data }, { data: header }] = await Promise.all([
+  const [{ data }, { data: header }, claims] = await Promise.all([
     getClient().query({ query: ChangeRequestsByProjectDocument, variables: { projectId: id } }),
     getClient().query({ query: ProjectDetailHeaderDocument, variables: { id } }),
+    getSessionClaims(),
   ]);
 
   const requests = [...(data.changeRequests ?? [])]
     .map(normalizeChangeRequest)
     .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
-  const newRequestButton = (
+  const canCreate = canManageProjects(claims?.role);
+  const newRequestButton = canCreate ? (
     <NewChangeRequestDialog lockedProjectId={id} lockedProjectName={header.project?.name} />
-  );
+  ) : null;
 
   if (requests.length === 0) {
     return (

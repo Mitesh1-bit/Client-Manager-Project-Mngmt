@@ -39,7 +39,16 @@ import { TaskForm } from "./task-form";
  *
  * @param {{ panel: { mode: 'view'|'edit'|'create', taskId?: string, defaults?: object } | null }} props
  */
-export function TaskSheet({ projectId, panel, onPanelChange, tasks, phases, milestones, users }) {
+export function TaskSheet({
+  projectId,
+  panel,
+  onPanelChange,
+  tasks,
+  phases,
+  milestones,
+  users,
+  canManage = false,
+}) {
   const selected = panel?.taskId ? tasks.find((task) => task.id === panel.taskId) : null;
   const close = () => onPanelChange(null);
 
@@ -93,6 +102,7 @@ export function TaskSheet({ projectId, panel, onPanelChange, tasks, phases, mile
           <TaskDetail
             task={selected}
             tasks={tasks}
+            canManage={canManage}
             onEdit={() => onPanelChange({ mode: "edit", taskId: selected.id })}
             onOpenTask={(taskId) => onPanelChange({ mode: "view", taskId })}
             onAddSubtask={() =>
@@ -112,7 +122,7 @@ export function TaskSheet({ projectId, panel, onPanelChange, tasks, phases, mile
   );
 }
 
-function TaskDetail({ task, tasks, onEdit, onOpenTask, onAddSubtask }) {
+function TaskDetail({ task, tasks, onEdit, onOpenTask, onAddSubtask, canManage }) {
   const blockers = blockingTasks(task);
   const doneSubtasks = task.subtasks.filter((subtask) => subtask.status === "DONE").length;
 
@@ -127,9 +137,11 @@ function TaskDetail({ task, tasks, onEdit, onOpenTask, onAddSubtask }) {
               {task.parentTask ? ` · subtask of “${task.parentTask.title}”` : ""}
             </SheetDescription>
           </div>
-          <Button variant="outline" size="sm" onClick={onEdit}>
-            Edit
-          </Button>
+          {canManage ? (
+            <Button variant="outline" size="sm" onClick={onEdit}>
+              Edit
+            </Button>
+          ) : null}
         </div>
       </SheetHeader>
 
@@ -209,7 +221,7 @@ function TaskDetail({ task, tasks, onEdit, onOpenTask, onAddSubtask }) {
                 </span>
               ) : null}
             </h3>
-            {!task.parentTask ? (
+            {canManage && !task.parentTask ? (
               <Button variant="ghost" size="sm" onClick={onAddSubtask}>
                 <Plus aria-hidden="true" />
                 Add
@@ -255,13 +267,13 @@ function TaskDetail({ task, tasks, onEdit, onOpenTask, onAddSubtask }) {
           )}
         </section>
 
-        <DependencySection task={task} tasks={tasks} onOpenTask={onOpenTask} />
+        <DependencySection task={task} tasks={tasks} onOpenTask={onOpenTask} canManage={canManage} />
       </div>
     </>
   );
 }
 
-function DependencySection({ task, tasks, onOpenTask }) {
+function DependencySection({ task, tasks, onOpenTask, canManage }) {
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [addDependency, { loading: addLoading }] = useMutation(AddTaskDependencyDocument);
@@ -301,7 +313,7 @@ function DependencySection({ task, tasks, onOpenTask }) {
     <section>
       <div className="mb-2.5 flex items-center justify-between gap-3">
         <h3 className="text-subheading">Depends on</h3>
-        {!adding && candidates.length > 0 ? (
+        {canManage && !adding && candidates.length > 0 ? (
           <Button variant="ghost" size="sm" onClick={() => setAdding(true)}>
             <Plus aria-hidden="true" />
             Add
@@ -350,10 +362,12 @@ function DependencySection({ task, tasks, onOpenTask }) {
                 {humanizeType(dep.type)}
               </span>
               <StatusBadge kind="taskStatus" value={dep.dependsOnTask.status} size="sm" />
-              <Button variant="ghost" size="icon-sm" onClick={() => remove(dep.id)}>
-                <Trash2 aria-hidden="true" />
-                <span className="sr-only">Remove dependency on {dep.dependsOnTask.title}</span>
-              </Button>
+              {canManage ? (
+                <Button variant="ghost" size="icon-sm" onClick={() => remove(dep.id)}>
+                  <Trash2 aria-hidden="true" />
+                  <span className="sr-only">Remove dependency on {dep.dependsOnTask.title}</span>
+                </Button>
+              ) : null}
             </li>
           ))}
         </ul>
