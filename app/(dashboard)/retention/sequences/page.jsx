@@ -1,4 +1,5 @@
 import { PageHeader } from "@/app/components/domain/page-header";
+import { RETENTION_MODULE_DESCRIPTION } from "@/app/lib/retention";
 
 import { RetentionTabs } from "../retention-tabs";
 import { SequencesListPanel } from "./sequences-list-panel";
@@ -11,7 +12,7 @@ export default function RetentionSequencesPage() {
       <PageHeader
         eyebrow="Operations"
         title="Retention"
-        description="AI-assisted and manual retention sequences, linked to client companies and approved before use."
+        description={RETENTION_MODULE_DESCRIPTION}
       />
 
       <SequencesListPanel />

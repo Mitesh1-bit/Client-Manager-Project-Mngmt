@@ -24,6 +24,7 @@ fragment ProjectRow on ProjectType {
   companyId
   startDate
   endDate
+  completionPercent
   projectManagerId
   projectManager {
     id
@@ -48,6 +49,7 @@ fragment ProjectHeader on ProjectType {
   companyId
   startDate
   endDate
+  completionPercent
   projectManagerId
   projectManager {
     id

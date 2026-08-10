@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/app/components/ui/select";
 import { EnrollInSequenceDocument } from "@/app/lib/graphql/generated/documents";
+import { RETENTION_LOCKED_DESCRIPTION } from "@/app/lib/retention";
 import { cn } from "@/app/lib/utils";
 
 /**
@@ -42,6 +43,7 @@ export function EnrollInSequenceDialog({
   companies,
   contacts,
   enrolledContactIds = [],
+  retentionEligible = true,
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -138,15 +140,23 @@ export function EnrollInSequenceDialog({
         <DialogHeader>
           <DialogTitle>Enroll in a sequence</DialogTitle>
           <DialogDescription>
-            {companyName
-              ? `Schedule touchpoints for ${companyName}. Select one or more contacts to include.`
-              : sequenceName
-                ? `Schedule "${sequenceName}" for a client and choose who should receive the touchpoints.`
-                : "Schedule the sequence's touchpoints starting today."}
+            {retentionEligible
+              ? companyName
+                ? `Schedule post-project call and email follow-ups for ${companyName}. Select one or more contacts.`
+                : sequenceName
+                  ? `Schedule "${sequenceName}" for a client after delivery and choose who receives follow-ups.`
+                  : "Schedule call and email touchpoints starting today."
+              : RETENTION_LOCKED_DESCRIPTION}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
+          {!retentionEligible ? (
+            <p className="rounded-lg border border-tone-caution-border bg-tone-caution-bg px-3 py-2.5 text-caption text-tone-caution-fg">
+              {RETENTION_LOCKED_DESCRIPTION}
+            </p>
+          ) : null}
+
           {companyName ? (
             <Field label="Client">
               <p className="flex h-10 items-center rounded-lg border bg-muted px-3 text-caption font-medium">
@@ -251,7 +261,7 @@ export function EnrollInSequenceDialog({
           <Button variant="ghost" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleEnroll} disabled={loading || availableContacts.length === 0}>
+          <Button onClick={handleEnroll} disabled={loading || !retentionEligible || availableContacts.length === 0}>
             {loading ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : null}
             Enroll{selectedContactIds.length > 1 ? ` (${selectedContactIds.length})` : ""}
           </Button>

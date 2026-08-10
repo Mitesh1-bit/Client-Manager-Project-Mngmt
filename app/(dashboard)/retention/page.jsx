@@ -9,6 +9,7 @@ import {
 
 import { AtRiskCompanyCard } from "./at-risk-company-card";
 import { RetentionTabs } from "./retention-tabs";
+import { RETENTION_MODULE_DESCRIPTION } from "@/app/lib/retention";
 
 export const metadata = { title: "Retention" };
 
@@ -26,7 +27,7 @@ export default async function RetentionAtRiskPage() {
       <PageHeader
         eyebrow="Operations"
         title="Retention"
-        description="Accounts that need attention before they churn, and why each one is flagged."
+        description={RETENTION_MODULE_DESCRIPTION}
       />
 
       <div className="space-y-4">
@@ -42,8 +43,8 @@ export default async function RetentionAtRiskPage() {
             <div>
               <p className="font-medium">Nothing at risk right now</p>
               <p className="mt-1 max-w-sm text-caption text-muted-foreground">
-                Every active account has a healthy score, recent contact, and no overdue
-                touchpoints.
+                Post-project accounts with healthy scores and up-to-date call or email follow-ups
+                appear here when they need attention.
               </p>
             </div>
           </div>

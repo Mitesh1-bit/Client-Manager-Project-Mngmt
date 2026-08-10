@@ -36,10 +36,8 @@ export async function generateMetadata({ params }) {
 }
 
 const TRIGGER_LABELS = {
-  MANUAL: "Started manually",
-  ON_COMPANY_CREATED: "Starts when a client is created",
-  ON_PROJECT_COMPLETED: "Starts when a project completes",
-  ON_RENEWAL_APPROACHING: "Starts as a renewal approaches",
+  MANUAL: "Started manually after delivery",
+  ON_PROJECT_COMPLETED: "Starts automatically when a project completes",
 };
 
 function isActiveEnrollment(status) {
@@ -64,11 +62,12 @@ export default async function SequenceDetailPage({ params }) {
   const activeEnrollments = sequence.enrollments.filter((e) => isActiveEnrollment(e.status));
   const otherEnrollments = sequence.enrollments.filter((e) => !isActiveEnrollment(e.status));
   const enrolledContactIds = activeEnrollments.map((e) => e.contact.id);
-  const companyFromOptions = pickList(options, "companies").find(
+  const companyFromOptions = pickList(options, "retentionEligibleCompanies").find(
     (company) => company.id === sequence.companyId,
   );
   const companyContacts = companyFromOptions?.contacts ?? [];
-  const enrollableCompanies = pickList(options, "companies");
+  const enrollableCompanies = pickList(options, "retentionEligibleCompanies");
+  const retentionEligible = Boolean(companyFromOptions ?? !sequence.companyId);
 
   return (
     <div className="mx-auto w-full max-w-3xl">
@@ -142,8 +141,9 @@ export default async function SequenceDetailPage({ params }) {
             companies={enrollableCompanies}
             contacts={companyContacts}
             enrolledContactIds={enrolledContactIds}
+            retentionEligible={retentionEligible}
             trigger={
-              <Button disabled={!enrollable || companyContacts.length === 0}>
+              <Button disabled={!enrollable || !retentionEligible || companyContacts.length === 0}>
                 <UserPlus aria-hidden="true" />
                 Enroll a client
               </Button>
@@ -162,6 +162,11 @@ export default async function SequenceDetailPage({ params }) {
       {!enrollable ? (
         <p className="mb-5 rounded-lg border border-tone-caution-border bg-tone-caution-bg px-3.5 py-2.5 text-caption text-tone-caution-fg">
           This sequence isn&apos;t approved yet, so it can&apos;t take new enrollments.
+        </p>
+      ) : !retentionEligible ? (
+        <p className="mb-5 rounded-lg border border-tone-caution-border bg-tone-caution-bg px-3.5 py-2.5 text-caption text-tone-caution-fg">
+          Retention is locked until this client&apos;s projects are completed end-to-end and no
+          delivery work is still in progress.
         </p>
       ) : null}
 
@@ -185,7 +190,7 @@ export default async function SequenceDetailPage({ params }) {
             <EmptyState
               icon={Users}
               title="Nobody enrolled yet"
-              description="Enroll a client to start scheduling this sequence's touchpoints for them."
+              description="Enroll a client after project delivery to schedule call and email follow-ups."
               className="border-0 bg-transparent py-6"
             />
           ) : (

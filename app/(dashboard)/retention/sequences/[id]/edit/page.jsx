@@ -30,7 +30,18 @@ export default async function EditSequencePage({ params }) {
   if (!data.retentionSequence) notFound();
 
   const sequence = normalizeRetentionSequence(data.retentionSequence);
-  const companies = options?.companies ?? [];
+  const eligibleCompanies = options?.retentionEligibleCompanies ?? [];
+  const companies =
+    sequence.companyId && !eligibleCompanies.some((company) => company.id === sequence.companyId)
+      ? [
+          ...eligibleCompanies,
+          {
+            id: sequence.companyId,
+            name: sequence.company?.name ?? "Client",
+            contacts: [],
+          },
+        ]
+      : eligibleCompanies;
 
   return (
     <div className="mx-auto w-full max-w-3xl">

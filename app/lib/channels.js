@@ -25,8 +25,13 @@ export const CHANNEL_OPTIONS = Object.entries(CHANNEL_LABELS).map(([value, label
   label,
 }));
 
-/** Sequence builder channels — email steps are disabled while mail is off. */
-export const SEQUENCE_CHANNEL_OPTIONS = CHANNEL_OPTIONS.filter(({ value }) => value !== "EMAIL");
+/** Post-project retention — follow-up calls and emails only. */
+export const RETENTION_CHANNEL_OPTIONS = CHANNEL_OPTIONS.filter(({ value }) =>
+  ["EMAIL", "CALL"].includes(value),
+);
+
+/** @deprecated Use RETENTION_CHANNEL_OPTIONS */
+export const SEQUENCE_CHANNEL_OPTIONS = RETENTION_CHANNEL_OPTIONS;
 
 export function channelIcon(channel) {
   return CHANNEL_ICONS[channel] ?? CalendarClock;

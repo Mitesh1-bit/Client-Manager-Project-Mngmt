@@ -46,7 +46,7 @@ query RetentionFormOptions {
     status
     companyId
   }
-  companies {
+  retentionEligibleCompanies {
     id
     name
     contacts {
@@ -54,6 +54,20 @@ query RetentionFormOptions {
       firstName
       lastName
       isPrimary
+    }
+  }
+}
+
+query CompanyRetentionEligibility($companyId: ID!) {
+  companyRetentionEligibility(companyId: $companyId) {
+    eligible
+    reason
+    completedProjectCount
+    incompleteProjectCount
+    blockingProjects {
+      id
+      name
+      status
     }
   }
 }

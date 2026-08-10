@@ -46,6 +46,7 @@ import {
   UpdateRetentionSequenceDocument,
   UpdateSequenceStepDocument,
 } from "@/app/lib/graphql/generated/documents";
+import { RETENTION_MODULE_DESCRIPTION } from "@/app/lib/retention";
 
 import { SequenceStepCard } from "./sequence-step-card";
 import {
@@ -219,6 +220,14 @@ export function SequenceBuilder({ mode, sequence, companies = [] }) {
 
   return (
     <form noValidate className="space-y-5">
+      <Alert>
+        <AlertTitle>Post-project follow-ups only</AlertTitle>
+        <AlertDescription>
+          {RETENTION_MODULE_DESCRIPTION} Each step must be a follow-up call or email — no meetings,
+          discussions, or delivery tasks.
+        </AlertDescription>
+      </Alert>
+
       <SectionCard title="About this sequence">
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label="Client company" error={errors.companyId?.message} required className="sm:col-span-2">
@@ -232,8 +241,8 @@ export function SequenceBuilder({ mode, sequence, companies = [] }) {
                     options={companyOptions}
                     value={control_.value ?? ""}
                     onChange={control_.onChange}
-                    placeholder="Choose a client company"
-                    emptyText="No client matches."
+                    placeholder="Client with completed projects"
+                    emptyText="No eligible clients — finish active projects first."
                   />
                 )}
               />

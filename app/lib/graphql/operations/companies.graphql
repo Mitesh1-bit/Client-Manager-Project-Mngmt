@@ -164,6 +164,9 @@ query CompanyProjects($id: ID!) {
     budget
     actualCost
     currency
+    startDate
+    endDate
+    completionPercent
     projectManagerId
     projectManager {
       id

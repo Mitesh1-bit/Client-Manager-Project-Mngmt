@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { Pencil } from "lucide-react";
+import { FolderKanban, Pencil } from "lucide-react";
 
 import { BackLink } from "@/app/components/domain/back-link";
-
 import { DetailTabs } from "@/app/components/domain/detail-tabs";
+import { EmptyState } from "@/app/components/domain/states";
 import { StatusBadge } from "@/app/components/domain/status-badge";
 import { TagList } from "@/app/components/domain/tag-list";
 import { Button } from "@/app/components/ui/button";
@@ -41,7 +40,23 @@ export default async function ProjectDetailLayout({ children, params }) {
   const companiesById = new Map(pickList(data, "companies").map((company) => [company.id, company]));
   const usersById = new Map(pickList(data, "users").map((user) => [user.id, user]));
   const project = normalizeProject(data.project, usersById, companiesById);
-  if (!project) notFound();
+  if (!project) {
+    return (
+      <div className="min-w-0 space-y-6">
+        <BackLink href="/projects">Projects</BackLink>
+        <EmptyState
+          icon={FolderKanban}
+          title="Project not found"
+          description="This project may have been deleted, belongs to another workspace, or you may not have access."
+          action={
+            <Button asChild>
+              <Link href="/projects">Back to projects</Link>
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
 
   const claims = await getSessionClaims();
   const canEdit = PROJECT_EDIT_ROLES.includes(claims?.role);
@@ -182,7 +197,7 @@ export default async function ProjectDetailLayout({ children, params }) {
 
       <DetailTabs tabs={tabs} tourId="project-tabs" />
 
-      {children}
+      <div className="min-w-0">{children}</div>
     </div>
   );
 }

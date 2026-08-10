@@ -314,6 +314,7 @@ fragment ProjectHeader on ProjectType {
   companyId
   startDate
   endDate
+  completionPercent
   projectManagerId
   projectManager {
     id
@@ -353,6 +354,7 @@ fragment ProjectRow on ProjectType {
   companyId
   startDate
   endDate
+  completionPercent
   projectManagerId
   projectManager {
     id
@@ -1239,11 +1241,29 @@ query CompanyProjects($id: ID!) {
     budget
     actualCost
     currency
+    startDate
+    endDate
+    completionPercent
     projectManagerId
     projectManager {
       id
       name
       avatarUrl
+    }
+  }
+}`;
+
+export const CompanyRetentionEligibilityDocument = gql`
+query CompanyRetentionEligibility($companyId: ID!) {
+  companyRetentionEligibility(companyId: $companyId) {
+    eligible
+    reason
+    completedProjectCount
+    incompleteProjectCount
+    blockingProjects {
+      id
+      name
+      status
     }
   }
 }`;
@@ -1612,6 +1632,7 @@ fragment ProjectRow on ProjectType {
   companyId
   startDate
   endDate
+  completionPercent
   projectManagerId
   projectManager {
     id
@@ -2560,6 +2581,7 @@ fragment ProjectHeader on ProjectType {
   companyId
   startDate
   endDate
+  completionPercent
   projectManagerId
   projectManager {
     id
@@ -2617,6 +2639,7 @@ fragment ProjectHeader on ProjectType {
   companyId
   startDate
   endDate
+  completionPercent
   projectManagerId
   projectManager {
     id
@@ -2794,6 +2817,7 @@ fragment ProjectRow on ProjectType {
   companyId
   startDate
   endDate
+  completionPercent
   projectManagerId
   projectManager {
     id
@@ -3095,7 +3119,7 @@ query RetentionFormOptions {
     status
     companyId
   }
-  companies {
+  retentionEligibleCompanies {
     id
     name
     contacts {
@@ -3729,6 +3753,7 @@ fragment ProjectHeader on ProjectType {
   companyId
   startDate
   endDate
+  completionPercent
   projectManagerId
   projectManager {
     id

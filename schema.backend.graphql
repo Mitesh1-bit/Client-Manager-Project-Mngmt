@@ -459,6 +459,7 @@ type ProjectType {
   health: String
   startDate: Date
   endDate: Date
+  completionPercent: Int!
   company: CompanyType
   projectManager: UserSummaryType
   phases: [PhaseType!]!
@@ -505,6 +506,8 @@ type Query {
   Full touchpoint history for a company — scheduled, completed and skipped.
   """
   companyTouchpoints(companyId: ID!): [TouchpointType!]!
+  companyRetentionEligibility(companyId: ID!): CompanyRetentionEligibilityType!
+  retentionEligibleCompanies: [CompanyType!]!
 
   """One search across companies, contacts, projects and tasks."""
   search(query: String!): SearchResultsType!
@@ -523,6 +526,20 @@ type Query {
   notifications(unreadOnly: Boolean! = false, limit: Int! = 50, offset: Int! = 0): [NotificationType!]!
   unreadNotificationCount: Int!
   organizationSettings: OrgSettingsType!
+}
+
+type RetentionBlockingProjectType {
+  id: ID!
+  name: String!
+  status: String!
+}
+
+type CompanyRetentionEligibilityType {
+  eligible: Boolean!
+  reason: String
+  completedProjectCount: Int!
+  incompleteProjectCount: Int!
+  blockingProjects: [RetentionBlockingProjectType!]!
 }
 
 type RetentionEnrollmentType {

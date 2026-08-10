@@ -8,10 +8,8 @@ import { cn } from "@/app/lib/utils";
 import { SEQUENCE_SOURCE_LABELS, SEQUENCE_STATUS_LABELS } from "./sequence-schema";
 
 const TRIGGER_LABELS = {
-  MANUAL: "Started manually",
-  ON_COMPANY_CREATED: "Starts when a client is created",
+  MANUAL: "Manual post-delivery follow-ups",
   ON_PROJECT_COMPLETED: "Starts when a project completes",
-  ON_RENEWAL_APPROACHING: "Starts as a renewal approaches",
 };
 
 const STATUS_STYLES = {

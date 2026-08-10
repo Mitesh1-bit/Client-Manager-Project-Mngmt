@@ -51,7 +51,7 @@ export function SequencesListPanel() {
 
   const { data: optionsData } = useQuery(RetentionFormOptionsDocument);
   const companyOptions = useMemo(
-    () => (optionsData?.companies ?? []).map((company) => ({ value: company.id, label: company.name })),
+    () => (optionsData?.retentionEligibleCompanies ?? []).map((company) => ({ value: company.id, label: company.name })),
     [optionsData],
   );
   const companyFilterOptions = useMemo(
@@ -171,14 +171,14 @@ export function SequencesListPanel() {
           <div className="min-w-0 flex-1 space-y-1.5">
             <p className="text-caption font-medium">Generate with AI</p>
             <p className="text-[0.75rem] text-muted-foreground">
-              Analyze client data and create a pending retention sequence for PM approval.
+              Propose post-project call and email follow-ups for clients with completed delivery.
             </p>
             <SearchableSelect
               options={companyOptions}
               value={generatingCompanyId}
               onChange={setGeneratingCompanyId}
-              placeholder="Choose a client company"
-              emptyText="No client matches."
+              placeholder="Choose a client with completed projects"
+              emptyText="No eligible clients — finish active projects first."
             />
           </div>
           <Button onClick={handleGenerate} disabled={generating || !generatingCompanyId}>

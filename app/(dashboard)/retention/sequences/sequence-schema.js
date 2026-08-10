@@ -3,10 +3,8 @@ import { SEQUENCE_ASSIGNEE_ROLES } from "@/app/lib/assignee-roles";
 import { toUiStatus } from "@/app/lib/api/normalize";
 
 export const TRIGGER_TYPES = [
-  { value: "MANUAL", label: "Manual — start it yourself for a client" },
-  { value: "ON_COMPANY_CREATED", label: "When a new client is created" },
-  { value: "ON_PROJECT_COMPLETED", label: "When a project completes" },
-  { value: "ON_RENEWAL_APPROACHING", label: "As a renewal approaches" },
+  { value: "ON_PROJECT_COMPLETED", label: "When a project completes (recommended)" },
+  { value: "MANUAL", label: "Manual — start follow-ups yourself" },
 ];
 
 export const SEQUENCE_STATUS_LABELS = {
@@ -35,7 +33,7 @@ const stepSchema = z.object({
     .max(80, "Keep the name under 80 characters.")
     .optional()
     .transform((value) => value || ""),
-  channel: z.enum(["EMAIL", "CALL", "MEETING", "INTERNAL_TASK"]),
+  channel: z.enum(["EMAIL", "CALL"]),
   offsetDays: z
     .union([z.string(), z.number()])
     .transform((value) => (value === "" ? NaN : Number(value)))
@@ -69,12 +67,7 @@ export const sequenceSchema = z
       .max(500, "Keep this under 500 characters.")
       .optional()
       .transform((value) => value || null),
-    triggerType: z.enum([
-      "MANUAL",
-      "ON_COMPANY_CREATED",
-      "ON_PROJECT_COMPLETED",
-      "ON_RENEWAL_APPROACHING",
-    ]),
+    triggerType: z.enum(["MANUAL", "ON_PROJECT_COMPLETED"]),
     isActive: z.boolean().default(false),
     steps: z.array(stepSchema).min(1, "Add at least one step."),
   })
@@ -97,7 +90,7 @@ export function sequenceToFormValues(sequence) {
     companyId: sequence?.companyId ?? sequence?.company?.id ?? "",
     name: sequence?.name ?? "",
     description: sequence?.description ?? "",
-    triggerType: toUiStatus("sequenceTriggerType", sequence?.triggerType) ?? "MANUAL",
+    triggerType: toUiStatus("sequenceTriggerType", sequence?.triggerType) ?? "ON_PROJECT_COMPLETED",
     isActive: sequence?.isActive ?? false,
     steps: sequence?.steps?.length
       ? [...sequence.steps]

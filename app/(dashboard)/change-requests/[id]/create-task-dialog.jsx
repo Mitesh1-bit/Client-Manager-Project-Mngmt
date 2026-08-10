@@ -37,7 +37,7 @@ import {
 } from "@/app/lib/graphql/generated/documents";
 import { listStatuses } from "@/app/lib/status";
 
-import { taskSchema, taskToFormValues, toCreateTaskVariables } from "../../projects/[id]/(detail)/task-schema";
+import { taskSchema, taskToFormValues, toCreateTaskVariables } from "../../projects/[id]/task-schema";
 
 const PRIORITY_OPTIONS = listStatuses("priority");
 
