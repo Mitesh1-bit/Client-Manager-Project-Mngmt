@@ -33,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
 import { UpdateTaskStatusDocument } from "@/app/lib/graphql/generated/documents";
+import { projectHeaderRefetch, taskStatusForApi } from "@/app/lib/project-progress";
 import { TASK_COLUMNS, TASK_STATUSES, groupTasksByStatus, moveTask } from "@/app/lib/project";
 import { cn } from "@/app/lib/utils";
 
@@ -151,7 +152,11 @@ export function ProjectBoard({
 
   async function persist(taskId, status, orderIndex, snapshot) {
     try {
-      await updateTaskStatus({ variables: { id: taskId, status, orderIndex } });
+      await updateTaskStatus({
+        variables: { id: taskId, status: taskStatusForApi(status), orderIndex },
+        refetchQueries: projectHeaderRefetch(projectId),
+        awaitRefetchQueries: true,
+      });
       router.refresh();
     } catch (error) {
       if (snapshot) setColumns(snapshot);

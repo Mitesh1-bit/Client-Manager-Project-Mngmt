@@ -7,7 +7,6 @@ import { EmptyState } from "@/app/components/domain/states";
 import { StatusBadge } from "@/app/components/domain/status-badge";
 import { TagList } from "@/app/components/domain/tag-list";
 import { Button } from "@/app/components/ui/button";
-import { Progress } from "@/app/components/ui/progress";
 import { formatCurrency, formatDate, initials } from "@/app/lib/format";
 import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
@@ -16,6 +15,8 @@ import { pickList } from "@/app/lib/api/safe-list";
 import { ProjectDetailHeaderDocument } from "@/app/lib/graphql/generated/documents";
 import { parseDay, startOfDay } from "@/app/lib/project";
 import { cn } from "@/app/lib/utils";
+
+import { ProjectProgressBar } from "./project-progress-bar";
 
 // Mirrors the backend's updateProject gate (require_role in
 // app/graphql/projects/schema.py).
@@ -130,16 +131,10 @@ export default async function ProjectDetailLayout({ children, params }) {
           <div>
             <dt className="text-caption text-muted-foreground">Progress</dt>
             <dd className="mt-1.5">
-              <div className="flex items-center gap-2">
-                <Progress
-                  value={project.completionPercent}
-                  aria-label={`${project.completionPercent}% complete`}
-                  className="flex-1"
-                />
-                <span className="tabular text-caption font-medium">
-                  {project.completionPercent}%
-                </span>
-              </div>
+              <ProjectProgressBar
+                projectId={id}
+                initialPercent={project.completionPercent}
+              />
             </dd>
           </div>
 

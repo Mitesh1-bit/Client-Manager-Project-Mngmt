@@ -6,6 +6,8 @@
  * run through these so the behaviour can be tested without a browser.
  */
 
+import { computeTaskCompletionPercent } from "@/app/lib/project-progress";
+
 /** Board columns, left to right. */
 export const TASK_COLUMNS = [
   { status: "TODO", label: "To do" },
@@ -91,14 +93,14 @@ export function isTaskOverdue(task, today = new Date()) {
   return parseDay(task.dueDate) < startOfDay(today);
 }
 
-/** Completed vs total top-level tasks — the board's own view of progress. */
+/** Weighted stage progress for top-level board tasks. */
 export function taskCompletion(tasks) {
   const topLevel = tasks.filter((task) => !task.parentTask);
   const done = topLevel.filter((task) => task.status === "DONE").length;
   return {
     done,
     total: topLevel.length,
-    percent: topLevel.length === 0 ? 0 : Math.round((done / topLevel.length) * 100),
+    percent: computeTaskCompletionPercent(topLevel),
   };
 }
 

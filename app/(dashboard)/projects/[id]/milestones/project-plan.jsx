@@ -40,7 +40,7 @@ import {
   UpdateMilestoneDocument,
   UpdatePhaseDocument,
 } from "@/app/lib/graphql/generated/documents";
-import { isTaskOverdue, parseDay, startOfDay } from "@/app/lib/project";
+import { isTaskOverdue, parseDay, startOfDay, taskCompletion } from "@/app/lib/project";
 import { listStatuses } from "@/app/lib/status";
 import { cn } from "@/app/lib/utils";
 
@@ -166,8 +166,7 @@ export function ProjectPlan({ projectId, phases = [], milestones = [], canManage
 
 function PhaseSection({ phase, canManage, onEditPhase, onAddMilestone, onEditMilestone }) {
   const tasks = phase.tasks.filter((task) => !task.parentTask);
-  const done = tasks.filter((task) => task.status === "DONE").length;
-  const percent = tasks.length === 0 ? 0 : Math.round((done / tasks.length) * 100);
+  const { done, total, percent } = taskCompletion(tasks);
 
   const dueDate = parseDay(phase.dueDate);
   const overdue = dueDate && phase.status !== "COMPLETED" && dueDate < startOfDay(new Date());
@@ -196,7 +195,7 @@ function PhaseSection({ phase, canManage, onEditPhase, onAddMilestone, onEditMil
             <div className="mb-1 flex items-center justify-between text-[0.75rem] text-muted-foreground">
               <span>Tasks</span>
               <span className="tabular">
-                {done}/{tasks.length}
+                {done}/{total}
               </span>
             </div>
             <Progress value={percent} aria-label={`${phase.name} is ${percent}% complete`} />

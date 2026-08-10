@@ -22,6 +22,7 @@ import {
 } from "@/app/components/ui/select";
 import { Textarea } from "@/app/components/ui/textarea";
 import { CreateTaskDocument, CreatePhaseDocument, UpdateTaskDocument } from "@/app/lib/graphql/generated/documents";
+import { projectHeaderRefetch } from "@/app/lib/project-progress";
 import { listStatuses } from "@/app/lib/status";
 
 import { taskSchema, taskToFormValues, toCreateTaskVariables, toUpdateTaskVariables } from "./task-schema";
@@ -83,6 +84,7 @@ export function TaskForm({ projectId, task, defaults, phases = [], milestones = 
         const phaseId = await resolvePhaseId(values);
         const { data } = await createTask({
           variables: toCreateTaskVariables(values, projectId, phaseId),
+          refetchQueries: projectHeaderRefetch(projectId),
           update: (cache) =>
             cache.evict({ id: cache.identify({ __typename: "ProjectType", id: projectId }) }),
         });
@@ -90,6 +92,7 @@ export function TaskForm({ projectId, task, defaults, phases = [], milestones = 
       } else {
         const { data } = await updateTask({
           variables: toUpdateTaskVariables(task.id, values),
+          refetchQueries: projectHeaderRefetch(projectId),
           update: (cache) =>
             cache.evict({ id: cache.identify({ __typename: "ProjectType", id: projectId }) }),
         });

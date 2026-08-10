@@ -18,6 +18,7 @@ import {
 } from "@/app/components/ui/select";
 import { formatDate, initials } from "@/app/lib/format";
 import { UpdateTaskStatusDocument } from "@/app/lib/graphql/generated/documents";
+import { projectHeaderRefetch, taskStatusForApi } from "@/app/lib/project-progress";
 import { blockingTasks, isTaskBlocked, isTaskOverdue } from "@/app/lib/project";
 import { listStatuses } from "@/app/lib/status";
 import { cn } from "@/app/lib/utils";
@@ -64,7 +65,11 @@ export function TaskList({
     try {
       // Sending the end of the destination column matches what a drag to the
       // bottom of that column would do.
-      await updateTaskStatus({ variables: { id: task.id, status, orderIndex: 9999 } });
+      await updateTaskStatus({
+        variables: { id: task.id, status: taskStatusForApi(status), orderIndex: 9999 },
+        refetchQueries: projectHeaderRefetch(projectId),
+        awaitRefetchQueries: true,
+      });
       router.refresh();
     } catch (error) {
       toast.error("Couldn't change that status", { description: error?.message });
