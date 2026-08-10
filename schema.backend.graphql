@@ -74,12 +74,14 @@ type ChangeRequestType {
   createdAt: DateTime!
   updatedAt: DateTime!
   approvals: [ChangeRequestApprovalType!]!
-  attachments: [DocumentType!]!
 
   """Tasks created from this change request, if any."""
   tasks: [TaskType!]!
   responseDueAt: DateTime
   isOverdue: Boolean!
+
+  """Files attached to this change request."""
+  attachments: [DocumentType!]!
 }
 
 type CompanyRetentionEligibilityType {
@@ -180,7 +182,6 @@ type DocumentType {
   encoding: String
   version: Int!
   uploadedBy: ID!
-  uploadedByName: String!
   uploadedByActorType: String!
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -191,6 +192,7 @@ type DocumentType {
   canPreview: Boolean!
   canPreviewInline: Boolean!
   lineCount: Int
+  uploadedByName: String!
 }
 
 type HealthScoreType {
@@ -334,7 +336,7 @@ type Mutation {
   skipTouchpoint(id: ID!, notes: String = null): TouchpointType!
 
   """
-  Record a touchpoint that already happened Â— a call made, a meeting held.
+  Record a touchpoint that already happened — a call made, a meeting held.
   """
   logTouchpoint(companyId: ID!, contactId: ID!, type: String!, outcome: String = null, notes: String = null, projectId: ID = null, occurredAt: DateTime = null): TouchpointType!
   createContract(companyId: ID!, name: String!, startDate: Date!, endDate: Date!, value: Float = null, autoRenew: Boolean! = false, status: String! = "draft"): ContractType!
@@ -490,6 +492,7 @@ type ProjectType {
   members: [UserSummaryType!]!
   clientContacts: [ContactType!]!
   tags: [TagType!]!
+  canManage: Boolean!
   completionPercent: Int!
 }
 
@@ -528,7 +531,7 @@ type Query {
   upcomingTouchpoints: [TouchpointType!]!
 
   """
-  Full touchpoint history for a company Â— scheduled, completed and skipped.
+  Full touchpoint history for a company — scheduled, completed and skipped.
   """
   companyTouchpoints(companyId: ID!): [TouchpointType!]!
   companyRetentionEligibility(companyId: ID!): CompanyRetentionEligibilityType!
@@ -704,4 +707,8 @@ type WorkloadType {
   totalEstimatedHours: Float!
   totalActualHours: Float!
   openTaskCount: Int!
+  projectCount: Int!
+  clientCount: Int!
+  projectIds: [ID!]!
+  clientIds: [ID!]!
 }

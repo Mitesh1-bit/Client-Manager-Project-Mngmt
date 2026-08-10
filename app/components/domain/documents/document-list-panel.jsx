@@ -89,6 +89,27 @@ export function DocumentListPanel({
     return rows;
   }, [normalized, query, categoryFilter, sort, maxItems]);
 
+  // Same filter/sort as `filtered`, minus the `maxItems` cap — the viewer
+  // modal navigates prev/next through every match, not just the capped
+  // preview list a compact panel shows.
+  const navigationDocuments = useMemo(() => {
+    let rows = [...normalized];
+    if (query.trim()) {
+      const q = query.trim().toLowerCase();
+      rows = rows.filter((doc) => doc.filename?.toLowerCase().includes(q));
+    }
+    if (categoryFilter !== "all") {
+      rows = rows.filter((doc) => getDocumentCategory(doc) === categoryFilter);
+    }
+    rows.sort((a, b) => {
+      if (sort === "name") return (a.filename || "").localeCompare(b.filename || "");
+      if (sort === "size") return (b.sizeBytes || 0) - (a.sizeBytes || 0);
+      if (sort === "oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+    return rows;
+  }, [normalized, query, categoryFilter, sort]);
+
   function openViewer(document) {
     setActiveDocument(document);
     setViewerOpen(true);
@@ -117,23 +138,6 @@ export function DocumentListPanel({
   }
 
   const showGrid = !compact && viewMode === "grid";
-  const navigationDocuments = useMemo(() => {
-    let rows = [...normalized];
-    if (query.trim()) {
-      const q = query.trim().toLowerCase();
-      rows = rows.filter((doc) => doc.filename?.toLowerCase().includes(q));
-    }
-    if (categoryFilter !== "all") {
-      rows = rows.filter((doc) => getDocumentCategory(doc) === categoryFilter);
-    }
-    rows.sort((a, b) => {
-      if (sort === "name") return (a.filename || "").localeCompare(b.filename || "");
-      if (sort === "size") return (b.sizeBytes || 0) - (a.sizeBytes || 0);
-      if (sort === "oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-    return rows;
-  }, [normalized, query, categoryFilter, sort]);
 
   return (
     <>

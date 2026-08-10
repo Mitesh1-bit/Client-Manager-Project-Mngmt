@@ -8,7 +8,6 @@ import { StatusBadge } from "@/app/components/domain/status-badge";
 import { TagList } from "@/app/components/domain/tag-list";
 import { Button } from "@/app/components/ui/button";
 import { formatCurrency, formatDate, initials } from "@/app/lib/format";
-import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { normalizeProject } from "@/app/lib/api/normalize";
 import { pickList } from "@/app/lib/api/safe-list";
@@ -17,10 +16,6 @@ import { parseDay, startOfDay } from "@/app/lib/project";
 import { cn } from "@/app/lib/utils";
 
 import { ProjectProgressBar } from "./project-progress-bar";
-
-// Mirrors the backend's updateProject gate (require_role in
-// app/graphql/projects/schema.py).
-const PROJECT_EDIT_ROLES = ["admin", "project_manager"];
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
@@ -59,8 +54,7 @@ export default async function ProjectDetailLayout({ children, params }) {
     );
   }
 
-  const claims = await getSessionClaims();
-  const canEdit = PROJECT_EDIT_ROLES.includes(claims?.role);
+  const canEdit = Boolean(project.canManage);
 
   const tabs = [
     { href: `/projects/${id}/board`, label: "Board" },

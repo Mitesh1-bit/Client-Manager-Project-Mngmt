@@ -25,7 +25,7 @@ export default async function ProjectTeamPage({ params }) {
       allUsers={pickList(data, "users")}
       companyContacts={data.project.company?.contacts ?? []}
       isAdmin={claims?.role === "admin"}
-      isProjectManager={claims?.role === "project_manager"}
+      isProjectManager={claims?.role === "project_manager" && Boolean(data.project.canManage)}
     />
   );
 }

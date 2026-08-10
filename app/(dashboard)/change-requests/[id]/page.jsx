@@ -12,7 +12,7 @@ import { ChangeRequestAttachmentsPanel } from "@/app/components/domain/documents
 import { EntityAvatar } from "@/app/components/domain/entity-avatar";
 import { SectionCard } from "@/app/components/domain/states";
 import { StatusBadge } from "@/app/components/domain/status-badge";
-import { formatDate, humanizeType } from "@/app/lib/format";
+import { humanizeType } from "@/app/lib/format";
 import { normalizeChangeRequest, toUiStatus } from "@/app/lib/api/normalize";
 import { asArray, pickList } from "@/app/lib/api/safe-list";
 import { getSessionClaims } from "@/app/lib/auth/session";
@@ -63,13 +63,16 @@ export default async function ChangeRequestDetailPage({ params }) {
   const canCreateTask =
     TASK_CREATOR_ROLES.includes(claims?.role) && TASK_CREATABLE_STATUSES.includes(request.status);
   let phases = [];
+  let taskOptionsList = [];
   if (canCreateTask) {
     const { data: taskOptions } = await getClient().query({
       query: ChangeRequestTaskOptionsDocument,
       variables: { projectId: request.projectId },
     });
     phases = asArray(taskOptions?.project?.phases);
+    taskOptionsList = asArray(taskOptions?.project?.tasks);
   }
+  const milestoneOptions = phases.flatMap((phase) => asArray(phase.milestones));
   const linkedTasks = asArray(request.tasks);
 
   return (
@@ -141,6 +144,8 @@ export default async function ChangeRequestDetailPage({ params }) {
                   request={request}
                   projectId={request.projectId}
                   phases={phases}
+                  milestones={milestoneOptions}
+                  tasks={taskOptionsList}
                   users={pickList(options, "users")}
                 />
               ) : null

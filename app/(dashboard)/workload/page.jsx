@@ -25,13 +25,15 @@ export default async function WorkloadPage() {
       <PageHeader
         eyebrow="Operations"
         title="Workload"
-        description="Open task load per person — estimated vs. actual hours, across all projects or one at a time."
+        description="Who's handling what — projects, clients, and open task load per person, with a quick way to add them to another project."
       />
 
       <WorkloadPanel
         initialRows={pickList(data, "workload")}
         users={pickList(data, "users")}
         projects={pickList(data, "projects")}
+        companies={pickList(data, "companies")}
+        viewerRole={viewer.role}
       />
     </>
   );

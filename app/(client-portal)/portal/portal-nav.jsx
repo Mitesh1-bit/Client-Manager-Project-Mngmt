@@ -4,8 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FileText, GitPullRequestArrow, House, LayoutList, ShieldCheck } from "lucide-react";
 
-import { cn } from "@/app/lib/utils";
-
 const ITEMS = [
   { href: "/portal", label: "Overview", icon: House, exact: true, tourId: "portal-nav-overview" },
   { href: "/portal/projects", label: "Projects", icon: LayoutList, tourId: "portal-nav-projects" },

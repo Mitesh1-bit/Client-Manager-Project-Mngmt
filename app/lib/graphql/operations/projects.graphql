@@ -51,6 +51,7 @@ fragment ProjectHeader on ProjectType {
   endDate
   completionPercent
   projectManagerId
+  canManage
   projectManager {
     id
     name
@@ -170,6 +171,7 @@ query ProjectPlan($id: ID!) {
   project(id: $id) {
     id
     name
+    canManage
     phases {
       ...PhaseFields
       milestones {
@@ -192,6 +194,7 @@ query ProjectBoard($id: ID!) {
   project(id: $id) {
     id
     name
+    canManage
     tasks {
       ...TaskFields
     }
@@ -466,6 +469,7 @@ query ProjectTeam($id: ID!) {
     id
     name
     companyId
+    canManage
     members {
       ...UserSummaryFields
     }
@@ -533,6 +537,7 @@ query ProjectChangeRequests($projectId: ID!) {
 query ProjectCalendar($id: ID!) {
   project(id: $id) {
     id
+    canManage
     tasks {
       ...TaskFields
     }
@@ -542,6 +547,7 @@ query ProjectCalendar($id: ID!) {
 query ProjectGantt($id: ID!) {
   project(id: $id) {
     id
+    canManage
     phases {
       ...PhaseFields
       milestones {

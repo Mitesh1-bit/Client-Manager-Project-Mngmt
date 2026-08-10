@@ -393,6 +393,7 @@ fragment ProjectHeader on ProjectType {
   endDate
   completionPercent
   projectManagerId
+  canManage
   projectManager {
     id
     name
@@ -1091,6 +1092,15 @@ query ChangeRequestTaskOptions($projectId: ID!) {
     phases {
       id
       name
+      milestones {
+        id
+        title
+      }
+    }
+    tasks {
+      id
+      title
+      parentTaskId
     }
   }
 }`;
@@ -2879,6 +2889,7 @@ query ProjectBoard($id: ID!) {
   project(id: $id) {
     id
     name
+    canManage
     tasks {
       ...TaskFields
     }
@@ -2943,6 +2954,7 @@ export const ProjectCalendarDocument = gql`
 query ProjectCalendar($id: ID!) {
   project(id: $id) {
     id
+    canManage
     tasks {
       ...TaskFields
     }
@@ -3032,6 +3044,7 @@ fragment ProjectHeader on ProjectType {
   endDate
   completionPercent
   projectManagerId
+  canManage
   projectManager {
     id
     name
@@ -3108,6 +3121,7 @@ fragment ProjectHeader on ProjectType {
   endDate
   completionPercent
   projectManagerId
+  canManage
   projectManager {
     id
     name
@@ -3163,6 +3177,7 @@ export const ProjectGanttDocument = gql`
 query ProjectGantt($id: ID!) {
   project(id: $id) {
     id
+    canManage
     phases {
       ...PhaseFields
       milestones {
@@ -3313,6 +3328,7 @@ query ProjectPlan($id: ID!) {
   project(id: $id) {
     id
     name
+    canManage
     phases {
       ...PhaseFields
       milestones {
@@ -3418,6 +3434,7 @@ query ProjectTeam($id: ID!) {
     id
     name
     companyId
+    canManage
     members {
       ...UserSummaryFields
     }
@@ -4249,6 +4266,7 @@ fragment ProjectHeader on ProjectType {
   endDate
   completionPercent
   projectManagerId
+  canManage
   projectManager {
     id
     name
@@ -4472,11 +4490,20 @@ query Workload($projectId: ID) {
     totalEstimatedHours
     totalActualHours
     openTaskCount
+    projectCount
+    clientCount
+    projectIds
+    clientIds
   }
   users {
     ...UserSummaryFields
   }
   projects {
+    id
+    name
+    companyId
+  }
+  companies {
     id
     name
   }

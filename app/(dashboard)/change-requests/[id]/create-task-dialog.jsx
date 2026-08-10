@@ -37,8 +37,10 @@ import {
 } from "@/app/lib/graphql/generated/documents";
 import { listStatuses } from "@/app/lib/status";
 
+import { SelectField } from "../../projects/[id]/task-form";
 import { taskSchema, taskToFormValues, toCreateTaskVariables } from "../../projects/[id]/task-schema";
 
+const STATUS_OPTIONS = listStatuses("taskStatus");
 const PRIORITY_OPTIONS = listStatuses("priority");
 
 /**
@@ -47,7 +49,14 @@ const PRIORITY_OPTIONS = listStatuses("priority");
  * `createTask` mutation the project board uses, just pre-filled and tagged
  * with `changeRequestId`.
  */
-export function CreateTaskFromChangeRequestDialog({ request, projectId, phases = [], users = [] }) {
+export function CreateTaskFromChangeRequestDialog({
+  request,
+  projectId,
+  phases = [],
+  milestones = [],
+  tasks = [],
+  users = [],
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [serverError, setServerError] = useState(null);
@@ -74,6 +83,9 @@ export function CreateTaskFromChangeRequestDialog({ request, projectId, phases =
   });
 
   const phaseOptions = phases.map((phase) => ({ value: phase.id, label: phase.name }));
+  const milestoneOptions = milestones.map((milestone) => ({ value: milestone.id, label: milestone.title }));
+  // A task can't be its own parent, and we don't offer nesting under a subtask.
+  const parentOptions = tasks.filter((candidate) => !candidate.parentTaskId);
 
   async function resolvePhaseId(values) {
     if (values.phaseId) return values.phaseId;
@@ -140,25 +152,14 @@ export function CreateTaskFromChangeRequestDialog({ request, projectId, phases =
           </FormField>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label="Phase" error={errors.phaseId?.message}>
-              {(field) => (
-                <Controller
-                  control={control}
-                  name="phaseId"
-                  render={({ field: control_ }) => (
-                    <SearchableSelect
-                      {...field}
-                      options={phaseOptions}
-                      value={control_.value ?? ""}
-                      onChange={control_.onChange}
-                      placeholder={phases.length === 0 ? "No phases yet — one will be created" : "Choose a phase"}
-                      emptyText="No phase matches."
-                      disabled={phases.length === 0}
-                    />
-                  )}
-                />
-              )}
-            </FormField>
+            <SelectField
+              control={control}
+              name="status"
+              label="Status"
+              required
+              error={errors.status?.message}
+              options={STATUS_OPTIONS.map((s) => ({ value: s.value, label: s.label }))}
+            />
 
             <FormField label="Priority" error={errors.priority?.message} required>
               {(field) => (
@@ -193,6 +194,54 @@ export function CreateTaskFromChangeRequestDialog({ request, projectId, phases =
                 error={errors.assigneeId?.message}
               />
             </div>
+
+            <FormField label="Phase" error={errors.phaseId?.message}>
+              {(field) => (
+                <Controller
+                  control={control}
+                  name="phaseId"
+                  render={({ field: control_ }) => (
+                    <SearchableSelect
+                      {...field}
+                      options={phaseOptions}
+                      value={control_.value ?? ""}
+                      onChange={control_.onChange}
+                      placeholder={phases.length === 0 ? "No phases yet — one will be created" : "Choose a phase"}
+                      emptyText="No phase matches."
+                      disabled={phases.length === 0}
+                    />
+                  )}
+                />
+              )}
+            </FormField>
+
+            <SelectField
+              control={control}
+              name="milestoneId"
+              label="Milestone"
+              placeholder="No milestone"
+              clearLabel="No milestone"
+              error={errors.milestoneId?.message}
+              options={milestoneOptions}
+            />
+
+            <SelectField
+              control={control}
+              name="parentTaskId"
+              label="Parent task"
+              placeholder="None — top-level task"
+              clearLabel="None — top-level task"
+              error={errors.parentTaskId?.message}
+              options={parentOptions.map((candidate) => ({ value: candidate.id, label: candidate.title }))}
+            />
+
+            <FormField label="Start date" error={errors.startDate?.message}>
+              {(field) => <Input {...field} {...register("startDate")} type="date" className="h-10" />}
+            </FormField>
+
+            <FormField label="Due date" error={errors.dueDate?.message}>
+              {(field) => <Input {...field} {...register("dueDate")} type="date" className="h-10" />}
+            </FormField>
 
             <FormField
               label="Estimate (hours)"

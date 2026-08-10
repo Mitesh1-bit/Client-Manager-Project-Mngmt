@@ -3,8 +3,10 @@ import { redirect } from "next/navigation";
 import { asArray } from "@/app/lib/api/safe-list";
 import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
-import { ProjectDocumentsDocument } from "@/app/lib/graphql/generated/documents";
-import { canManageProjects } from "@/app/lib/rbac";
+import {
+  ProjectDetailHeaderDocument,
+  ProjectDocumentsDocument,
+} from "@/app/lib/graphql/generated/documents";
 
 import { ProjectDocumentsPanel } from "./project-documents-panel";
 
@@ -13,13 +15,14 @@ export const metadata = { title: "Documents" };
 export default async function ProjectDocumentsPage({ params }) {
   const { id } = await params;
 
-  const claims = await getSessionClaims();
-  if (!canManageProjects(claims?.role)) redirect(`/projects/${id}`);
+  const [claims, { data: header }, { data }] = await Promise.all([
+    getSessionClaims(),
+    getClient().query({ query: ProjectDetailHeaderDocument, variables: { id } }),
+    getClient().query({ query: ProjectDocumentsDocument, variables: { projectId: id } }),
+  ]);
 
-  const { data } = await getClient().query({
-    query: ProjectDocumentsDocument,
-    variables: { projectId: id },
-  });
+  if (!header.project?.canManage) redirect(`/projects/${id}`);
+
   const documents = asArray(data.documents);
 
   return (

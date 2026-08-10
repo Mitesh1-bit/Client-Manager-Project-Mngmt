@@ -4,11 +4,20 @@ query Workload($projectId: ID) {
     totalEstimatedHours
     totalActualHours
     openTaskCount
+    projectCount
+    clientCount
+    projectIds
+    clientIds
   }
   users {
     ...UserSummaryFields
   }
   projects {
+    id
+    name
+    companyId
+  }
+  companies {
     id
     name
   }

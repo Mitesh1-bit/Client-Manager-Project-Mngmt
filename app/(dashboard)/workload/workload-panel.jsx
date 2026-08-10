@@ -1,25 +1,43 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useLazyQuery } from "@apollo/client/react";
-import { Gauge, LoaderCircle } from "lucide-react";
+import { useLazyQuery, useMutation } from "@apollo/client/react";
+import { useRouter } from "next/navigation";
+import { Gauge, LoaderCircle, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 import { DataTable } from "@/app/components/domain/data-table";
 import { EntityAvatar } from "@/app/components/domain/entity-avatar";
 import { SearchableSelect } from "@/app/components/domain/searchable-select";
 import { EmptyState, SectionCard } from "@/app/components/domain/states";
+import { Button } from "@/app/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/app/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
 import { Progress } from "@/app/components/ui/progress";
 import { pickList } from "@/app/lib/api/safe-list";
-import { WorkloadDocument } from "@/app/lib/graphql/generated/documents";
+import { AddProjectMemberDocument, WorkloadDocument } from "@/app/lib/graphql/generated/documents";
 import { cn } from "@/app/lib/utils";
 
-export function WorkloadPanel({ initialRows, users, projects }) {
+export function WorkloadPanel({ initialRows, users, projects, companies, viewerRole }) {
+  const router = useRouter();
   const [rows, setRows] = useState(initialRows);
   const [projectId, setProjectId] = useState("");
   const [runQuery, { loading }] = useLazyQuery(WorkloadDocument, { fetchPolicy: "network-only" });
+  const [assignTarget, setAssignTarget] = useState(null); // { assigneeId, name }
+  const [assignProjectId, setAssignProjectId] = useState("");
+  const [addMember, { loading: assigning }] = useMutation(AddProjectMemberDocument);
 
   const usersById = useMemo(() => new Map(users.map((user) => [user.id, user])), [users]);
+  const projectsById = useMemo(() => new Map(projects.map((p) => [p.id, p])), [projects]);
+  const companiesById = useMemo(() => new Map(companies.map((c) => [c.id, c])), [companies]);
   const projectOptions = useMemo(
     () => [{ value: "all", label: "All projects" }, ...projects.map((p) => ({ value: p.id, label: p.name }))],
     [projects],
@@ -38,6 +56,25 @@ export function WorkloadPanel({ initialRows, users, projects }) {
       setRows(pickList(data, "workload"));
     } catch (error) {
       toast.error("Couldn't load workload", { description: error?.message });
+    }
+  }
+
+  const assignProjectOptions = useMemo(() => projects.map((p) => ({ value: p.id, label: p.name })), [projects]);
+
+  function openAssign(user) {
+    setAssignTarget(user);
+    setAssignProjectId("");
+  }
+
+  async function handleAssign() {
+    if (!assignTarget || !assignProjectId) return;
+    try {
+      await addMember({ variables: { projectId: assignProjectId, userId: assignTarget.id } });
+      toast.success(`${assignTarget.name} added to the project`);
+      setAssignTarget(null);
+      router.refresh();
+    } catch (error) {
+      toast.error("Couldn't add them to that project", { description: error?.message });
     }
   }
 
@@ -62,6 +99,32 @@ export function WorkloadPanel({ initialRows, users, projects }) {
             </div>
           );
         },
+      },
+      {
+        id: "projectCount",
+        header: "Projects",
+        meta: { width: "6rem" },
+        cell: ({ row }) => (
+          <NameListPopover
+            count={row.original.projectCount}
+            items={row.original.projectIds.map((id) => projectsById.get(id)).filter(Boolean)}
+            emptyLabel="No projects"
+            getHref={(item) => `/projects/${item.id}`}
+          />
+        ),
+      },
+      {
+        id: "clientCount",
+        header: "Clients",
+        meta: { width: "6rem" },
+        cell: ({ row }) => (
+          <NameListPopover
+            count={row.original.clientCount}
+            items={row.original.clientIds.map((id) => companiesById.get(id)).filter(Boolean)}
+            emptyLabel="No clients"
+            getHref={(item) => `/companies/${item.id}`}
+          />
+        ),
       },
       {
         id: "openTaskCount",
@@ -101,43 +164,133 @@ export function WorkloadPanel({ initialRows, users, projects }) {
           );
         },
       },
+      {
+        id: "assign",
+        header: () => <span className="sr-only">Assign</span>,
+        enableSorting: false,
+        meta: { width: "6rem", className: "text-right" },
+        cell: ({ row }) => {
+          const user = usersById.get(row.original.assigneeId);
+          if (!user) return null;
+          // Mirrors the project Team tab's rule: a PM can only add a team
+          // member; admins can add anyone.
+          const canAssign = viewerRole === "admin" || (viewerRole === "project_manager" && user.role === "team_member");
+          if (!canAssign) return null;
+          return (
+            <Button variant="ghost" size="sm" onClick={() => openAssign(user)}>
+              <UserPlus aria-hidden="true" />
+              Assign
+            </Button>
+          );
+        },
+      },
     ],
-    [usersById],
+    [usersById, viewerRole, projectsById, companiesById],
   );
 
   return (
-    <SectionCard
-      title="Open task load"
-      description={`${sortedRows.length} ${sortedRows.length === 1 ? "person" : "people"} with open tasks`}
-    >
-      <div className="mb-4 max-w-xs">
-        <SearchableSelect
-          options={projectOptions}
-          value={projectId || "all"}
-          onChange={handleProjectChange}
-          placeholder="All projects"
-          emptyText="No project matches."
-        />
-      </div>
-
-      {loading ? (
-        <div className="flex items-center justify-center py-10 text-muted-foreground">
-          <LoaderCircle aria-hidden="true" className="animate-spin" />
+    <>
+      <SectionCard
+        title="Team workload"
+        description={`${sortedRows.length} ${sortedRows.length === 1 ? "person" : "people"} across active projects`}
+      >
+        <div className="mb-4 max-w-xs">
+          <SearchableSelect
+            options={projectOptions}
+            value={projectId || "all"}
+            onChange={handleProjectChange}
+            placeholder="All projects"
+            emptyText="No project matches."
+          />
         </div>
-      ) : (
-        <DataTable
-          data={sortedRows}
-          columns={columns}
-          getRowId={(row) => row.assigneeId}
-          emptyState={
-            <EmptyState
-              icon={Gauge}
-              title="Nobody has open tasks"
-              description="Once tasks are assigned, each person's load shows up here."
-            />
-          }
-        />
-      )}
-    </SectionCard>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-10 text-muted-foreground">
+            <LoaderCircle aria-hidden="true" className="animate-spin" />
+          </div>
+        ) : (
+          <DataTable
+            data={sortedRows}
+            columns={columns}
+            getRowId={(row) => row.assigneeId}
+            emptyState={
+              <EmptyState
+                icon={Gauge}
+                title="Nobody to show yet"
+                description="Once someone is added to a project or assigned a task, their load shows up here."
+              />
+            }
+          />
+        )}
+      </SectionCard>
+
+      <Dialog open={Boolean(assignTarget)} onOpenChange={(open) => !open && setAssignTarget(null)}>
+        <DialogContent size="form">
+          <DialogHeader>
+            <DialogTitle>Add {assignTarget?.name} to a project</DialogTitle>
+            <DialogDescription>
+              They&apos;ll show up on that project&apos;s Team tab right away.
+            </DialogDescription>
+          </DialogHeader>
+
+          <SearchableSelect
+            options={assignProjectOptions}
+            value={assignProjectId}
+            onChange={setAssignProjectId}
+            placeholder="Choose a project"
+            emptyText="No project matches."
+          />
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setAssignTarget(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAssign} disabled={!assignProjectId || assigning}>
+              {assigning ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : null}
+              Add to project
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+/** Turns a bare count into "click to see which ones" — the answer to "which
+ * projects/clients does this person actually handle", not just how many. */
+function NameListPopover({ count, items, emptyLabel, getHref }) {
+  if (count === 0) {
+    return <span className="tabular text-muted-foreground">0</span>;
+  }
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="tabular rounded-sm underline decoration-dotted underline-offset-2 hover:decoration-solid focus-ring"
+        >
+          {count}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-56 p-2">
+        {items.length === 0 ? (
+          <p className="px-2 py-1.5 text-caption text-muted-foreground">{emptyLabel}</p>
+        ) : (
+          <ul className="space-y-0.5">
+            {items.map((item) => (
+              <li key={item.id}>
+                <Link
+                  href={getHref(item)}
+                  className="block truncate rounded-sm px-2 py-1.5 text-caption hover:bg-muted/60 focus-ring"
+                >
+                  {item.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 }

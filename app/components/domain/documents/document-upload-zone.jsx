@@ -120,10 +120,14 @@ export function DocumentUploadZone({
         tabIndex={-1}
       />
 
+      {/* Drag-and-drop is a supplementary input method — the "Browse files"
+          button below is the fully keyboard-accessible way in, so this
+          wrapper stays a plain, non-interactive div rather than claiming a
+          landmark role and tab stop it doesn't actually support. */}
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions --
+          drag handlers only enhance a drop target that's already reachable
+          and operable via the "Browse files" button below. */}
       <div
-        role="region"
-        aria-label="File upload drop zone"
-        tabIndex={0}
         className={`rounded-2xl border border-dashed p-4 transition-colors ${dragOver ? "border-accent bg-accent/5" : "bg-muted/20"}`}
         onDragOver={(event) => {
           event.preventDefault();
