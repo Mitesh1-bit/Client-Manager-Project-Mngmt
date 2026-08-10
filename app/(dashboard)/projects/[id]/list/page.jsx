@@ -11,12 +11,6 @@ import {
 
 import { TaskList } from "./task-list";
 
-// Mirrors the backend's createTask/deleteTask gate (require_role in
-// app/graphql/planning/schema.py). updateTask stays open to team members but
-// backend-restricted to the status field on tasks assigned to them (see
-// update_task_record in app/graphql/planning/service.py).
-const PLAN_MANAGE_ROLES = ["admin", "project_manager"];
-
 export const metadata = { title: "Task list" };
 
 export default async function ProjectListPage({ params }) {
@@ -30,7 +24,7 @@ export default async function ProjectListPage({ params }) {
   if (!data.project) notFound();
 
   const claims = await getSessionClaims();
-  const canManage = PLAN_MANAGE_ROLES.includes(claims?.role);
+  const canManage = Boolean(data.project.canManage);
 
   const plan = normalizeProjectPlan(data.project, usersByIdFromData(options));
 

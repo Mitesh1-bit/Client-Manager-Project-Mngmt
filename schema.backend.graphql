@@ -492,6 +492,7 @@ type ProjectType {
   members: [UserSummaryType!]!
   clientContacts: [ContactType!]!
   tags: [TagType!]!
+  canManage: Boolean!
   completionPercent: Int!
 }
 
