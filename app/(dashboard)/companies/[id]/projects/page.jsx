@@ -7,21 +7,24 @@ import { Progress } from "@/app/components/ui/progress";
 import { formatCurrency, formatDate, initials } from "@/app/lib/format";
 import { normalizeProject } from "@/app/lib/api/normalize";
 import { asArray } from "@/app/lib/api/safe-list";
+import { getSessionClaims } from "@/app/lib/auth/session";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import { CompanyProjectsDocument } from "@/app/lib/graphql/generated/documents";
+import { canManageProjects } from "@/app/lib/rbac";
 import { cn } from "@/app/lib/utils";
 
 export const metadata = { title: "Projects" };
 
 export default async function CompanyProjectsPage({ params }) {
   const { id } = await params;
-  const { data } = await getClient().query({
-    query: CompanyProjectsDocument,
-    variables: { id },
-  });
+  const [{ data }, claims] = await Promise.all([
+    getClient().query({ query: CompanyProjectsDocument, variables: { id } }),
+    getSessionClaims(),
+  ]);
 
   if (!data.company) notFound();
   const projects = asArray(data.projects).map((project) => normalizeProject(project));
+  const canManage = canManageProjects(claims?.role);
 
   if (projects.length === 0) {
     return (
@@ -80,17 +83,21 @@ export default async function CompanyProjectsPage({ params }) {
                   {formatDate(project.startDate)} – {formatDate(project.endDate)}
                 </dd>
               </div>
-              <div>
-                <dt className="text-muted-foreground">Budget</dt>
-                <dd className="mt-0.5 font-medium">{formatCurrency(project.budget, project.currency)}</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">Spent</dt>
-                <dd className={cn("mt-0.5 font-medium", overBudget && "text-tone-critical-fg")}>
-                  {formatCurrency(project.actualCost, project.currency)}
-                  {overBudget ? <span className="sr-only"> — over budget</span> : null}
-                </dd>
-              </div>
+              {canManage ? (
+                <>
+                  <div>
+                    <dt className="text-muted-foreground">Budget</dt>
+                    <dd className="mt-0.5 font-medium">{formatCurrency(project.budget, project.currency)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Spent</dt>
+                    <dd className={cn("mt-0.5 font-medium", overBudget && "text-tone-critical-fg")}>
+                      {formatCurrency(project.actualCost, project.currency)}
+                      {overBudget ? <span className="sr-only"> — over budget</span> : null}
+                    </dd>
+                  </div>
+                </>
+              ) : null}
             </dl>
           </article>
         );

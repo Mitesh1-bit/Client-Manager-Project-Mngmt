@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
-import { Download, FileText } from "lucide-react";
+import { Download, FileText, Lock } from "lucide-react";
 
 import { EmptyState } from "@/app/components/domain/states";
 import { Button } from "@/app/components/ui/button";
 import { asArray } from "@/app/lib/api/safe-list";
+import { formatGraphqlError } from "@/app/lib/graphql/format-error";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   CompanyDetailHeaderDocument,
@@ -14,13 +15,30 @@ export const metadata = { title: "Documents" };
 
 export default async function CompanyDocsPage({ params }) {
   const { id } = await params;
-  const [{ data: header }, { data: docs }] = await Promise.all([
+  const [{ data: header }, docsResult] = await Promise.all([
     getClient().query({ query: CompanyDetailHeaderDocument, variables: { id } }),
-    getClient().query({ query: CompanyDocumentsDocument, variables: { companyId: id } }),
+    getClient()
+      .query({ query: CompanyDocumentsDocument, variables: { companyId: id } })
+      .then(({ data }) => ({ data, error: null }))
+      .catch((error) => ({ data: null, error })),
   ]);
 
   if (!header.company) notFound();
-  const documents = asArray(docs.companyDocuments);
+
+  // Documents are finance/ops-sensitive — the backend restricts who can see
+  // them (see the tab-visibility check in the layout). Someone reaching this
+  // URL directly without that role gets a plain explanation, not a page crash.
+  if (docsResult.error) {
+    return (
+      <EmptyState
+        icon={Lock}
+        title="You don't have access to documents"
+        description={formatGraphqlError(docsResult.error, "Ask an admin or project manager for access.")}
+      />
+    );
+  }
+
+  const documents = asArray(docsResult.data.companyDocuments);
 
   if (documents.length === 0) {
     return (

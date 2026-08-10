@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
-import { FileSignature } from "lucide-react";
+import { FileSignature, Lock } from "lucide-react";
 
 import { EmptyState } from "@/app/components/domain/states";
 import { StatusBadge } from "@/app/components/domain/status-badge";
 import { asArray } from "@/app/lib/api/safe-list";
 import { formatCurrency, formatDate } from "@/app/lib/format";
+import { formatGraphqlError } from "@/app/lib/graphql/format-error";
 import { getClient } from "@/app/lib/graphql/apollo-client";
 import {
   CompanyContractsDocument,
@@ -17,13 +18,30 @@ export const metadata = { title: "Contracts" };
 
 export default async function CompanyContractsPage({ params }) {
   const { id } = await params;
-  const [{ data: header }, { data }] = await Promise.all([
+  const [{ data: header }, contractsResult] = await Promise.all([
     getClient().query({ query: CompanyDetailHeaderDocument, variables: { id } }),
-    getClient().query({ query: CompanyContractsDocument, variables: { companyId: id } }),
+    getClient()
+      .query({ query: CompanyContractsDocument, variables: { companyId: id } })
+      .then(({ data }) => ({ data, error: null }))
+      .catch((error) => ({ data: null, error })),
   ]);
 
   if (!header.company) notFound();
-  const contracts = asArray(data.contracts).map((contract) => ({
+
+  // Contracts are finance-sensitive — the backend restricts who can see them
+  // (see the tab-visibility check in the layout). Someone reaching this URL
+  // directly without that role gets a plain explanation, not a page crash.
+  if (contractsResult.error) {
+    return (
+      <EmptyState
+        icon={Lock}
+        title="You don't have access to contracts"
+        description={formatGraphqlError(contractsResult.error, "Ask an admin or project manager for access.")}
+      />
+    );
+  }
+
+  const contracts = asArray(contractsResult.data.contracts).map((contract) => ({
     ...contract,
     status: contract.status?.toUpperCase(),
   }));
