@@ -22,13 +22,13 @@ export const blogPosts = [
     slug: "client-health-scores-explained",
     title: "Client health scores in Meridian",
     description:
-      "How health scores combine project status, touchpoints, open change requests, contracts, and company status into one at-risk view.",
+      "How health scores combine project status, open change requests, contracts, and company status into one at-risk view.",
     datePublished: "2026-07-01",
     dateModified: "2026-07-01",
     author: "Meridian Team",
     keywords: ["client retention", "health score", "account management"],
     directAnswer:
-      "A client health score is a weighted index of delivery signals — project health, touchpoints, open change requests, contract renewal proximity, and account status.",
+      "A client health score is a weighted index of delivery signals — project health, open change requests, contract renewal proximity, and account status.",
     body: [
       "Health scoring uses configurable weights per organization. Scores sync to the company record; history is append-only for reporting.",
       "The at-risk dashboard filters companies below your threshold so account reviews start with clients that need attention.",

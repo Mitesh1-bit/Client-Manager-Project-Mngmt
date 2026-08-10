@@ -16,7 +16,6 @@ import { cn } from "@/app/lib/utils";
 
 const WEIGHT_FIELDS = [
   { key: "healthWeightProjectHealth", label: "Project health" },
-  { key: "healthWeightTouchpoints", label: "Touchpoints" },
   { key: "healthWeightChangeRequests", label: "Change requests" },
   { key: "healthWeightContract", label: "Contract" },
   { key: "healthWeightCompanyStatus", label: "Company status" },
@@ -58,7 +57,6 @@ export function OrgSettingsPanel({ settings }) {
       await updateSettings({
         variables: {
           healthWeightProjectHealth: Number(form.healthWeightProjectHealth),
-          healthWeightTouchpoints: Number(form.healthWeightTouchpoints),
           healthWeightChangeRequests: Number(form.healthWeightChangeRequests),
           healthWeightContract: Number(form.healthWeightContract),
           healthWeightCompanyStatus: Number(form.healthWeightCompanyStatus),
@@ -88,7 +86,7 @@ export function OrgSettingsPanel({ settings }) {
 
       <SectionCard
         title="Client health scoring"
-        description="How a company's health score (0-100) is weighted, and when it counts as at risk."
+        description="Four weighted factors: project health, change requests, contract, and company status."
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {WEIGHT_FIELDS.map(({ key, label }) => (
@@ -115,7 +113,7 @@ export function OrgSettingsPanel({ settings }) {
           )}
         >
           Weights add up to {weightSum.toFixed(2)}
-          {weightSumOk ? "" : " — these five must add up to 1.00"}
+          {weightSumOk ? "" : " — these four must add up to 1.00"}
         </p>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">

@@ -239,9 +239,6 @@ const AT_RISK_HEALTH_THRESHOLD = 45; // matches getHealthBand()'s "At risk" band
  * started, and a churned company is already lost, not "at risk" of it.
  */
 function buildAtRiskCompanies() {
-  const noContactDays = db.organization.settings.retentionNoContactDays ?? 30;
-  const now = Date.now();
-
   return db.companies
     .filter((company) => ["ACTIVE", "PAUSED"].includes(company.status))
     .map((company) => {
@@ -259,10 +256,7 @@ function buildAtRiskCompanies() {
       if (company.healthScore !== null && company.healthScore < AT_RISK_HEALTH_THRESHOLD) {
         reasons.push("LOW_HEALTH_SCORE");
       }
-      if (overdueTouchpointCount > 0) reasons.push("OVERDUE_TOUCHPOINTS");
-      if (!lastTouchpointAt || now - new Date(lastTouchpointAt).getTime() > noContactDays * DAY_MS) {
-        reasons.push("NO_RECENT_CONTACT");
-      }
+      // Touchpoint signals no longer flag at-risk — display metadata only (matches backend).
 
       return {
         company,
@@ -289,8 +283,8 @@ function demotePrimaryContacts(companyId, keepId) {
 }
 
 const ORG_SETTINGS_DEFAULTS = {
-  health_weight_project_health: 0.35,
-  health_weight_touchpoints: 0.25,
+  health_weight_project_health: 0.60,
+  health_weight_touchpoints: 0.0,
   health_weight_change_requests: 0.15,
   health_weight_contract: 0.15,
   health_weight_company_status: 0.1,
@@ -905,23 +899,22 @@ export const resolvers = {
 
       const weightKeys = [
         "health_weight_project_health",
-        "health_weight_touchpoints",
         "health_weight_change_requests",
         "health_weight_contract",
         "health_weight_company_status",
       ];
       const weightArgs = [
         "healthWeightProjectHealth",
-        "healthWeightTouchpoints",
         "healthWeightChangeRequests",
         "healthWeightContract",
         "healthWeightCompanyStatus",
       ];
       const weightsTouched = weightArgs.some((key) => args[key] != null);
       if (weightsTouched) {
+        next.health_weight_touchpoints = 0.0;
         const total = weightKeys.reduce((sum, key) => sum + (next[key] ?? ORG_SETTINGS_DEFAULTS[key]), 0);
         if (Math.abs(total - 1) > 0.01) {
-          throw new GraphQLError(`The five health weights must add up to 1.0 (currently ${total.toFixed(2)}).`);
+          throw new GraphQLError(`The four health weights must add up to 1.0 (currently ${total.toFixed(2)}).`);
         }
       }
 

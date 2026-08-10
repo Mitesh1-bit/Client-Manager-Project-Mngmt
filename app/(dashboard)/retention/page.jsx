@@ -43,8 +43,7 @@ export default async function RetentionAtRiskPage() {
             <div>
               <p className="font-medium">Nothing at risk right now</p>
               <p className="mt-1 max-w-sm text-caption text-muted-foreground">
-                Post-project accounts with healthy scores and up-to-date call or email follow-ups
-                appear here when they need attention.
+                Clients below your health score threshold appear here when they need attention.
               </p>
             </div>
           </div>

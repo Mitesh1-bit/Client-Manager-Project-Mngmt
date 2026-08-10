@@ -62,7 +62,6 @@ export default async function CompanyLayout({ children, params }) {
     { href: `/companies/${id}`, label: "Overview" },
     { href: `/companies/${id}/contacts`, label: "Contacts" },
     { href: `/companies/${id}/projects`, label: "Projects" },
-    { href: `/companies/${id}/touchpoints`, label: "Touchpoints" },
     ...(canManage ? [{ href: `/companies/${id}/docs`, label: "Documents" }] : []),
     ...(canManage ? [{ href: `/companies/${id}/contracts`, label: "Contracts" }] : []),
     ...(canViewInvoices ? [{ href: `/companies/${id}/invoices`, label: "Invoices" }] : []),

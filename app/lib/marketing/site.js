@@ -85,9 +85,9 @@ export const productPageContent = {
         label: "Friday · Renewal radar",
         headline: "Summit Co. flagged before the QBR",
         story:
-          "Health scores dipped after two missed touchpoints and an open change request. Leadership sees Summit on the at-risk dashboard Friday morning — retention sequence enrolls automatically.",
+          "Health scores dipped after delayed project delivery and an open change request. Leadership sees Summit on the at-risk dashboard Friday morning — retention sequence enrolls automatically.",
         beats: [
-          "Health weights combine delivery + touchpoints + open CRs",
+          "Health weights combine project delivery, open CRs, contracts, and status",
           "At-risk filter surfaces accounts before renewal",
           "Retention sequence triggered from project events",
         ],
@@ -212,7 +212,7 @@ export const whyMeridianContent = {
     {
       title: "Spot at-risk accounts before renewal",
       description:
-        "Configurable health weights combine project status, touchpoints, and open CRs into one score — filtered on your at-risk dashboard.",
+        "Configurable health weights combine project status, open change requests, contracts, and company status into one score — filtered on your at-risk dashboard.",
       href: "/product#retention",
       linkLabel: "Explore retention",
       mockupTitle: "Health signals",
@@ -500,7 +500,7 @@ export const solutionRoles = [
     id: "account-managers",
     label: "Account managers",
     headline: "See every client before they go quiet",
-    body: "Health scores roll up project status, touchpoints, open change requests, and contract renewal dates on the company record.",
+    body: "Health scores roll up project health, open change requests, contract renewal dates, and company status on the client record.",
     bullets: [
       "At-risk dashboard filtered by your threshold",
       "Touchpoint timeline on every company",

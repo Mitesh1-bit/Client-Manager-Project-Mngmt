@@ -80,7 +80,7 @@ function FridayScene() {
         <p className="font-mkt-display text-6xl leading-none text-mkt-lime md:text-8xl">42</p>
         <p className="mt-2 text-sm uppercase tracking-[0.2em] text-white/50">Summit Co. health</p>
         <p className="mt-6 max-w-sm text-base text-white/75">
-          Two missed touchpoints + open CR pulled the score down. Retention sequence enrolled automatically
+          Delayed project delivery and an open change request pulled the score down. Retention sequence enrolled automatically
           — leadership saw it on the at-risk view before the QBR.
         </p>
       </motion.div>

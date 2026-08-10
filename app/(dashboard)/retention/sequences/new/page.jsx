@@ -20,10 +20,7 @@ export default async function NewSequencePage() {
     <div className="mx-auto w-full max-w-3xl">
       <BackLink href="/retention/sequences">Sequences</BackLink>
 
-      <PageHeader
-        title="New sequence"
-        description={RETENTION_MODULE_DESCRIPTION}
-      />
+      <PageHeader title="New sequence" description={RETENTION_MODULE_DESCRIPTION} />
 
       {companies.length === 0 ? (
         <EmptyState

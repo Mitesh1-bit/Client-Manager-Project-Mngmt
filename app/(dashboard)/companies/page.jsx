@@ -128,7 +128,7 @@ function NoCompanies({ canManage }) {
     <EmptyState
       icon={Building2}
       title="No clients yet"
-      description="Add your first client to start tracking contacts, projects and touchpoints against it."
+      description="Add your first client to start tracking contacts and projects against it."
       action={
         canManage ? (
           <Button asChild>

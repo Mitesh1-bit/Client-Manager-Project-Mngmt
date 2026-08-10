@@ -24,7 +24,6 @@ import { PaginationBar } from "@/app/components/domain/pagination-bar";
 import { EntityAvatar } from "@/app/components/domain/entity-avatar";
 import { EmptyState } from "@/app/components/domain/states";
 import { StatusBadge } from "@/app/components/domain/status-badge";
-import { TouchpointTimeline } from "@/app/components/domain/touchpoint-timeline";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -334,7 +333,7 @@ export function ContactsPanel({ companyId, companyName, contacts = [], tags = []
           <EmptyState
             icon={UserRound}
             title="No contacts yet"
-            description="Add the people you work with at this client so touchpoints and portal access have somewhere to hang."
+            description="Add the people you work with at this client so portal access and project work have somewhere to hang."
             action={
               canManage ? (
                 <Button onClick={() => setPanel({ mode: "create" })}>
@@ -401,7 +400,7 @@ export function ContactsPanel({ companyId, companyName, contacts = [], tags = []
           <AlertDialogHeader>
             <AlertDialogTitle>Archive {archiveTarget?.fullName}?</AlertDialogTitle>
             <AlertDialogDescription>
-              They&apos;ll be marked inactive and lose portal access. Their touchpoint history and
+              They&apos;ll be marked inactive and lose portal access. Their activity history and
               past change requests stay on the record.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -484,17 +483,6 @@ function ContactDetail({ contact, onEdit, canManage = false }) {
             ))}
           </div>
         ) : null}
-
-        <section>
-          <h3 className="mb-3 text-subheading">Touchpoints</h3>
-          {(contact.touchpoints ?? []).length === 0 ? (
-            <p className="text-caption text-muted-foreground">
-              No touchpoints logged with this person yet.
-            </p>
-          ) : (
-            <TouchpointTimeline touchpoints={contact.touchpoints ?? []} />
-          )}
-        </section>
 
         <section>
           <h3 className="mb-3 text-subheading">History</h3>

@@ -15,8 +15,8 @@ export const NOTIFICATION_CATALOG = {
     description: "When a milestone is ready for review or a client responds.",
   },
   retention_touchpoints: {
-    label: "Retention touchpoints",
-    description: "Upcoming or overdue client retention follow-ups.",
+    label: "Retention follow-ups",
+    description: "Upcoming or overdue scheduled follow-ups from retention sequences.",
     internalOnly: true,
   },
   project_updates: {

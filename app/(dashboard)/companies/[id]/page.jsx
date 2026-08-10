@@ -81,7 +81,7 @@ export default async function CompanyOverviewPage({ params }) {
         <SectionCard
           data-tour="company-health"
           title="Health"
-          description="Recalculated nightly from touchpoints, project status and response times."
+          description="Recalculated from project health, open change requests, contracts, and client status."
         >
           {/* Stacked on phones — side by side the score and the six-field grid
               squeeze each other into unreadable columns. */}
@@ -119,18 +119,13 @@ export default async function CompanyOverviewPage({ params }) {
         <SectionCard
           data-tour="company-activity"
           title="Activity"
-          description="Touchpoints, change requests, projects and edits in one feed."
-          actions={
-            <Button variant="ghost" size="sm" asChild>
-              <Link href={`/companies/${id}/touchpoints`}>All touchpoints</Link>
-            </Button>
-          }
+          description="Change requests, projects, and edits in one feed."
         >
           {activity.length === 0 ? (
             <EmptyState
               icon={History}
               title="Nothing has happened yet"
-              description="Once you log a touchpoint or start a project, it shows up here."
+              description="Once you start a project or update this client, it shows up here."
             />
           ) : (
             <ActivityTimeline entries={activity} limit={TIMELINE_LIMIT} />

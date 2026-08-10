@@ -1,20 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarClock, Phone, TriangleAlert, UserRound, Workflow } from "lucide-react";
+import { Phone, TriangleAlert, UserRound, Workflow } from "lucide-react";
 
 import { EnrollInSequenceDialog } from "@/app/components/domain/enroll-in-sequence-dialog";
 import { EntityAvatar } from "@/app/components/domain/entity-avatar";
 import { HealthScoreBadge } from "@/app/components/domain/health-score-badge";
 import { StatusBadge } from "@/app/components/domain/status-badge";
 import { Button } from "@/app/components/ui/button";
-import { formatRelativeDays } from "@/app/lib/format";
 import { cn } from "@/app/lib/utils";
 
 const REASON_META = {
   LOW_HEALTH_SCORE: { label: "Low health score", tone: "critical" },
-  OVERDUE_TOUCHPOINTS: { label: "Overdue touchpoints", tone: "caution" },
-  NO_RECENT_CONTACT: { label: "No recent contact", tone: "info" },
 };
 
 const REASON_TONE_CLASSES = {
@@ -23,14 +20,9 @@ const REASON_TONE_CLASSES = {
   info: "border-tone-info-border bg-tone-info-bg text-tone-info-fg",
 };
 
-/**
- * One row of the at-risk dashboard. `row` is an `AtRiskCompany` — reasons are
- * already computed server-side (see NEEDED_SCHEMA_CHANGES.md §9.3), this only
- * presents them and offers the two actions that actually address risk:
- * logging a touchpoint and enrolling in a sequence.
- */
+/** At-risk row — health score plus retention sequence actions. */
 export function AtRiskCompanyCard({ row, sequences }) {
-  const { company, reasons, overdueTouchpointCount, lastTouchpointAt, activeEnrollments } = row;
+  const { company, reasons, activeEnrollments } = row;
   const companySequences = sequences.filter(
     (sequence) => !sequence.companyId || sequence.companyId === company.id,
   );
@@ -84,31 +76,17 @@ export function AtRiskCompanyCard({ row, sequences }) {
         })}
       </ul>
 
-      <dl className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-caption text-muted-foreground">
-        {overdueTouchpointCount > 0 ? (
-          <div className="flex items-center gap-1.5">
-            <CalendarClock aria-hidden="true" className="size-3.5" />
-            <dt className="sr-only">Overdue touchpoints</dt>
-            <dd>
-              {overdueTouchpointCount} overdue touchpoint{overdueTouchpointCount === 1 ? "" : "s"}
-            </dd>
-          </div>
-        ) : null}
-        <div className="flex items-center gap-1.5">
-          <dt>Last contact</dt>
-          <dd className="font-medium text-foreground">
-            {lastTouchpointAt ? formatRelativeDays(lastTouchpointAt) : "Never"}
-          </dd>
-        </div>
-        {company.primaryContact ? (
+      {company.primaryContact ? (
+        <dl className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-caption text-muted-foreground">
           <div className="flex min-w-0 items-center gap-1.5">
             <UserRound aria-hidden="true" className="size-3.5 shrink-0" />
+            <dt className="sr-only">Primary contact</dt>
             <dd className="truncate">
               {company.primaryContact.firstName} {company.primaryContact.lastName}
             </dd>
           </div>
-        ) : null}
-      </dl>
+        </dl>
+      ) : null}
 
       {activeEnrollments.length > 0 ? (
         <ul className="mt-3 flex flex-wrap gap-1.5">
