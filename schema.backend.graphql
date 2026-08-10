@@ -81,6 +81,14 @@ type ChangeRequestType {
   isOverdue: Boolean!
 }
 
+type CompanyRetentionEligibilityType {
+  eligible: Boolean!
+  reason: String
+  completedProjectCount: Int!
+  incompleteProjectCount: Int!
+  blockingProjects: [RetentionBlockingProjectType!]!
+}
+
 type CompanySizeType {
   id: ID!
   label: String!
@@ -258,8 +266,8 @@ type Mutation {
   createTag(name: String!): TagType!
   addTag(entityType: String!, entityId: ID!, tagId: ID!): Boolean!
   removeTag(entityType: String!, entityId: ID!, tagId: ID!): Boolean!
-  createProject(companyId: ID!, name: String!, description: String = null, status: String! = "planning", priority: String = null, projectManagerId: ID = null, startDate: Date = null, endDate: Date = null, budget: Float = null, currency: String! = "GBP", health: String = "on_track"): ProjectType!
-  updateProject(id: ID!, name: String = null, description: String = null, status: String = null, priority: String = null, projectManagerId: ID = null, startDate: Date = null, endDate: Date = null, budget: Float = null, currency: String = null, health: String = null): ProjectType!
+  createProject(companyId: ID!, name: String!, description: String = null, status: String! = "planning", priority: String = null, projectManagerId: ID = null, startDate: Date = null, endDate: Date = null, budget: Float = null, actualCost: Float = null, currency: String! = "GBP", health: String = "on_track"): ProjectType!
+  updateProject(id: ID!, name: String = null, description: String = null, status: String = null, priority: String = null, projectManagerId: ID = null, startDate: Date = null, endDate: Date = null, budget: Float = null, actualCost: Float = null, currency: String = null, health: String = null): ProjectType!
   deleteProject(id: ID!): Boolean!
   addProjectMember(projectId: ID!, userId: ID!): UserSummaryType!
   removeProjectMember(projectId: ID!, userId: ID!): Boolean!
@@ -310,7 +318,7 @@ type Mutation {
   skipTouchpoint(id: ID!, notes: String = null): TouchpointType!
 
   """
-  Record a touchpoint that already happened â€” a call made, a meeting held.
+  Record a touchpoint that already happened — a call made, a meeting held.
   """
   logTouchpoint(companyId: ID!, contactId: ID!, type: String!, outcome: String = null, notes: String = null, projectId: ID = null, occurredAt: DateTime = null): TouchpointType!
   createContract(companyId: ID!, name: String!, startDate: Date!, endDate: Date!, value: Float = null, autoRenew: Boolean! = false, status: String! = "draft"): ContractType!
@@ -459,7 +467,6 @@ type ProjectType {
   health: String
   startDate: Date
   endDate: Date
-  completionPercent: Int!
   company: CompanyType
   projectManager: UserSummaryType
   phases: [PhaseType!]!
@@ -467,6 +474,7 @@ type ProjectType {
   members: [UserSummaryType!]!
   clientContacts: [ContactType!]!
   tags: [TagType!]!
+  completionPercent: Int!
 }
 
 type Query {
@@ -503,7 +511,7 @@ type Query {
   upcomingTouchpoints: [TouchpointType!]!
 
   """
-  Full touchpoint history for a company â€” scheduled, completed and skipped.
+  Full touchpoint history for a company — scheduled, completed and skipped.
   """
   companyTouchpoints(companyId: ID!): [TouchpointType!]!
   companyRetentionEligibility(companyId: ID!): CompanyRetentionEligibilityType!
@@ -532,14 +540,6 @@ type RetentionBlockingProjectType {
   id: ID!
   name: String!
   status: String!
-}
-
-type CompanyRetentionEligibilityType {
-  eligible: Boolean!
-  reason: String
-  completedProjectCount: Int!
-  incompleteProjectCount: Int!
-  blockingProjects: [RetentionBlockingProjectType!]!
 }
 
 type RetentionEnrollmentType {

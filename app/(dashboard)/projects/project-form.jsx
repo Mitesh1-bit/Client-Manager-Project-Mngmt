@@ -47,6 +47,7 @@ import {
 
 const STATUS_OPTIONS = listStatuses("projectStatus");
 const PRIORITY_OPTIONS = listStatuses("priority");
+const HEALTH_OPTIONS = listStatuses("projectHealth");
 
 /**
  * Create and edit share one form, following the company form's conventions:
@@ -289,6 +290,29 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
             )}
           </FormField>
 
+          <FormField label="Health" error={errors.health?.message} required>
+            {(field) => (
+              <Controller
+                control={control}
+                name="health"
+                render={({ field: control_ }) => (
+                  <Select value={control_.value} onValueChange={control_.onChange}>
+                    <SelectTrigger {...field} className="h-10 w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {HEALTH_OPTIONS.map((health) => (
+                        <SelectItem key={health.value} value={health.value}>
+                          {health.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            )}
+          </FormField>
+
           <FormField label="Start date" error={errors.startDate?.message}>
             {(field) => <Input {...field} {...register("startDate")} type="date" className="h-10" />}
           </FormField>
@@ -312,6 +336,20 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
             )}
           </FormField>
           </div>
+
+          <FormField label="Actual cost" hint="What's been spent so far, excluding VAT." error={errors.actualCost?.message}>
+            {(field) => (
+              <Input
+                {...field}
+                {...register("actualCost")}
+                type="number"
+                min="0"
+                step="100"
+                className="h-10"
+                placeholder="0"
+              />
+            )}
+          </FormField>
 
           <FormField label="Currency" error={errors.currency?.message}>
             {(field) => (

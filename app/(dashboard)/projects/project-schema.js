@@ -53,6 +53,7 @@ export const projectSchema = z
     description: optionalText(1000, "Keep this under 1000 characters."),
     status: z.enum(["PLANNING", "ACTIVE", "ON_HOLD", "COMPLETED", "CANCELLED"]),
     priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]),
+    health: z.enum(["ON_TRACK", "AT_RISK", "DELAYED"]),
     projectManagerId: z.string().optional().transform((value) => value || null),
     startDate: optionalDate,
     endDate: optionalDate,
@@ -65,6 +66,16 @@ export const projectSchema = z
       })
       .refine((value) => value === null || (Number.isFinite(value) && value >= 0), {
         message: "Enter a budget of 0 or more.",
+      }),
+    actualCost: z
+      .union([z.string(), z.number()])
+      .optional()
+      .transform((value) => {
+        if (value === "" || value === null || value === undefined) return null;
+        return Number(value);
+      })
+      .refine((value) => value === null || (Number.isFinite(value) && value >= 0), {
+        message: "Enter an actual cost of 0 or more.",
       }),
     currency: z.enum(CURRENCIES.map((c) => c.value)),
     tagIds: z.array(z.string()).default([]),
@@ -83,10 +94,12 @@ export function projectToFormValues(project) {
     description: project?.description ?? "",
     status: toUiStatus("projectStatus", project?.status) ?? "PLANNING",
     priority: toUiStatus("priority", project?.priority) ?? "MEDIUM",
+    health: toUiStatus("projectHealth", project?.health) ?? "ON_TRACK",
     projectManagerId: project?.projectManager?.id ?? project?.projectManagerId ?? "",
     startDate: toDateInputValue(project?.startDate),
     endDate: toDateInputValue(project?.endDate),
     budget: project?.budget ?? "",
+    actualCost: project?.actualCost ?? "",
     currency: project?.currency ?? "GBP",
     tagIds: project?.tags?.map((tag) => tag.id) ?? [],
   };
@@ -104,8 +117,9 @@ export function toCreateProjectVariables(values) {
     startDate: toApiDate(values.startDate),
     endDate: toApiDate(values.endDate),
     budget: values.budget,
+    actualCost: values.actualCost,
     currency: values.currency,
-    health: toApiStatus("projectHealth", "ON_TRACK"),
+    health: toApiStatus("projectHealth", values.health),
   };
 }
 
@@ -121,7 +135,8 @@ export function toUpdateProjectVariables(id, values) {
     startDate: toApiDate(values.startDate),
     endDate: toApiDate(values.endDate),
     budget: values.budget,
+    actualCost: values.actualCost,
     currency: values.currency,
-    health: toApiStatus("projectHealth", "ON_TRACK"),
+    health: toApiStatus("projectHealth", values.health),
   };
 }

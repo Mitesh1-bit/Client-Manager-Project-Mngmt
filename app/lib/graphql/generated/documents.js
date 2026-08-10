@@ -1603,7 +1603,7 @@ fragment PhaseFields on PhaseType {
 }`;
 
 export const CreateProjectDocument = gql`
-mutation CreateProject($companyId: ID!, $name: String!, $description: String, $status: String!, $priority: String, $projectManagerId: ID, $startDate: Date, $endDate: Date, $budget: Float, $currency: String, $health: String) {
+mutation CreateProject($companyId: ID!, $name: String!, $description: String, $status: String!, $priority: String, $projectManagerId: ID, $startDate: Date, $endDate: Date, $budget: Float, $actualCost: Float, $currency: String, $health: String) {
   createProject(
     companyId: $companyId
     name: $name
@@ -1614,6 +1614,7 @@ mutation CreateProject($companyId: ID!, $name: String!, $description: String, $s
     startDate: $startDate
     endDate: $endDate
     budget: $budget
+    actualCost: $actualCost
     currency: $currency
     health: $health
   ) {
@@ -3723,7 +3724,7 @@ fragment PhaseFields on PhaseType {
 }`;
 
 export const UpdateProjectDocument = gql`
-mutation UpdateProject($id: ID!, $name: String, $description: String, $status: String, $priority: String, $projectManagerId: ID, $startDate: Date, $endDate: Date, $budget: Float, $currency: String, $health: String) {
+mutation UpdateProject($id: ID!, $name: String, $description: String, $status: String, $priority: String, $projectManagerId: ID, $startDate: Date, $endDate: Date, $budget: Float, $actualCost: Float, $currency: String, $health: String) {
   updateProject(
     id: $id
     name: $name
@@ -3734,6 +3735,7 @@ mutation UpdateProject($id: ID!, $name: String, $description: String, $status: S
     startDate: $startDate
     endDate: $endDate
     budget: $budget
+    actualCost: $actualCost
     currency: $currency
     health: $health
   ) {

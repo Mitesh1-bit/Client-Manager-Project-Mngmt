@@ -230,6 +230,7 @@ mutation CreateProject(
   $startDate: Date
   $endDate: Date
   $budget: Float
+  $actualCost: Float
   $currency: String
   $health: String
 ) {
@@ -243,6 +244,7 @@ mutation CreateProject(
     startDate: $startDate
     endDate: $endDate
     budget: $budget
+    actualCost: $actualCost
     currency: $currency
     health: $health
   ) {
@@ -260,6 +262,7 @@ mutation UpdateProject(
   $startDate: Date
   $endDate: Date
   $budget: Float
+  $actualCost: Float
   $currency: String
   $health: String
 ) {
@@ -273,6 +276,7 @@ mutation UpdateProject(
     startDate: $startDate
     endDate: $endDate
     budget: $budget
+    actualCost: $actualCost
     currency: $currency
     health: $health
   ) {
