@@ -15,6 +15,7 @@ import {
   ChangeRequestFormOptionsDocument,
   ChangeRequestQueueCountsDocument,
 } from "@/app/lib/graphql/generated/documents";
+import { awaitingParty } from "@/app/lib/change-requests";
 import { hasActiveFilters, parseListParams, readList, readString } from "@/app/lib/list-params";
 import { canManageProjects } from "@/app/lib/rbac";
 import { listStatuses } from "@/app/lib/status";
@@ -176,6 +177,19 @@ async function QueueResults({ params, bucket, canCreate }) {
   }
   if (filter.status?.length) {
     filtered = filtered.filter((row) => filter.status.includes(row.status));
+  }
+  if (filter.type?.length) {
+    // Type is free-typed on the backend and stored lowercase (e.g.
+    // "scope_addition"); the filter options are the fixed presets in
+    // SCREAMING_SNAKE_CASE, so compare case-insensitively.
+    const allowedTypes = new Set(filter.type.map((t) => String(t).toLowerCase()));
+    filtered = filtered.filter((row) => allowedTypes.has(String(row.type ?? "").toLowerCase()));
+  }
+  if (filter.priority?.length) {
+    filtered = filtered.filter((row) => filter.priority.includes(row.priority));
+  }
+  if (filter.awaiting) {
+    filtered = filtered.filter((row) => awaitingParty(row) === filter.awaiting);
   }
   if (filter.companyId) {
     filtered = filtered.filter((row) => row.companyId === filter.companyId);

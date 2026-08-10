@@ -283,6 +283,7 @@ export function normalizeChangeRequest(cr) {
   return {
     ...cr,
     status: toUiStatus("changeRequestStatus", cr.status),
+    priority: toUiStatus("priority", cr.priority),
     reference: cr.reference ?? cr.id?.slice(0, 8),
     updatedAt: cr.updatedAt ?? cr.createdAt,
     comments: cr.comments ?? [],
@@ -327,6 +328,19 @@ export function filterProjects(projects, filter = {}) {
   if (filter.status?.length) {
     const allowed = new Set(filter.status.map((s) => toUiStatus("projectStatus", s)));
     rows = rows.filter((row) => allowed.has(row.status));
+  }
+  if (filter.health?.length) {
+    const allowed = new Set(filter.health.map((h) => toUiStatus("projectHealth", h)));
+    rows = rows.filter((row) => allowed.has(row.health));
+  }
+  if (filter.priority?.length) {
+    const allowed = new Set(filter.priority.map((p) => toUiStatus("priority", p)));
+    rows = rows.filter((row) => allowed.has(row.priority));
+  }
+  if (filter.projectManagerId) {
+    rows = rows.filter(
+      (row) => row.projectManager?.id === filter.projectManagerId || row.projectManagerId === filter.projectManagerId,
+    );
   }
   if (filter.companyId) {
     rows = rows.filter((row) => row.company?.id === filter.companyId || row.companyId === filter.companyId);
