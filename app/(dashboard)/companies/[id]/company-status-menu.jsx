@@ -50,7 +50,7 @@ export function CompanyStatusMenu({ companyId, companyName, status }) {
 
     try {
       await updateCompany({
-        variables: { id: companyId, input: { name: companyName, status: next } },
+        variables: { id: companyId, status: next },
       });
       toast.success(`Status set to ${getStatusMeta("companyStatus", next).label.toLowerCase()}`);
       router.refresh();
