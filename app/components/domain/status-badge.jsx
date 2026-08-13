@@ -61,13 +61,15 @@ const SIZE_CLASSES = {
 };
 
 /**
- * Status pill driven entirely by `app/lib/status.js`. Always renders an icon
- * alongside the colour so the state survives a colour-blind or greyscale read.
+ * Status pill driven by `app/lib/status.js`, or by an explicit `meta`
+ * (label/tone/icon) for statuses that aren't in that fixed registry — e.g. a
+ * project's custom board columns. Always renders an icon alongside the
+ * colour so the state survives a colour-blind or greyscale read.
  *
- * @param {{ kind: string, value: string, size?: 'sm' | 'md', showIcon?: boolean, className?: string }} props
+ * @param {{ kind: string, value: string, meta?: { label: string, tone: string, icon: string } | null, size?: 'sm' | 'md', showIcon?: boolean, className?: string }} props
  */
-export function StatusBadge({ kind, value, size = "md", showIcon = true, className }) {
-  const meta = getStatusMeta(kind, value);
+export function StatusBadge({ kind, value, meta: metaProp, size = "md", showIcon = true, className }) {
+  const meta = metaProp ?? getStatusMeta(kind, value);
   const Icon = ICONS[meta.icon] ?? Minus;
 
   return (

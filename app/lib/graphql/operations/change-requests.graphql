@@ -138,6 +138,9 @@ query ChangeRequestDetail($id: ID!) {
 query ChangeRequestTaskOptions($projectId: ID!) {
   project(id: $projectId) {
     id
+    columns {
+      ...ProjectColumnFields
+    }
     phases {
       id
       name

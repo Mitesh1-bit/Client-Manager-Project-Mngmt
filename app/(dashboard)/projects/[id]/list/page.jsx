@@ -35,6 +35,7 @@ export default async function ProjectListPage({ params }) {
       phases={plan.phases}
       milestones={plan.milestones}
       users={pickList(options, "users")}
+      boardColumns={plan.boardColumns}
       canManage={canManage}
       viewerId={claims?.sub}
     />

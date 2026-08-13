@@ -75,6 +75,14 @@ fragment PhaseFields on PhaseType {
   dueDate
 }
 
+fragment ProjectColumnFields on ProjectColumnType {
+  id
+  code
+  label
+  orderIndex
+  isTerminal
+}
+
 fragment MilestoneFields on MilestoneType {
   id
   phaseId
@@ -172,6 +180,9 @@ query ProjectPlan($id: ID!) {
     id
     name
     canManage
+    columns {
+      ...ProjectColumnFields
+    }
     phases {
       ...PhaseFields
       milestones {
@@ -195,6 +206,9 @@ query ProjectBoard($id: ID!) {
     id
     name
     canManage
+    columns {
+      ...ProjectColumnFields
+    }
     tasks {
       ...TaskFields
     }
@@ -287,6 +301,42 @@ mutation UpdateProject(
   }
 }
 
+mutation DeleteProject($id: ID!) {
+  deleteProject(id: $id)
+}
+
+mutation CreateProjectColumn(
+  $projectId: ID!
+  $label: String!
+  $insertAfterColumnId: ID
+  $isTerminal: Boolean
+) {
+  createProjectColumn(
+    projectId: $projectId
+    label: $label
+    insertAfterColumnId: $insertAfterColumnId
+    isTerminal: $isTerminal
+  ) {
+    ...ProjectColumnFields
+  }
+}
+
+mutation UpdateProjectColumn($id: ID!, $label: String, $isTerminal: Boolean) {
+  updateProjectColumn(id: $id, label: $label, isTerminal: $isTerminal) {
+    ...ProjectColumnFields
+  }
+}
+
+mutation DeleteProjectColumn($id: ID!) {
+  deleteProjectColumn(id: $id)
+}
+
+mutation ReorderProjectColumns($projectId: ID!, $orderedColumnIds: [ID!]!) {
+  reorderProjectColumns(projectId: $projectId, orderedColumnIds: $orderedColumnIds) {
+    ...ProjectColumnFields
+  }
+}
+
 mutation CreatePhase(
   $projectId: ID!
   $name: String!
@@ -318,6 +368,10 @@ mutation UpdatePhase(
   updatePhase(id: $id, name: $name, orderIndex: $orderIndex, status: $status, startDate: $startDate, dueDate: $dueDate) {
     ...PhaseFields
   }
+}
+
+mutation DeletePhase($id: ID!) {
+  deletePhase(id: $id)
 }
 
 mutation CreateMilestone(
@@ -362,6 +416,10 @@ mutation UpdateMilestone(
   ) {
     ...MilestoneFields
   }
+}
+
+mutation DeleteMilestone($id: ID!) {
+  deleteMilestone(id: $id)
 }
 
 mutation MarkMilestoneReadyForReview($milestoneId: ID!) {
@@ -437,6 +495,10 @@ mutation UpdateTask(
   ) {
     ...TaskFields
   }
+}
+
+mutation DeleteTask($id: ID!) {
+  deleteTask(id: $id)
 }
 
 mutation UpdateTaskStatus($id: ID!, $status: String!) {

@@ -34,6 +34,7 @@ export default async function ProjectCalendarPage({ params }) {
       phases={plan.phases}
       milestones={plan.milestones}
       users={pickList(options, "users")}
+      boardColumns={plan.boardColumns}
       canManage={canManage}
     />
   );

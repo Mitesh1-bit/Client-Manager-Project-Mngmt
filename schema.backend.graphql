@@ -291,6 +291,10 @@ type Mutation {
   removeProjectMember(projectId: ID!, userId: ID!): Boolean!
   addProjectContact(projectId: ID!, contactId: ID!): ContactType!
   removeProjectContact(projectId: ID!, contactId: ID!): Boolean!
+  createProjectColumn(projectId: ID!, label: String!, insertAfterColumnId: ID = null, isTerminal: Boolean! = false): ProjectColumnType!
+  updateProjectColumn(id: ID!, label: String = null, isTerminal: Boolean = null): ProjectColumnType!
+  deleteProjectColumn(id: ID!): Boolean!
+  reorderProjectColumns(projectId: ID!, orderedColumnIds: [ID!]!): [ProjectColumnType!]!
   createPhase(projectId: ID!, name: String!, orderIndex: Int!, status: String! = "not_started", startDate: Date = null, dueDate: Date = null): PhaseType!
   updatePhase(id: ID!, name: String = null, orderIndex: Int = null, status: String = null, startDate: Date = null, dueDate: Date = null): PhaseType!
   deletePhase(id: ID!): Boolean!
@@ -336,7 +340,7 @@ type Mutation {
   skipTouchpoint(id: ID!, notes: String = null): TouchpointType!
 
   """
-  Record a touchpoint that already happened — a call made, a meeting held.
+  Record a touchpoint that already happened â€” a call made, a meeting held.
   """
   logTouchpoint(companyId: ID!, contactId: ID!, type: String!, outcome: String = null, notes: String = null, projectId: ID = null, occurredAt: DateTime = null): TouchpointType!
   createContract(companyId: ID!, name: String!, startDate: Date!, endDate: Date!, value: Float = null, autoRenew: Boolean! = false, status: String! = "draft"): ContractType!
@@ -471,6 +475,15 @@ type PortalProjectType {
   changeRequests: [ChangeRequestType!]!
 }
 
+type ProjectColumnType {
+  id: ID!
+  projectId: ID!
+  code: String!
+  label: String!
+  orderIndex: Int!
+  isTerminal: Boolean!
+}
+
 type ProjectType {
   id: ID!
   companyId: ID!
@@ -493,6 +506,7 @@ type ProjectType {
   clientContacts: [ContactType!]!
   tags: [TagType!]!
   canManage: Boolean!
+  columns: [ProjectColumnType!]!
   completionPercent: Int!
 }
 
@@ -531,7 +545,7 @@ type Query {
   upcomingTouchpoints: [TouchpointType!]!
 
   """
-  Full touchpoint history for a company — scheduled, completed and skipped.
+  Full touchpoint history for a company â€” scheduled, completed and skipped.
   """
   companyTouchpoints(companyId: ID!): [TouchpointType!]!
   companyRetentionEligibility(companyId: ID!): CompanyRetentionEligibilityType!

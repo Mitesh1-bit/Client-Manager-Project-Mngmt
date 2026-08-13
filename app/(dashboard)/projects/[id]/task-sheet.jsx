@@ -6,6 +6,7 @@ import { useMutation } from "@apollo/client/react";
 import { Check, GitBranch, Lock, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
+import { ConfirmDeleteDialog } from "@/app/components/domain/confirm-delete-dialog";
 import { StatusBadge } from "@/app/components/domain/status-badge";
 import { Button } from "@/app/components/ui/button";
 import {
@@ -26,9 +27,12 @@ import { formatDate, humanizeType, initials } from "@/app/lib/format";
 import { assigneeCategoryLabel, getUserAssigneeCategory } from "@/app/lib/assignee-roles";
 import {
   AddTaskDependencyDocument,
+  DeleteTaskDocument,
   RemoveTaskDependencyDocument,
 } from "@/app/lib/graphql/generated/documents";
 import { blockingTasks } from "@/app/lib/project";
+import { columnStatusMeta, terminalColumnStatus } from "@/app/lib/project-columns";
+import { projectHeaderRefetch } from "@/app/lib/project-progress";
 import { cn } from "@/app/lib/utils";
 
 import { TaskForm } from "./task-form";
@@ -47,6 +51,7 @@ export function TaskSheet({
   phases,
   milestones,
   users,
+  boardColumns = [],
   canManage = false,
 }) {
   const selected = panel?.taskId ? tasks.find((task) => task.id === panel.taskId) : null;
@@ -72,6 +77,7 @@ export function TaskSheet({
               milestones={milestones}
               users={users}
               tasks={tasks}
+              boardColumns={boardColumns}
               onDone={close}
               onCancel={close}
             />
@@ -92,6 +98,7 @@ export function TaskSheet({
               milestones={milestones}
               users={users}
               tasks={tasks}
+              boardColumns={boardColumns}
               onDone={() => onPanelChange({ mode: "view", taskId: selected.id })}
               onCancel={() => onPanelChange({ mode: "view", taskId: selected.id })}
             />
@@ -100,11 +107,14 @@ export function TaskSheet({
 
         {panel?.mode === "view" && selected ? (
           <TaskDetail
+            projectId={projectId}
             task={selected}
             tasks={tasks}
+            boardColumns={boardColumns}
             canManage={canManage}
             onEdit={() => onPanelChange({ mode: "edit", taskId: selected.id })}
             onOpenTask={(taskId) => onPanelChange({ mode: "view", taskId })}
+            onDeleted={close}
             onAddSubtask={() =>
               onPanelChange({
                 mode: "create",
@@ -122,9 +132,29 @@ export function TaskSheet({
   );
 }
 
-function TaskDetail({ task, tasks, onEdit, onOpenTask, onAddSubtask, canManage }) {
-  const blockers = blockingTasks(task);
-  const doneSubtasks = task.subtasks.filter((subtask) => subtask.status === "DONE").length;
+function TaskDetail({ projectId, task, tasks, boardColumns, onEdit, onOpenTask, onDeleted, onAddSubtask, canManage }) {
+  const router = useRouter();
+  const terminalStatus = terminalColumnStatus(boardColumns);
+  const blockers = blockingTasks(task, terminalStatus);
+  const doneSubtasks = task.subtasks.filter((subtask) => subtask.status === terminalStatus).length;
+
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleteTask, { loading: deleting }] = useMutation(DeleteTaskDocument);
+
+  async function handleDelete() {
+    try {
+      await deleteTask({
+        variables: { id: task.id },
+        refetchQueries: projectHeaderRefetch(projectId),
+      });
+      toast.success(`"${task.title}" deleted`);
+      setConfirmingDelete(false);
+      router.refresh();
+      onDeleted?.();
+    } catch (error) {
+      toast.error("Couldn't delete this task", { description: error?.message });
+    }
+  }
 
   return (
     <>
@@ -138,12 +168,36 @@ function TaskDetail({ task, tasks, onEdit, onOpenTask, onAddSubtask, canManage }
             </SheetDescription>
           </div>
           {canManage ? (
-            <Button variant="outline" size="sm" onClick={onEdit}>
-              Edit
-            </Button>
+            <div className="flex shrink-0 items-center gap-2">
+              <Button variant="outline" size="sm" onClick={onEdit}>
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => setConfirmingDelete(true)}
+              >
+                <Trash2 aria-hidden="true" />
+                <span className="sr-only">Delete task</span>
+              </Button>
+            </div>
           ) : null}
         </div>
       </SheetHeader>
+
+      <ConfirmDeleteDialog
+        open={confirmingDelete}
+        onOpenChange={setConfirmingDelete}
+        title="Delete this task?"
+        description={
+          task.subtasks.length > 0
+            ? `"${task.title}" has ${task.subtasks.length} subtask${task.subtasks.length === 1 ? "" : "s"} — delete those first, then this task.`
+            : `"${task.title}" will be removed from the board. This can't be undone.`
+        }
+        onConfirm={handleDelete}
+        loading={deleting}
+      />
 
       <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5">
         {blockers.length > 0 ? (
@@ -159,7 +213,7 @@ function TaskDetail({ task, tasks, onEdit, onOpenTask, onAddSubtask, canManage }
         ) : null}
 
         <div className="flex flex-wrap items-center gap-2">
-          <StatusBadge kind="taskStatus" value={task.status} />
+          <StatusBadge kind="taskStatus" value={task.status} meta={columnStatusMeta(boardColumns, task.status)} />
           <StatusBadge kind="priority" value={task.priority} size="sm" />
         </div>
 
@@ -243,37 +297,48 @@ function TaskDetail({ task, tasks, onEdit, onOpenTask, onAddSubtask, canManage }
                     aria-hidden="true"
                     className={cn(
                       "flex size-4 shrink-0 items-center justify-center rounded-full border",
-                      subtask.status === "DONE"
+                      subtask.status === terminalStatus
                         ? "border-tone-positive-border bg-tone-positive-bg text-tone-positive-fg"
                         : "border-border",
                     )}
                   >
-                    {subtask.status === "DONE" ? <Check className="size-2.5" /> : null}
+                    {subtask.status === terminalStatus ? <Check className="size-2.5" /> : null}
                   </span>
                   <button
                     type="button"
                     onClick={() => onOpenTask(subtask.id)}
                     className={cn(
                       "min-w-0 flex-1 truncate text-left text-caption hover:underline focus-ring rounded-sm",
-                      subtask.status === "DONE" && "text-muted-foreground line-through",
+                      subtask.status === terminalStatus && "text-muted-foreground line-through",
                     )}
                   >
                     {subtask.title}
                   </button>
-                  <StatusBadge kind="taskStatus" value={subtask.status} size="sm" />
+                  <StatusBadge
+                    kind="taskStatus"
+                    value={subtask.status}
+                    meta={columnStatusMeta(boardColumns, subtask.status)}
+                    size="sm"
+                  />
                 </li>
               ))}
             </ul>
           )}
         </section>
 
-        <DependencySection task={task} tasks={tasks} onOpenTask={onOpenTask} canManage={canManage} />
+        <DependencySection
+          task={task}
+          tasks={tasks}
+          boardColumns={boardColumns}
+          onOpenTask={onOpenTask}
+          canManage={canManage}
+        />
       </div>
     </>
   );
 }
 
-function DependencySection({ task, tasks, onOpenTask, canManage }) {
+function DependencySection({ task, tasks, boardColumns, onOpenTask, canManage }) {
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [addDependency, { loading: addLoading }] = useMutation(AddTaskDependencyDocument);
@@ -361,7 +426,12 @@ function DependencySection({ task, tasks, onOpenTask, canManage }) {
               <span className="hidden text-[0.6875rem] text-muted-foreground sm:inline">
                 {humanizeType(dep.type)}
               </span>
-              <StatusBadge kind="taskStatus" value={dep.dependsOnTask.status} size="sm" />
+              <StatusBadge
+                kind="taskStatus"
+                value={dep.dependsOnTask.status}
+                meta={columnStatusMeta(boardColumns, dep.dependsOnTask.status)}
+                size="sm"
+              />
               {canManage ? (
                 <Button variant="ghost" size="icon-sm" onClick={() => remove(dep.id)}>
                   <Trash2 aria-hidden="true" />

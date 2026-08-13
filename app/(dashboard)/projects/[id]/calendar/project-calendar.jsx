@@ -14,6 +14,7 @@ import {
   startOfDay,
   toDayString,
 } from "@/app/lib/project";
+import { columnStatusMeta, terminalColumnStatus } from "@/app/lib/project-columns";
 import { cn } from "@/app/lib/utils";
 
 import { TaskSheet } from "../task-sheet";
@@ -21,11 +22,13 @@ import { TaskSheet } from "../task-sheet";
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MAX_VISIBLE_PER_DAY = 3;
 
-const TASK_TONE = {
-  DONE: "bg-tone-positive-bg text-tone-positive-fg border-tone-positive-border",
-  IN_PROGRESS: "bg-tone-info-bg text-tone-info-fg border-tone-info-border",
-  REVIEW: "bg-tone-accent-bg text-tone-accent-fg border-tone-accent-border",
-  TODO: "bg-muted text-muted-foreground border-border",
+const TONE_CHIP_CLASSES = {
+  positive: "bg-tone-positive-bg text-tone-positive-fg border-tone-positive-border",
+  info: "bg-tone-info-bg text-tone-info-fg border-tone-info-border",
+  accent: "bg-tone-accent-bg text-tone-accent-fg border-tone-accent-border",
+  caution: "bg-tone-caution-bg text-tone-caution-fg border-tone-caution-border",
+  critical: "bg-tone-critical-bg text-tone-critical-fg border-tone-critical-border",
+  neutral: "bg-muted text-muted-foreground border-border",
 };
 
 /**
@@ -40,10 +43,12 @@ export function ProjectCalendar({
   phases = [],
   milestones = [],
   users = [],
+  boardColumns = [],
   canManage = false,
 }) {
   const [panel, setPanel] = useState(null);
   const [expandedDay, setExpandedDay] = useState(null);
+  const terminalStatus = terminalColumnStatus(boardColumns);
 
   // Open on the month the work is actually in, not necessarily today's.
   const [cursor, setCursor] = useState(() => {
@@ -225,8 +230,10 @@ export function ProjectCalendar({
                             title={item.task.title}
                             className={cn(
                               "block w-full truncate rounded border px-1 py-0.5 text-left text-[0.6875rem] transition-colors hover:brightness-95 focus-ring",
-                              TASK_TONE[item.task.status],
-                              isTaskOverdue(item.task) &&
+                              TONE_CHIP_CLASSES[
+                                columnStatusMeta(boardColumns, item.task.status)?.tone ?? "neutral"
+                              ],
+                              isTaskOverdue(item.task, terminalStatus) &&
                                 "ring-1 ring-tone-critical/40",
                             )}
                           >
@@ -234,7 +241,7 @@ export function ProjectCalendar({
                             <span className="sr-only">
                               {" "}
                               due {formatDate(item.task.dueDate)}
-                              {isTaskOverdue(item.task) ? ", overdue" : ""}
+                              {isTaskOverdue(item.task, terminalStatus) ? ", overdue" : ""}
                             </span>
                           </button>
                         </li>
@@ -268,6 +275,7 @@ export function ProjectCalendar({
         phases={phases}
         milestones={milestones}
         users={users}
+        boardColumns={boardColumns}
         canManage={canManage}
       />
     </>

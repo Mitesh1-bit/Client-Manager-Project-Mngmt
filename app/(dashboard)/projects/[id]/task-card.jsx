@@ -6,6 +6,7 @@ import { CalendarDays, GitBranch, GripVertical, ListTree, Lock } from "lucide-re
 import { StatusBadge } from "@/app/components/domain/status-badge";
 import { formatDate, initials } from "@/app/lib/format";
 import { blockingTasks, isTaskBlocked, isTaskOverdue } from "@/app/lib/project";
+import { terminalColumnStatus } from "@/app/lib/project-columns";
 import { cn } from "@/app/lib/utils";
 
 /**
@@ -18,13 +19,26 @@ import { cn } from "@/app/lib/utils";
  * builder's step card in Phase 6.
  */
 export const TaskCard = forwardRef(function TaskCard(
-  { task, onOpen, dragging, overlay, className, style, listeners, attributes, actions, movable = true },
+  {
+    task,
+    onOpen,
+    dragging,
+    overlay,
+    className,
+    style,
+    listeners,
+    attributes,
+    actions,
+    movable = true,
+    boardColumns = [],
+  },
   ref,
 ) {
-  const blocked = isTaskBlocked(task);
-  const blockers = blockingTasks(task);
-  const overdue = isTaskOverdue(task);
-  const doneSubtasks = task.subtasks.filter((subtask) => subtask.status === "DONE").length;
+  const terminalStatus = terminalColumnStatus(boardColumns);
+  const blocked = isTaskBlocked(task, terminalStatus);
+  const blockers = blockingTasks(task, terminalStatus);
+  const overdue = isTaskOverdue(task, terminalStatus);
+  const doneSubtasks = task.subtasks.filter((subtask) => subtask.status === terminalStatus).length;
 
   return (
     <article

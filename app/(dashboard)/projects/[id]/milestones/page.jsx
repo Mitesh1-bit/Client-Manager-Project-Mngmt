@@ -23,6 +23,7 @@ export default async function ProjectMilestonesPage({ params }) {
       projectId={plan.project.id}
       phases={plan.phases}
       milestones={plan.milestones}
+      boardColumns={plan.boardColumns}
       canManage={canManage}
     />
   );

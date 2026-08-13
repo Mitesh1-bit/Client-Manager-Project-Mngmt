@@ -9,6 +9,7 @@ import { Controller, useForm } from "react-hook-form";
 import { LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 
+import { ConfirmDeleteDialog } from "@/app/components/domain/confirm-delete-dialog";
 import { FormField } from "@/app/components/domain/form-field";
 import { MultiSelect, SelectedChips } from "@/app/components/domain/multi-select";
 import {
@@ -31,6 +32,7 @@ import {
   AddTagDocument,
   CreateProjectDocument,
   CreateTagDocument,
+  DeleteProjectDocument,
   RemoveTagDocument,
   UpdateProjectDocument,
 } from "@/app/lib/graphql/generated/documents";
@@ -60,10 +62,12 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
 
   const [createProject] = useMutation(CreateProjectDocument);
   const [updateProject] = useMutation(UpdateProjectDocument);
+  const [deleteProject, { loading: deleting }] = useMutation(DeleteProjectDocument);
   const [createTag] = useMutation(CreateTagDocument);
   const [addTag] = useMutation(AddTagDocument);
   const [removeTag] = useMutation(RemoveTagDocument);
   const [tagList, setTagList] = useState(tags);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const {
     register,
@@ -123,6 +127,17 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
       router.refresh();
     } catch (error) {
       setServerError(error?.message ?? "We couldn't save this project. Try again.");
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      await deleteProject({ variables: { id: project.id } });
+      toast.success(`${project.name} deleted`);
+      router.push("/projects");
+    } catch (error) {
+      toast.error("Couldn't delete this project", { description: error?.message });
+      setConfirmingDelete(false);
     }
   }
 
@@ -408,6 +423,25 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
         </Alert>
       ) : null}
 
+      {mode === "edit" ? (
+        <SectionCard title="Danger zone" description="This can't be undone.">
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-caption text-muted-foreground">
+              Deleting a project removes it, and everything inside it (phases, milestones,
+              tasks), from view for everyone.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => setConfirmingDelete(true)}
+            >
+              Delete project
+            </Button>
+          </div>
+        </SectionCard>
+      ) : null}
+
       <div className="sticky bottom-0 z-20 -mx-(--content-gutter) border-t bg-background/90 px-(--content-gutter) backdrop-blur" data-tour="project-field-save">
         <div className="flex items-center justify-end gap-2 py-3">
           {isDirty ? (
@@ -430,6 +464,17 @@ export function ProjectForm({ mode, project, companies = [], users = [], tags = 
           </Button>
         </div>
       </div>
+
+      {mode === "edit" ? (
+        <ConfirmDeleteDialog
+          open={confirmingDelete}
+          onOpenChange={setConfirmingDelete}
+          title="Delete this project?"
+          description={`"${project.name}" and everything inside it — phases, milestones, and tasks — will be removed. This can't be undone.`}
+          onConfirm={handleDelete}
+          loading={deleting}
+        />
+      ) : null}
     </form>
   );
 }

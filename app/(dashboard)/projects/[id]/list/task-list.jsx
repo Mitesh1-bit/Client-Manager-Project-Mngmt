@@ -20,12 +20,10 @@ import { formatDate, initials } from "@/app/lib/format";
 import { UpdateTaskStatusDocument } from "@/app/lib/graphql/generated/documents";
 import { projectHeaderRefetch, taskStatusForApi } from "@/app/lib/project-progress";
 import { blockingTasks, isTaskBlocked, isTaskOverdue } from "@/app/lib/project";
-import { listStatuses } from "@/app/lib/status";
+import { columnStatusMeta, terminalColumnStatus } from "@/app/lib/project-columns";
 import { cn } from "@/app/lib/utils";
 
 import { TaskSheet } from "../task-sheet";
-
-const STATUS_OPTIONS = listStatuses("taskStatus");
 
 /**
  * The flat, scannable counterpart to the board: every task grouped by phase,
@@ -37,12 +35,18 @@ export function TaskList({
   phases = [],
   milestones = [],
   users = [],
+  boardColumns = [],
   canManage = false,
   viewerId = null,
 }) {
   const router = useRouter();
   const [updateTaskStatus] = useMutation(UpdateTaskStatusDocument);
   const canEditStatus = (task) => canManage || task.assigneeId === viewerId;
+  const terminalStatus = terminalColumnStatus(boardColumns);
+  const statusOptions = useMemo(
+    () => boardColumns.map((column) => ({ value: column.status, label: column.label })),
+    [boardColumns],
+  );
 
   const [panel, setPanel] = useState(null);
   const [collapsed, setCollapsed] = useState(() => new Set());
@@ -106,6 +110,7 @@ export function TaskList({
           phases={phases}
           milestones={milestones}
           users={users}
+          boardColumns={boardColumns}
           canManage={canManage}
         />
       </>
@@ -148,7 +153,7 @@ export function TaskList({
                     <StatusBadge kind="phaseStatus" value={group.status} size="sm" />
                   ) : null}
                   <span className="tabular ml-auto text-caption text-muted-foreground">
-                    {group.tasks.filter((task) => task.status === "DONE").length} of{" "}
+                    {group.tasks.filter((task) => task.status === terminalStatus).length} of{" "}
                     {group.tasks.length} done
                   </span>
                 </button>
@@ -161,6 +166,8 @@ export function TaskList({
                       key={task.id}
                       task={task}
                       pendingStatus={pendingStatus[task.id]}
+                      boardColumns={boardColumns}
+                      statusOptions={statusOptions}
                       onOpen={() => setPanel({ mode: "view", taskId: task.id })}
                       onStatusChange={changeStatus}
                       canEditStatus={canEditStatus(task)}
@@ -201,6 +208,7 @@ export function TaskList({
         phases={phases}
         milestones={milestones}
         users={users}
+        boardColumns={boardColumns}
         canManage={canManage}
       />
     </>
@@ -210,6 +218,8 @@ export function TaskList({
 function TaskRow({
   task,
   pendingStatus,
+  boardColumns,
+  statusOptions,
   onOpen,
   onStatusChange,
   canEditStatus,
@@ -220,9 +230,10 @@ function TaskRow({
   canEditSubtaskStatus,
 }) {
   const [showSubtasks, setShowSubtasks] = useState(true);
-  const blocked = isTaskBlocked(task);
-  const blockers = blockingTasks(task);
-  const overdue = isTaskOverdue(task);
+  const terminalStatus = terminalColumnStatus(boardColumns);
+  const blocked = isTaskBlocked(task, terminalStatus);
+  const blockers = blockingTasks(task, terminalStatus);
+  const overdue = isTaskOverdue(task, terminalStatus);
   const status = pendingStatus ?? task.status;
 
   return (
@@ -304,7 +315,7 @@ function TaskRow({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {STATUS_OPTIONS.map((option) => (
+              {statusOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -312,7 +323,7 @@ function TaskRow({
             </SelectContent>
           </Select>
         ) : (
-          <StatusBadge kind="taskStatus" value={status} size="sm" />
+          <StatusBadge kind="taskStatus" value={status} meta={columnStatusMeta(boardColumns, status)} size="sm" />
         )}
 
         {onAddSubtask ? (
@@ -335,7 +346,7 @@ function TaskRow({
                 onClick={() => onOpenSubtask(subtask.id)}
                 className={cn(
                   "min-w-0 flex-1 truncate text-left text-caption hover:underline focus-ring rounded-sm",
-                  subtask.status === "DONE" && "text-muted-foreground line-through",
+                  subtask.status === terminalStatus && "text-muted-foreground line-through",
                 )}
               >
                 {subtask.title}
@@ -358,7 +369,7 @@ function TaskRow({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {STATUS_OPTIONS.map((option) => (
+                    {statusOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
@@ -366,7 +377,12 @@ function TaskRow({
                   </SelectContent>
                 </Select>
               ) : (
-                <StatusBadge kind="taskStatus" value={subtask.status} size="sm" />
+                <StatusBadge
+                  kind="taskStatus"
+                  value={subtask.status}
+                  meta={columnStatusMeta(boardColumns, subtask.status)}
+                  size="sm"
+                />
               )}
             </li>
           ))}

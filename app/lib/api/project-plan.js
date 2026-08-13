@@ -1,5 +1,6 @@
 import { pickList } from "@/app/lib/api/safe-list";
 import { normalizeProject, normalizeTask, toUiStatus } from "@/app/lib/api/normalize";
+import { normalizeProjectColumns } from "@/app/lib/project-columns";
 
 /** @param {Record<string, unknown>} milestone @param {{ id: string, name?: string }} [phase] */
 function normalizeMilestone(milestone, phase) {
@@ -46,7 +47,7 @@ function indexTasks(tasks) {
  */
 export function normalizeProjectPlan(project, usersById) {
   if (!project) {
-    return { project: null, phases: [], tasks: [], milestones: [] };
+    return { project: null, phases: [], tasks: [], milestones: [], boardColumns: [] };
   }
 
   const rawTasks = project.tasks ?? [];
@@ -97,6 +98,7 @@ export function normalizeProjectPlan(project, usersById) {
     phases,
     tasks: tasksWithMilestones,
     milestones,
+    boardColumns: normalizeProjectColumns(project.columns),
   };
 }
 

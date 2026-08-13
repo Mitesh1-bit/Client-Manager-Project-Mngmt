@@ -14,6 +14,7 @@ import {
   timelineBounds,
   timelineMonths,
 } from "@/app/lib/project";
+import { columnStatusMeta, terminalColumnStatus } from "@/app/lib/project-columns";
 import { cn } from "@/app/lib/utils";
 
 import { TaskSheet } from "../task-sheet";
@@ -36,10 +37,12 @@ export function ProjectGantt({
   tasks = [],
   milestones = [],
   users = [],
+  boardColumns = [],
   canManage = false,
 }) {
   const [panel, setPanel] = useState(null);
   const scrollRef = useRef(null);
+  const terminalStatus = terminalColumnStatus(boardColumns);
 
   const dated = useMemo(
     () => [
@@ -100,8 +103,8 @@ export function ProjectGantt({
 
   const arrows = useMemo(
     () =>
-      barsWidth > 0 ? buildArrows(rows, rowIndexByTask, bounds, barsWidth) : [],
-    [rows, rowIndexByTask, bounds, barsWidth],
+      barsWidth > 0 ? buildArrows(rows, rowIndexByTask, bounds, barsWidth, terminalStatus) : [],
+    [rows, rowIndexByTask, bounds, barsWidth, terminalStatus],
   );
 
   if (rows.length === 0) {
@@ -127,6 +130,7 @@ export function ProjectGantt({
           phases={phases}
           milestones={milestones}
           users={users}
+          boardColumns={boardColumns}
           canManage={canManage}
         />
       </>
@@ -292,6 +296,8 @@ export function ProjectGantt({
                     <TaskBar
                       task={row.task}
                       bounds={bounds}
+                      boardColumns={boardColumns}
+                      terminalStatus={terminalStatus}
                       onOpen={() =>
                         setPanel({ mode: "view", taskId: row.task.id })
                       }
@@ -312,6 +318,7 @@ export function ProjectGantt({
         phases={phases}
         milestones={milestones}
         users={users}
+        boardColumns={boardColumns}
         canManage={canManage}
       />
     </>
@@ -331,17 +338,20 @@ function PhaseBar({ phase, bounds }) {
   );
 }
 
-const TASK_BAR_TONE = {
-  DONE: "bg-tone-positive-bg border-tone-positive-border text-tone-positive-fg",
-  IN_PROGRESS: "bg-tone-info-bg border-tone-info-border text-tone-info-fg",
-  REVIEW: "bg-tone-accent-bg border-tone-accent-border text-tone-accent-fg",
-  TODO: "bg-muted border-border text-muted-foreground",
+const TONE_BAR_CLASSES = {
+  positive: "bg-tone-positive-bg border-tone-positive-border text-tone-positive-fg",
+  info: "bg-tone-info-bg border-tone-info-border text-tone-info-fg",
+  accent: "bg-tone-accent-bg border-tone-accent-border text-tone-accent-fg",
+  caution: "bg-tone-caution-bg border-tone-caution-border text-tone-caution-fg",
+  critical: "bg-tone-critical-bg border-tone-critical-border text-tone-critical-fg",
+  neutral: "bg-muted border-border text-muted-foreground",
 };
 
-function TaskBar({ task, bounds, onOpen }) {
+function TaskBar({ task, bounds, boardColumns, terminalStatus, onOpen }) {
   const geometry = barGeometry(bounds, task.startDate, task.dueDate);
-  const overdue = isTaskOverdue(task);
-  const blocked = isTaskBlocked(task);
+  const overdue = isTaskOverdue(task, terminalStatus);
+  const blocked = isTaskBlocked(task, terminalStatus);
+  const meta = columnStatusMeta(boardColumns, task.status);
 
   if (!geometry) {
     return (
@@ -358,7 +368,7 @@ function TaskBar({ task, bounds, onOpen }) {
       style={{ left: `${geometry.left}%`, width: `${geometry.width}%` }}
       className={cn(
         "absolute top-1/2 flex h-5 -translate-y-1/2 items-center gap-1 rounded border px-1.5 text-[0.6875rem] transition-shadow hover:shadow-card focus-ring",
-        TASK_BAR_TONE[task.status],
+        TONE_BAR_CLASSES[meta?.tone ?? "neutral"],
         overdue && "border-tone-critical-border ring-1 ring-tone-critical/40",
       )}
     >
@@ -499,7 +509,7 @@ function buildRows(phases, tasks, milestones) {
  * percentages, but SVG path data only takes numbers, so the geometry is
  * converted here.
  */
-function buildArrows(rows, rowIndexByTask, bounds, width) {
+function buildArrows(rows, rowIndexByTask, bounds, width, terminalStatus) {
   const px = (percent) => (percent / 100) * width;
   const yOf = (index) => {
     let y = 0;
@@ -543,7 +553,7 @@ function buildArrows(rows, rowIndexByTask, bounds, width) {
       const midX = x2 > x1 + 12 ? (x1 + x2) / 2 : x1 + 10;
       arrows.push({
         key: dep.id,
-        satisfied: dep.dependsOnTask.status === "DONE",
+        satisfied: dep.dependsOnTask.status === terminalStatus,
         d: [
           `M ${round(x1)} ${y1}`,
           `L ${round(midX)} ${y1}`,

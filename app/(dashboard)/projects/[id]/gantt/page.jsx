@@ -34,6 +34,7 @@ export default async function ProjectGanttPage({ params }) {
       tasks={plan.tasks}
       milestones={plan.milestones}
       users={pickList(options, "users")}
+      boardColumns={plan.boardColumns}
       canManage={canManage}
     />
   );

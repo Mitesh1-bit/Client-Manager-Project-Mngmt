@@ -8,6 +8,7 @@ import { Controller, useForm } from "react-hook-form";
 import { CircleCheck, Flag, LoaderCircle, Pencil, Plus, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
+import { ConfirmDeleteDialog } from "@/app/components/domain/confirm-delete-dialog";
 import { FormField } from "@/app/components/domain/form-field";
 import { EmptyState } from "@/app/components/domain/states";
 import { StatusBadge } from "@/app/components/domain/status-badge";
@@ -36,11 +37,15 @@ import { formatDate, formatDateTime } from "@/app/lib/format";
 import {
   CreateMilestoneDocument,
   CreatePhaseDocument,
+  DeleteMilestoneDocument,
+  DeletePhaseDocument,
   MarkMilestoneReadyForReviewDocument,
   UpdateMilestoneDocument,
   UpdatePhaseDocument,
 } from "@/app/lib/graphql/generated/documents";
 import { isTaskOverdue, parseDay, startOfDay, taskCompletion } from "@/app/lib/project";
+import { terminalColumnStatus } from "@/app/lib/project-columns";
+import { projectHeaderRefetch } from "@/app/lib/project-progress";
 import { listStatuses } from "@/app/lib/status";
 import { cn } from "@/app/lib/utils";
 
@@ -63,7 +68,7 @@ const PHASE_STATUS_OPTIONS = listStatuses("phaseStatus");
  * roll up to them. Client sign-off state is shown but not actioned here — the
  * approval flow itself belongs to the client portal in Phase 4.
  */
-export function ProjectPlan({ projectId, phases = [], milestones = [], canManage = false }) {
+export function ProjectPlan({ projectId, phases = [], milestones = [], boardColumns = [], canManage = false }) {
   const [panel, setPanel] = useState(null);
   const close = () => setPanel(null);
 
@@ -123,6 +128,7 @@ export function ProjectPlan({ projectId, phases = [], milestones = [], canManage
           <PhaseSection
             key={phase.id}
             phase={phase}
+            boardColumns={boardColumns}
             canManage={canManage}
             onEditPhase={() => setPanel({ mode: "phase-edit", phaseId: phase.id })}
             onAddMilestone={() =>
@@ -142,6 +148,7 @@ export function ProjectPlan({ projectId, phases = [], milestones = [], canManage
                 <MilestoneRow
                   key={milestone.id}
                   milestone={milestone}
+                  boardColumns={boardColumns}
                   canManage={canManage}
                   onEdit={() => setPanel({ mode: "milestone-edit", milestoneId: milestone.id })}
                 />
@@ -164,9 +171,9 @@ export function ProjectPlan({ projectId, phases = [], milestones = [], canManage
   );
 }
 
-function PhaseSection({ phase, canManage, onEditPhase, onAddMilestone, onEditMilestone }) {
+function PhaseSection({ phase, boardColumns, canManage, onEditPhase, onAddMilestone, onEditMilestone }) {
   const tasks = phase.tasks.filter((task) => !task.parentTask);
-  const { done, total, percent } = taskCompletion(tasks);
+  const { done, total, percent } = taskCompletion(tasks, boardColumns);
 
   const dueDate = parseDay(phase.dueDate);
   const overdue = dueDate && phase.status !== "COMPLETED" && dueDate < startOfDay(new Date());
@@ -229,6 +236,7 @@ function PhaseSection({ phase, canManage, onEditPhase, onAddMilestone, onEditMil
                 <MilestoneRow
                   key={milestone.id}
                   milestone={milestone}
+                  boardColumns={boardColumns}
                   canManage={canManage}
                   onEdit={() => onEditMilestone(milestone.id)}
                 />
@@ -247,12 +255,13 @@ function PhaseSection({ phase, canManage, onEditPhase, onAddMilestone, onEditMil
   );
 }
 
-function MilestoneRow({ milestone, canManage, onEdit }) {
-  const done = milestone.tasks.filter((task) => task.status === "DONE").length;
+function MilestoneRow({ milestone, boardColumns, canManage, onEdit }) {
+  const terminalStatus = terminalColumnStatus(boardColumns);
+  const done = milestone.tasks.filter((task) => task.status === terminalStatus).length;
   const dueDate = parseDay(milestone.dueDate);
   const overdue =
     dueDate && milestone.status !== "COMPLETED" && dueDate < startOfDay(new Date());
-  const overdueTasks = milestone.tasks.filter((task) => isTaskOverdue(task)).length;
+  const overdueTasks = milestone.tasks.filter((task) => isTaskOverdue(task, terminalStatus)).length;
 
   return (
     <li className="rounded-lg border p-3.5">
@@ -397,6 +406,7 @@ function PlanSheet({ projectId, panel, phases, milestones, onClose }) {
             ) : (
               <MilestoneForm
                 key={milestone?.id ?? "create"}
+                projectId={projectId}
                 milestone={panel.mode === "milestone-edit" ? milestone : null}
                 defaults={panel.defaults}
                 phases={phases}
@@ -416,6 +426,8 @@ function PhaseForm({ projectId, phase, orderIndex, onDone, onCancel }) {
   const [serverError, setServerError] = useState(null);
   const [createPhase] = useMutation(CreatePhaseDocument);
   const [updatePhase] = useMutation(UpdatePhaseDocument);
+  const [deletePhase, { loading: deleting }] = useMutation(DeletePhaseDocument);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const {
     register,
@@ -447,6 +459,21 @@ function PhaseForm({ projectId, phase, orderIndex, onDone, onCancel }) {
     }
   }
 
+  async function handleDelete() {
+    try {
+      await deletePhase({
+        variables: { id: phase.id },
+        refetchQueries: projectHeaderRefetch(projectId),
+      });
+      toast.success("Phase deleted");
+      setConfirmingDelete(false);
+      router.refresh();
+      onDone();
+    } catch (error) {
+      toast.error("Couldn't delete this phase", { description: error?.message });
+    }
+  }
+
   return (
     <FormShell
       onSubmit={handleSubmit(onSubmit)}
@@ -454,6 +481,7 @@ function PhaseForm({ projectId, phase, orderIndex, onDone, onCancel }) {
       isSubmitting={isSubmitting}
       submitLabel={phase ? "Save changes" : "Add phase"}
       serverError={serverError}
+      onDelete={phase ? () => setConfirmingDelete(true) : null}
     >
       <FormField label="Phase name" error={errors.name?.message} required>
         {(field) => <Input {...field} {...register("name")} className="h-10" autoFocus />}
@@ -490,15 +518,28 @@ function PhaseForm({ projectId, phase, orderIndex, onDone, onCancel }) {
           {(field) => <Input {...field} {...register("dueDate")} type="date" className="h-10" />}
         </FormField>
       </div>
+
+      {phase ? (
+        <ConfirmDeleteDialog
+          open={confirmingDelete}
+          onOpenChange={setConfirmingDelete}
+          title="Delete this phase?"
+          description={`"${phase.name}" will be removed. If it still has milestones or tasks, move or delete those first.`}
+          onConfirm={handleDelete}
+          loading={deleting}
+        />
+      ) : null}
     </FormShell>
   );
 }
 
-function MilestoneForm({ milestone, defaults, phases, onDone, onCancel }) {
+function MilestoneForm({ projectId, milestone, defaults, phases, onDone, onCancel }) {
   const router = useRouter();
   const [serverError, setServerError] = useState(null);
   const [createMilestone] = useMutation(CreateMilestoneDocument);
   const [updateMilestone] = useMutation(UpdateMilestoneDocument);
+  const [deleteMilestone, { loading: deleting }] = useMutation(DeleteMilestoneDocument);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const {
     register,
@@ -533,12 +574,28 @@ function MilestoneForm({ milestone, defaults, phases, onDone, onCancel }) {
     }
   }
 
+  async function handleDelete() {
+    try {
+      await deleteMilestone({
+        variables: { id: milestone.id },
+        refetchQueries: projectHeaderRefetch(projectId),
+      });
+      toast.success("Milestone deleted");
+      setConfirmingDelete(false);
+      router.refresh();
+      onDone();
+    } catch (error) {
+      toast.error("Couldn't delete this milestone", { description: error?.message });
+    }
+  }
+
   return (
     <FormShell
       onSubmit={handleSubmit(onSubmit)}
       onCancel={onCancel}
       isSubmitting={isSubmitting}
       submitLabel={milestone ? "Save changes" : "Add milestone"}
+      onDelete={milestone ? () => setConfirmingDelete(true) : null}
       serverError={serverError}
     >
       <FormField label="Title" error={errors.title?.message} required>
@@ -598,11 +655,22 @@ function MilestoneForm({ milestone, defaults, phases, onDone, onCancel }) {
           )}
         />
       </div>
+
+      {milestone ? (
+        <ConfirmDeleteDialog
+          open={confirmingDelete}
+          onOpenChange={setConfirmingDelete}
+          title="Delete this milestone?"
+          description={`"${milestone.title}" will be removed. If it still has tasks attached, move or delete those first.`}
+          onConfirm={handleDelete}
+          loading={deleting}
+        />
+      ) : null}
     </FormShell>
   );
 }
 
-function FormShell({ onSubmit, onCancel, isSubmitting, submitLabel, serverError, children }) {
+function FormShell({ onSubmit, onCancel, isSubmitting, submitLabel, serverError, onDelete, children }) {
   return (
     <form noValidate onSubmit={onSubmit} className="flex h-full flex-col">
       <div className="flex-1 space-y-5 overflow-y-auto px-5 py-4">
@@ -615,20 +683,34 @@ function FormShell({ onSubmit, onCancel, isSubmitting, submitLabel, serverError,
         {children}
       </div>
 
-      <div className="flex items-center justify-end gap-2 border-t px-5 py-3">
-        <Button type="button" variant="ghost" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <>
-              <LoaderCircle aria-hidden="true" className="animate-spin" />
-              Saving…
-            </>
-          ) : (
-            submitLabel
-          )}
-        </Button>
+      <div className="flex items-center justify-between gap-2 border-t px-5 py-3">
+        {onDelete ? (
+          <Button
+            type="button"
+            variant="outline"
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={onDelete}
+          >
+            Delete
+          </Button>
+        ) : (
+          <span />
+        )}
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="ghost" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <LoaderCircle aria-hidden="true" className="animate-spin" />
+                Saving…
+              </>
+            ) : (
+              submitLabel
+            )}
+          </Button>
+        </div>
       </div>
     </form>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,9 +38,8 @@ import {
 import { listStatuses } from "@/app/lib/status";
 
 import { SelectField } from "../../projects/[id]/task-form";
-import { taskSchema, taskToFormValues, toCreateTaskVariables } from "../../projects/[id]/task-schema";
+import { createTaskSchema, taskToFormValues, toCreateTaskVariables } from "../../projects/[id]/task-schema";
 
-const STATUS_OPTIONS = listStatuses("taskStatus");
 const PRIORITY_OPTIONS = listStatuses("priority");
 
 /**
@@ -56,12 +55,19 @@ export function CreateTaskFromChangeRequestDialog({
   milestones = [],
   tasks = [],
   users = [],
+  boardColumns = [],
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [serverError, setServerError] = useState(null);
   const [createTask] = useMutation(CreateTaskDocument);
   const [createPhase] = useMutation(CreatePhaseDocument);
+
+  const statusOptions = useMemo(
+    () => boardColumns.map((column) => ({ value: column.status, label: column.label })),
+    [boardColumns],
+  );
+  const taskSchema = useMemo(() => createTaskSchema(boardColumns), [boardColumns]);
 
   const {
     register,
@@ -74,7 +80,7 @@ export function CreateTaskFromChangeRequestDialog({
   } = useForm({
     resolver: zodResolver(taskSchema),
     defaultValues: {
-      ...taskToFormValues(null, { status: "TODO", phaseId: phases[0]?.id ?? "" }),
+      ...taskToFormValues(null, { phaseId: phases[0]?.id ?? "" }, boardColumns),
       title: request.title,
       description: request.description ?? "",
       priority: request.priority ?? "MEDIUM",
@@ -158,7 +164,7 @@ export function CreateTaskFromChangeRequestDialog({
               label="Status"
               required
               error={errors.status?.message}
-              options={STATUS_OPTIONS.map((s) => ({ value: s.value, label: s.label }))}
+              options={statusOptions}
             />
 
             <FormField label="Priority" error={errors.priority?.message} required>

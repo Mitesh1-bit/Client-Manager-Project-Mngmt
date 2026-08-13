@@ -22,6 +22,7 @@ import {
   ChangeRequestFormOptionsDocument,
   ChangeRequestTaskOptionsDocument,
 } from "@/app/lib/graphql/generated/documents";
+import { normalizeProjectColumns } from "@/app/lib/project-columns";
 
 import { AssessmentPanel } from "./assessment-panel";
 import { ChangeRequestActions } from "./change-request-actions";
@@ -64,6 +65,7 @@ export default async function ChangeRequestDetailPage({ params }) {
     TASK_CREATOR_ROLES.includes(claims?.role) && TASK_CREATABLE_STATUSES.includes(request.status);
   let phases = [];
   let taskOptionsList = [];
+  let boardColumns = [];
   if (canCreateTask) {
     const { data: taskOptions } = await getClient().query({
       query: ChangeRequestTaskOptionsDocument,
@@ -71,6 +73,7 @@ export default async function ChangeRequestDetailPage({ params }) {
     });
     phases = asArray(taskOptions?.project?.phases);
     taskOptionsList = asArray(taskOptions?.project?.tasks);
+    boardColumns = normalizeProjectColumns(taskOptions?.project?.columns);
   }
   const milestoneOptions = phases.flatMap((phase) => asArray(phase.milestones));
   const linkedTasks = asArray(request.tasks);
@@ -147,6 +150,7 @@ export default async function ChangeRequestDetailPage({ params }) {
                   milestones={milestoneOptions}
                   tasks={taskOptionsList}
                   users={pickList(options, "users")}
+                  boardColumns={boardColumns}
                 />
               ) : null
             }

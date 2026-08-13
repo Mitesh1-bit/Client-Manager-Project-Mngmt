@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,9 +25,8 @@ import { CreateTaskDocument, CreatePhaseDocument, UpdateTaskDocument } from "@/a
 import { projectHeaderRefetch } from "@/app/lib/project-progress";
 import { listStatuses } from "@/app/lib/status";
 
-import { taskSchema, taskToFormValues, toCreateTaskVariables, toUpdateTaskVariables } from "./task-schema";
+import { createTaskSchema, taskToFormValues, toCreateTaskVariables, toUpdateTaskVariables } from "./task-schema";
 
-const STATUS_OPTIONS = listStatuses("taskStatus");
 const PRIORITY_OPTIONS = listStatuses("priority");
 const NONE = "__none__";
 
@@ -35,7 +34,18 @@ const NONE = "__none__";
  * Task create/edit. Rendered inside the task sheet, so it lays out as a
  * scrolling body with a pinned action row rather than a page.
  */
-export function TaskForm({ projectId, task, defaults, phases = [], milestones = [], users = [], tasks = [], onDone, onCancel }) {
+export function TaskForm({
+  projectId,
+  task,
+  defaults,
+  phases = [],
+  milestones = [],
+  users = [],
+  tasks = [],
+  boardColumns = [],
+  onDone,
+  onCancel,
+}) {
   const router = useRouter();
   const mode = task ? "edit" : "create";
   const [serverError, setServerError] = useState(null);
@@ -43,6 +53,12 @@ export function TaskForm({ projectId, task, defaults, phases = [], milestones = 
   const [createTask] = useMutation(CreateTaskDocument);
   const [createPhase] = useMutation(CreatePhaseDocument);
   const [updateTask] = useMutation(UpdateTaskDocument);
+
+  const statusOptions = useMemo(
+    () => boardColumns.map((column) => ({ value: column.status, label: column.label })),
+    [boardColumns],
+  );
+  const taskSchema = useMemo(() => createTaskSchema(boardColumns), [boardColumns]);
 
   const {
     register,
@@ -53,7 +69,7 @@ export function TaskForm({ projectId, task, defaults, phases = [], milestones = 
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(taskSchema),
-    defaultValues: taskToFormValues(task, defaults),
+    defaultValues: taskToFormValues(task, defaults, boardColumns),
   });
 
   // A task can't be its own parent, and we don't offer nesting under a subtask.
@@ -133,7 +149,7 @@ export function TaskForm({ projectId, task, defaults, phases = [], milestones = 
               label="Status"
               required
               error={errors.status?.message}
-              options={STATUS_OPTIONS.map((s) => ({ value: s.value, label: s.label }))}
+              options={statusOptions}
             />
           </div>
           <SelectField

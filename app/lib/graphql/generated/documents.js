@@ -377,6 +377,15 @@ fragment PortalProjectRow on PortalProjectType {
   }
 }`;
 
+export const ProjectColumnFieldsFragmentDoc = gql`
+fragment ProjectColumnFields on ProjectColumnType {
+  id
+  code
+  label
+  orderIndex
+  isTerminal
+}`;
+
 export const ProjectHeaderFragmentDoc = gql`
 fragment ProjectHeader on ProjectType {
   id
@@ -1089,6 +1098,9 @@ export const ChangeRequestTaskOptionsDocument = gql`
 query ChangeRequestTaskOptions($projectId: ID!) {
   project(id: $projectId) {
     id
+    columns {
+      ...ProjectColumnFields
+    }
     phases {
       id
       name
@@ -1103,6 +1115,13 @@ query ChangeRequestTaskOptions($projectId: ID!) {
       parentTaskId
     }
   }
+}
+fragment ProjectColumnFields on ProjectColumnType {
+  id
+  code
+  label
+  orderIndex
+  isTerminal
 }`;
 
 export const CompanyContactsDocument = gql`
@@ -1928,6 +1947,25 @@ fragment TagFields on TagType {
   name
 }`;
 
+export const CreateProjectColumnDocument = gql`
+mutation CreateProjectColumn($projectId: ID!, $label: String!, $insertAfterColumnId: ID, $isTerminal: Boolean) {
+  createProjectColumn(
+    projectId: $projectId
+    label: $label
+    insertAfterColumnId: $insertAfterColumnId
+    isTerminal: $isTerminal
+  ) {
+    ...ProjectColumnFields
+  }
+}
+fragment ProjectColumnFields on ProjectColumnType {
+  id
+  code
+  label
+  orderIndex
+  isTerminal
+}`;
+
 export const CreateRetentionSequenceDocument = gql`
 mutation CreateRetentionSequence($name: String!, $companyId: ID!, $triggerType: String!, $description: String, $isTemplate: Boolean!, $submitForApproval: Boolean!) {
   createRetentionSequence(
@@ -2132,6 +2170,31 @@ mutation DeleteDocument($id: ID!) {
 export const DeleteInvoiceDocument = gql`
 mutation DeleteInvoice($id: ID!) {
   deleteInvoice(id: $id)
+}`;
+
+export const DeleteMilestoneDocument = gql`
+mutation DeleteMilestone($id: ID!) {
+  deleteMilestone(id: $id)
+}`;
+
+export const DeletePhaseDocument = gql`
+mutation DeletePhase($id: ID!) {
+  deletePhase(id: $id)
+}`;
+
+export const DeleteProjectDocument = gql`
+mutation DeleteProject($id: ID!) {
+  deleteProject(id: $id)
+}`;
+
+export const DeleteProjectColumnDocument = gql`
+mutation DeleteProjectColumn($id: ID!) {
+  deleteProjectColumn(id: $id)
+}`;
+
+export const DeleteTaskDocument = gql`
+mutation DeleteTask($id: ID!) {
+  deleteTask(id: $id)
 }`;
 
 export const DeleteUserDocument = gql`
@@ -2890,6 +2953,9 @@ query ProjectBoard($id: ID!) {
     id
     name
     canManage
+    columns {
+      ...ProjectColumnFields
+    }
     tasks {
       ...TaskFields
     }
@@ -2897,6 +2963,13 @@ query ProjectBoard($id: ID!) {
   users {
     ...UserSummaryFields
   }
+}
+fragment ProjectColumnFields on ProjectColumnType {
+  id
+  code
+  label
+  orderIndex
+  isTerminal
 }
 fragment TaskFields on TaskType {
   id
@@ -3329,6 +3402,9 @@ query ProjectPlan($id: ID!) {
     id
     name
     canManage
+    columns {
+      ...ProjectColumnFields
+    }
     phases {
       ...PhaseFields
       milestones {
@@ -3375,6 +3451,13 @@ fragment PhaseFields on PhaseType {
   status
   startDate
   dueDate
+}
+fragment ProjectColumnFields on ProjectColumnType {
+  id
+  code
+  label
+  orderIndex
+  isTerminal
 }
 fragment TaskFields on TaskType {
   id
@@ -3538,6 +3621,23 @@ mutation RemoveTag($entityType: String!, $entityId: ID!, $tagId: ID!) {
 export const RemoveTaskDependencyDocument = gql`
 mutation RemoveTaskDependency($id: ID!) {
   removeTaskDependency(id: $id)
+}`;
+
+export const ReorderProjectColumnsDocument = gql`
+mutation ReorderProjectColumns($projectId: ID!, $orderedColumnIds: [ID!]!) {
+  reorderProjectColumns(
+    projectId: $projectId
+    orderedColumnIds: $orderedColumnIds
+  ) {
+    ...ProjectColumnFields
+  }
+}
+fragment ProjectColumnFields on ProjectColumnType {
+  id
+  code
+  label
+  orderIndex
+  isTerminal
 }`;
 
 export const ReorderSequenceStepsDocument = gql`
@@ -4290,6 +4390,20 @@ fragment UserSummaryFields on UserSummaryType {
   role
   jobTitle
   avatarUrl
+}`;
+
+export const UpdateProjectColumnDocument = gql`
+mutation UpdateProjectColumn($id: ID!, $label: String, $isTerminal: Boolean) {
+  updateProjectColumn(id: $id, label: $label, isTerminal: $isTerminal) {
+    ...ProjectColumnFields
+  }
+}
+fragment ProjectColumnFields on ProjectColumnType {
+  id
+  code
+  label
+  orderIndex
+  isTerminal
 }`;
 
 export const UpdateRetentionSequenceDocument = gql`

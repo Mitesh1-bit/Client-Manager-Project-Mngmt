@@ -7,33 +7,30 @@
  */
 
 import { computeTaskCompletionPercent } from "@/app/lib/project-progress";
-
-/** Board columns, left to right. */
-export const TASK_COLUMNS = [
-  { status: "TODO", label: "To do" },
-  { status: "IN_PROGRESS", label: "In progress" },
-  { status: "REVIEW", label: "In review" },
-  { status: "DONE", label: "Done" },
-];
-
-export const TASK_STATUSES = TASK_COLUMNS.map((column) => column.status);
+import { terminalColumnStatus } from "@/app/lib/project-columns";
 
 const byOrder = (a, b) => a.orderIndex - b.orderIndex;
 
 /**
  * Groups top-level tasks into board columns. Subtasks are deliberately left
- * out — they belong to their parent card, not to a column of their own.
+ * out — they belong to their parent card, not to a column of their own. Any
+ * task whose status matches none of the project's columns (stale data, a
+ * column that got deleted from under it) lands in `_unknown` instead of
+ * silently vanishing from the board.
  *
  * @param {Array<{ id: string, status: string, orderIndex: number, parentTask?: { id: string } | null }>} tasks
+ * @param {Array<{ status: string }>} boardColumns
  * @returns {Record<string, unknown[]>}
  */
-export function groupTasksByStatus(tasks) {
-  const columns = Object.fromEntries(TASK_STATUSES.map((status) => [status, []]));
+export function groupTasksByStatus(tasks, boardColumns) {
+  const statuses = boardColumns.map((column) => column.status);
+  const columns = Object.fromEntries(statuses.map((status) => [status, []]));
+  columns._unknown = [];
   for (const task of tasks) {
     if (task.parentTask) continue;
-    if (columns[task.status]) columns[task.status].push(task);
+    (columns[task.status] ?? columns._unknown).push(task);
   }
-  for (const status of TASK_STATUSES) columns[status].sort(byOrder);
+  for (const key of Object.keys(columns)) columns[key].sort(byOrder);
   return columns;
 }
 
@@ -46,16 +43,18 @@ export function groupTasksByStatus(tasks) {
  * @param {string} taskId
  * @param {string} toStatus
  * @param {number} toIndex position within the destination column
+ * @param {Array<{ status: string }>} boardColumns
  */
-export function moveTask(columns, taskId, toStatus, toIndex) {
-  const fromStatus = TASK_STATUSES.find((status) =>
-    columns[status].some((task) => task.id === taskId),
+export function moveTask(columns, taskId, toStatus, toIndex, boardColumns) {
+  const statuses = [...boardColumns.map((column) => column.status), "_unknown"];
+  const fromStatus = statuses.find((status) =>
+    (columns[status] ?? []).some((task) => task.id === taskId),
   );
   if (!fromStatus || !columns[toStatus]) return columns;
 
   const task = columns[fromStatus].find((row) => row.id === taskId);
   const next = Object.fromEntries(
-    TASK_STATUSES.map((status) => [status, columns[status].filter((row) => row.id !== taskId)]),
+    statuses.map((status) => [status, (columns[status] ?? []).filter((row) => row.id !== taskId)]),
   );
 
   const at = Math.max(0, Math.min(toIndex, next[toStatus].length));
@@ -73,14 +72,14 @@ export function moveTask(columns, taskId, toStatus, toIndex) {
  * A task is blocked while any task it depends on is unfinished. Drives the
  * board's blocked badge and the warning on the task sheet.
  */
-export function isTaskBlocked(task) {
-  return (task.dependencies ?? []).some((dep) => dep.dependsOnTask.status !== "DONE");
+export function isTaskBlocked(task, terminalStatus) {
+  return (task.dependencies ?? []).some((dep) => dep.dependsOnTask.status !== terminalStatus);
 }
 
 /** The unfinished predecessors, for naming them in the UI. */
-export function blockingTasks(task) {
+export function blockingTasks(task, terminalStatus) {
   return (task.dependencies ?? [])
-    .filter((dep) => dep.dependsOnTask.status !== "DONE")
+    .filter((dep) => dep.dependsOnTask.status !== terminalStatus)
     .map((dep) => dep.dependsOnTask);
 }
 
@@ -88,19 +87,20 @@ export function blockingTasks(task) {
  * Overdue means past its due date and not finished. Tasks with no due date are
  * never overdue — we don't invent a deadline nobody set.
  */
-export function isTaskOverdue(task, today = new Date()) {
-  if (!task.dueDate || task.status === "DONE") return false;
+export function isTaskOverdue(task, terminalStatus, today = new Date()) {
+  if (!task.dueDate || task.status === terminalStatus) return false;
   return parseDay(task.dueDate) < startOfDay(today);
 }
 
 /** Weighted stage progress for top-level board tasks. */
-export function taskCompletion(tasks) {
+export function taskCompletion(tasks, boardColumns) {
+  const terminalStatus = terminalColumnStatus(boardColumns);
   const topLevel = tasks.filter((task) => !task.parentTask);
-  const done = topLevel.filter((task) => task.status === "DONE").length;
+  const done = topLevel.filter((task) => task.status === terminalStatus).length;
   return {
     done,
     total: topLevel.length,
-    percent: computeTaskCompletionPercent(topLevel),
+    percent: computeTaskCompletionPercent(topLevel, boardColumns),
   };
 }
 
